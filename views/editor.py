@@ -6,7 +6,7 @@ editor.py
 
 import streamlit as st
 from utils import storage, state
-from views import original, characters, scenes, acts
+from views import original, characters, scenes, acts, export
 
 
 def render():
@@ -41,7 +41,7 @@ def render():
         st.markdown(f"**当前项目：** {project.get('name', '未命名')}")
         st.markdown("---")
 
-        # 导航按钮：根据当前 section 高亮（简单通过 disabled 或文字标记）
+        # 导航按钮：根据当前 section 高亮
         current_section = st.session_state.get("current_section", "original")
 
         btn_original_label = "📄 原文" if current_section != "original" else "📄 原文 ✓"
@@ -60,6 +60,10 @@ def render():
         if st.button(btn_acts_label, use_container_width=True):
             state.switch_section("acts")
 
+        btn_export_label = "📋 剧本导出" if current_section != "export" else "📋 剧本导出 ✓"
+        if st.button(btn_export_label, use_container_width=True):
+            state.switch_section("export")
+
     # 右侧主内容区
     current_section = st.session_state.get("current_section", "original")
 
@@ -71,5 +75,7 @@ def render():
         scenes.render(project)
     elif current_section == "acts":
         acts.render(project)
+    elif current_section == "export":
+        export.render(project)
     else:
         st.error("未知页面，请重新选择导航项。")
