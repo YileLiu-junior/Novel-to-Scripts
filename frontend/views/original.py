@@ -10,7 +10,7 @@ original.py
 """
 
 import streamlit as st
-from utils import storage
+from frontend.utils import storage
 
 # ============ 常量 ============
 MAX_TEXT_LENGTH = 20000       # 原文最大字数

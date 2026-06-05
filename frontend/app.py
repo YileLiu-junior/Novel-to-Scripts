@@ -9,8 +9,8 @@ AI 小说转剧本工具 —— Streamlit 应用入口。
 """
 
 import streamlit as st
-from utils import state
-from views import home, editor
+from frontend.utils import state
+from frontend.views import home, editor
 
 
 def main():

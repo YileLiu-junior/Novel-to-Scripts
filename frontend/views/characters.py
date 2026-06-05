@@ -5,7 +5,7 @@ characters.py
 
 import streamlit as st
 import uuid
-from utils import storage
+from frontend.utils import storage
 
 # 每行卡片数量
 CARDS_PER_ROW = 4

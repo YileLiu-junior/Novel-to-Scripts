@@ -5,7 +5,7 @@ export.py
 """
 
 import streamlit as st
-from utils import exporter
+from frontend.utils import exporter
 
 
 def render(project: dict):

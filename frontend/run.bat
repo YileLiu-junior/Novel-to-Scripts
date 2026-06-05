@@ -24,18 +24,20 @@ if not exist "%PYTHON_EXE%" (
     exit /b 1
 )
 
-if not exist "app.py" (
-    echo [ERROR] app.py not found in current directory.
+cd /d "%~dp0.."
+
+if not exist "frontend\app.py" (
+    echo [ERROR] frontend\app.py not found.
     echo Current directory:
     echo %cd%
     echo.
-    echo Please put run.bat in the same folder as app.py.
+    echo Please ensure frontend\app.py exists.
     echo.
     pause
     exit /b 1
 )
 
-"%PYTHON_EXE%" -m streamlit run app.py
+"%PYTHON_EXE%" -m streamlit run frontend/app.py
 
 echo.
 echo Streamlit exited with code: %errorlevel%

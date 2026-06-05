@@ -6,7 +6,7 @@ acts.py
 
 import streamlit as st
 import uuid
-from utils import storage, state
+from frontend.utils import storage, state
 
 # 每行卡片数量
 CARDS_PER_ROW = 3

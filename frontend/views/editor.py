@@ -5,8 +5,8 @@ editor.py
 """
 
 import streamlit as st
-from utils import storage, state
-from views import original, characters, scenes, acts, export
+from frontend.utils import storage, state
+from frontend.views import original, characters, scenes, acts, export
 
 
 def render():

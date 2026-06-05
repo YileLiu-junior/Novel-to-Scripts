@@ -10,7 +10,7 @@ import uuid
 from datetime import datetime
 
 # 数据文件路径（相对于项目根目录）
-DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
+DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data")
 DATA_FILE = os.path.join(DATA_DIR, "projects.json")
 
 

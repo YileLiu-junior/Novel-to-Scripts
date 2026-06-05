@@ -5,7 +5,7 @@ scenes.py
 
 import streamlit as st
 import uuid
-from utils import storage
+from frontend.utils import storage
 
 
 def render(project: dict):

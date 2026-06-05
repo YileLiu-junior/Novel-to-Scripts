@@ -4,7 +4,7 @@ home.py
 """
 
 import streamlit as st
-from utils import storage, state
+from frontend.utils import storage, state
 
 
 def render():
