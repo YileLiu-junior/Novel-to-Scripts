@@ -1,0 +1,2 @@
+"""Repository boundary for persistence."""
+
