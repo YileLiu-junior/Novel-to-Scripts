@@ -1,0 +1,214 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xengineer.local/schemas/screenplay.schema.json",
+  "title": "XEngineer Structured Screenplay",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "project",
+    "source",
+    "adaptation_config",
+    "story_bible",
+    "events",
+    "causal_graph",
+    "foreshadowing",
+    "adaptation_plan",
+    "scenes",
+    "audit_report"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "project": {
+      "type": "object",
+      "required": ["id", "title", "target_format"],
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "logline": { "type": "string" },
+        "target_format": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "source": {
+      "type": "object",
+      "required": ["chapters"],
+      "properties": {
+        "case_id": { "type": "string" },
+        "novel_source_file": { "type": "string" },
+        "screenplay_reference_file": { "type": "string" },
+        "chapters": {
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "type": "object",
+            "required": ["id", "title", "order"],
+            "properties": {
+              "id": { "type": "string", "pattern": "^chapter_[0-9]{3}$" },
+              "title": { "type": "string" },
+              "order": { "type": "integer", "minimum": 1 }
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "adaptation_config": {
+      "type": "object",
+      "required": ["target_format", "fidelity_level", "preserve_priorities", "dialogue_style"],
+      "properties": {
+        "target_format": { "type": "string" },
+        "fidelity_level": { "type": "string", "enum": ["low", "medium", "high"] },
+        "preserve_priorities": { "type": "array", "items": { "type": "string" } },
+        "dialogue_style": { "type": "string" }
+      }
+    },
+    "story_bible": {
+      "type": "object",
+      "required": ["characters", "relationship_edges", "knowledge_states"],
+      "properties": {
+        "characters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "name"],
+            "properties": {
+              "id": { "type": "string", "pattern": "^char_[0-9]{3}$" },
+              "name": { "type": "string" },
+              "aliases": { "type": "array", "items": { "type": "string" } },
+              "narrative_role": { "type": "string" },
+              "voice_profile": { "type": "object" }
+            },
+            "additionalProperties": true
+          }
+        },
+        "relationship_edges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "from", "to", "type"],
+            "properties": {
+              "id": { "type": "string", "pattern": "^rel_[0-9]{3}$" },
+              "from": { "type": "string" },
+              "to": { "type": "string" },
+              "type": { "type": "string" },
+              "current_state": { "type": "string" },
+              "evidence_level": { "type": "string" }
+            },
+            "additionalProperties": true
+          }
+        },
+        "knowledge_states": { "type": "array", "items": { "type": "object" } }
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "event_type", "participants", "summary"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^event_[0-9]{3}$" },
+          "title": { "type": "string" },
+          "event_type": { "type": "string" },
+          "participants": { "type": "array", "items": { "type": "string" } },
+          "summary": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "causal_graph": {
+      "type": "object",
+      "required": ["edges"],
+      "properties": {
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["from", "to", "relation", "explanation"],
+            "properties": {
+              "from": { "type": "string" },
+              "to": { "type": "string" },
+              "relation": { "type": "string" },
+              "explanation": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "foreshadowing": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "setup_event_id", "status", "description"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^foreshadow_[0-9]{3}$" },
+          "setup_event_id": { "type": "string" },
+          "payoff_event_id": { "type": "string" },
+          "payoff_scene_id": { "type": "string" },
+          "status": { "type": "string" },
+          "description": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "adaptation_plan": {
+      "type": "object",
+      "required": ["retained_events", "merged_events", "deleted_or_deferred_events", "protected_elements", "scene_plan"],
+      "properties": {
+        "retained_events": { "type": "array", "items": { "type": "string" } },
+        "merged_events": { "type": "array", "items": { "type": "object" } },
+        "deleted_or_deferred_events": { "type": "array", "items": { "type": "object" } },
+        "protected_elements": { "type": "array", "items": { "type": "string" } },
+        "scene_plan": { "type": "array", "items": { "type": "object" } }
+      }
+    },
+    "scenes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "source_refs", "location", "characters", "related_events", "action", "dialogue"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^scene_[0-9]{3}$" },
+          "title": { "type": "string" },
+          "source_refs": { "type": "array", "items": { "type": "object" } },
+          "dramatic_purpose": { "type": "array", "items": { "type": "string" } },
+          "location": { "type": "object" },
+          "characters": { "type": "array", "items": { "type": "string" } },
+          "related_events": { "type": "array", "items": { "type": "string" } },
+          "foreshadowing": { "type": "object" },
+          "action": { "type": "array", "items": { "type": "string" } },
+          "dialogue": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "character_id", "line"],
+              "properties": {
+                "id": { "type": "string", "pattern": "^line_[0-9]{3}$" },
+                "character_id": { "type": "string" },
+                "line": { "type": "string" },
+                "surface_intent": { "type": "string" },
+                "subtext": { "type": "string" },
+                "emotional_state": { "type": "string" },
+                "action_hint": { "type": "string" }
+              },
+              "additionalProperties": true
+            }
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "audit_report": {
+      "type": "object",
+      "required": ["continuity_warnings", "unresolved_foreshadowing", "dialogue_warnings", "schema_warnings"],
+      "properties": {
+        "continuity_warnings": { "type": "array", "items": { "type": "object" } },
+        "unresolved_foreshadowing": { "type": "array", "items": { "type": "object" } },
+        "dialogue_warnings": { "type": "array", "items": { "type": "object" } },
+        "schema_warnings": { "type": "array", "items": { "type": "object" } }
+      }
+    }
+  },
+  "additionalProperties": false
+}
+

@@ -1,0 +1,30 @@
+schema: "https://json-schema.org/draft/2020-12/schema"
+id: "https://xengineer.local/schemas/screenplay.schema.yaml"
+title: "XEngineer Structured Screenplay"
+canonical_source: "schemas/screenplay.schema.json"
+required_top_level:
+  - schema_version
+  - project
+  - source
+  - adaptation_config
+  - story_bible
+  - events
+  - causal_graph
+  - foreshadowing
+  - adaptation_plan
+  - scenes
+  - audit_report
+id_patterns:
+  chapter: "chapter_###"
+  paragraph: "p_###"
+  character: "char_###"
+  relationship: "rel_###"
+  event: "event_###"
+  scene: "scene_###"
+  dialogue_line: "line_###"
+  warning: "warning_###"
+validation_boundary:
+  schema_validation: "field presence, primitive types, arrays, object shape"
+  reference_validation: "cross-entity existence and membership checks in backend validators"
+  export_validation: "only validated JSON/Pydantic models are serialized to YAML"
+
