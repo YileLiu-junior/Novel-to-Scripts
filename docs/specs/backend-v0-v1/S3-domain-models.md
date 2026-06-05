@@ -1,14 +1,14 @@
-# S3 Domain Models
+# S3 Domain 模型
 
-## Owner
+## 负责人
 
-Backend Builder.
+后端构建者（Backend Builder）。
 
-## Purpose
+## 目的
 
-Turn fixtures and schema into backend internal truth with Pydantic models.
+fixtures 和 schema 通过 Pydantic 模型转化为后端内部的事实标准。
 
-## Files
+## 文件
 
 - `backend/app/domain/common.py`
 - `backend/app/domain/project.py`
@@ -22,21 +22,21 @@ Turn fixtures and schema into backend internal truth with Pydantic models.
 - `backend/app/domain/llm_runs.py`
 - `backend/app/core/ids.py`
 
-## Rules
+## 规则
 
-- `domain/` imports Pydantic and standard library only.
-- `domain/` must not import FastAPI, SQLAlchemy, OpenAI SDK, or repositories.
-- Domain models express structure, not persistence behavior.
-- Backend-generated IDs are represented as strings with documented prefixes.
+- `domain/` 仅允许导入 Pydantic 和标准库。
+- `domain/` 不得导入 FastAPI、SQLAlchemy、OpenAI SDK 或 repository 层。
+- Domain 模型只表达数据结构，不表达持久化行为。
+- 后端生成的 ID 以字符串表示，并具有文档化的前缀。
 
-## Tests
+## 测试
 
 - `backend/tests/services/test_chapter_service.py`
 - `backend/tests/validators/test_schema_validator.py`
 
-## Acceptance
+## 验收标准
 
-- Three chapters normalize into `chapter_001` through `chapter_003`.
-- Paragraph IDs remain predictable when the same chapter text is saved again.
-- Missing required fields fail Pydantic validation.
+- 三章内容规范化为 `chapter_001` 至 `chapter_003`。
+- 相同的章节文本再次保存时，段落 ID 保持可预测、不发生变化。
+- 缺失必填字段时 Pydantic 校验报错。
 
