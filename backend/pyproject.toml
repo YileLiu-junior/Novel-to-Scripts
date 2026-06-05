@@ -1,0 +1,16 @@
+[project]
+name = "xengineer-backend"
+version = "0.1.0"
+description = "Structured novel-to-screenplay backend skeleton"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.111",
+  "pydantic>=2",
+  "PyYAML>=6",
+  "jsonschema>=4",
+  "uvicorn>=0.30"
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
