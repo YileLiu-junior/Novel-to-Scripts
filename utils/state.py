@@ -16,7 +16,7 @@ def init_session_state():
     if "current_project_id" not in st.session_state:
         st.session_state.current_project_id = None
 
-    # 当前编辑页面：original / characters / scenes / acts
+    # 当前编辑页面：original / characters / scenes / acts / export
     if "current_section" not in st.session_state:
         st.session_state.current_section = "original"
 
@@ -54,9 +54,9 @@ def enter_project(project_id: str):
 
 def switch_section(section: str):
     """
-    切换当前编辑页面（original / characters / scenes / acts）。
+    切换当前编辑页面（original / characters / scenes / acts / export）。
     """
-    if section in ("original", "characters", "scenes", "acts"):
+    if section in ("original", "characters", "scenes", "acts", "export"):
         st.session_state.current_section = section
         # 切换到非场次页面时，清空 selected_act_id
         if section != "acts":
