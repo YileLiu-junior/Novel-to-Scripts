@@ -1,16 +1,14 @@
-# S1 Fixture Contract
+# S1 测试夹具合约
 
-## Owner
+## 负责人
 
-Contract Architect.
+合约架构师（Contract Architect）。
 
-## Purpose
+## 目的
 
-Lock the shared language before domain, API, prompts, or frontend code move.
-Fixtures are the first source of agreement between backend, frontend, tests,
-and skills.
+在 domain、API、prompt 或前端代码开始推进之前，锁定共享语言。测试夹具（fixtures）是后端、前端、测试和skills之间达成一致的第一个锚点。
 
-## Files
+## 文件
 
 - `fixtures/demo_novel_3_chapters.json`
 - `fixtures/demo_story_bible.json`
@@ -19,11 +17,11 @@ and skills.
 - `fixtures/demo_audit_report.json`
 - `fixtures/demo_invalid_refs.yaml`
 
-## Contract
+## 合约条款
 
-- JSON/Pydantic is the internal source of truth.
-- YAML is an export and user-editable interchange format.
-- IDs in fixtures must look like final backend IDs:
+- JSON/Pydantic 为内部唯一事实来源。
+- YAML 作为导出格式和用户可编辑的交换格式。
+- 测试夹具中的 ID 必须与最终后端 ID 格式一致：
   - `chapter_###`
   - `p_###`
   - `char_###`
@@ -31,15 +29,12 @@ and skills.
   - `scene_###`
   - `line_###`
   - `warning_###`
-- `demo_novel_3_chapters.json` must include at least three chapters.
-- Demo story bible must include at least two characters, three events, one
-  relationship, one foreshadowing item, and knowledge-state examples.
-- Demo screenplay must include at least two scenes and source references.
-- Invalid refs fixture must contain at least one broken `character_id` or
-  `event_id`.
+- `demo_novel_3_chapters.json` 必须包含至少三章。
+- 演示用故事圣经（story bible）必须包含至少两个角色、三个事件、一条关系、一条伏笔和知识状态示例。
+- 演示用剧本必须包含至少两个场景及其来源引用。
+- 无效引用测试夹具必须包含至少一条断裂的 `character_id` 或 `event_id`。
 
-## Review Gate
+## 评审关卡
 
-Gate 1 Contract passes only when fixture changes are reflected in schema,
-domain models, DTOs, and prompt reference examples.
+验收门槛 1（合约）仅在测试夹具的变更同步反映到 schema、domain 模型、DTO 和 prompt 参考示例中时，方可通过。
 

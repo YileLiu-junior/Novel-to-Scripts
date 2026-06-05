@@ -1,10 +1,7 @@
-# Backend V0+V1 Spec Index
+# Backend V0+V1 规范索引
 
-This directory contains the small-step specs for the V0+V1 backend.
-
-The upstream plan calls them "10 small Specs", but keeps the numbering S0-S10.
-This directory preserves that numbering: S0 is the operating-rule preflight,
-and S1-S10 are the ten implementation-facing specs.
+本目录包含 V0+V1 后端的小步规范文档。
+上游计划将其称为"10 个小规范"，但保留了 S0–S10 的编号。本目录沿用这一编号方案：S0 是运行规则前置检查，S1–S10 是十个面向实现的规范。
 
 ## Order
 
@@ -20,9 +17,7 @@ and S1-S10 are the ten implementation-facing specs.
 10. `S9-yaml-and-schema-export.md`
 11. `S10-smoke-and-acceptance.md`
 
-## Gate Rule
+## 验收规则
 
-Each spec should leave a checkable artifact. A step is not done just because a
-prompt or route exists; it must also have a fixture, schema, code boundary, test
-target, or demo proof appropriate to the step.
+每个规范都应留下可检验的产出物。一个步骤不能仅因为定义了一个 prompt 或 route 就算完成；它还必须具备与该步骤相匹配的测试夹具（fixture）、数据模式（schema）、代码边界、测试目标或演示证明。
 
