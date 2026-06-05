@@ -1,0 +1,81 @@
+schema_version: "1.0"
+project:
+  id: "project_demo_invalid"
+  title: "Broken refs contract fixture"
+  logline: "This file intentionally contains broken references."
+  target_format: "web_series"
+source:
+  case_id: "sherlock_study_in_pink"
+  novel_source_file: "research/novel-to-script-cases/01_sherlock_study_in_pink/a-study-in-scarlet_novel_zh.txt"
+  chapters:
+    - id: "chapter_001"
+      title: "歇洛克·福尔摩斯先生"
+      order: 1
+adaptation_config:
+  target_format: "web_series"
+  fidelity_level: "high"
+  preserve_priorities: ["relationship_arc"]
+  dialogue_style: "restrained_with_subtext"
+story_bible:
+  characters:
+    - id: "char_001"
+      name: "约翰·华生"
+      aliases: ["华生"]
+      narrative_role: "point_of_view"
+  relationship_edges: []
+  knowledge_states: []
+events:
+  - id: "event_001"
+    title: "华生寻找住处"
+    event_type: "setup"
+    participants: ["char_001"]
+    summary: "华生寻找住处。"
+causal_graph:
+  edges:
+    - from: "event_001"
+      to: "event_missing"
+      relation: "broken"
+      explanation: "Intentional missing event reference."
+foreshadowing:
+  - id: "foreshadow_001"
+    setup_event_id: "event_missing"
+    payoff_scene_id: "scene_missing"
+    status: "planned"
+    description: "Intentional broken event and scene reference."
+adaptation_plan:
+  retained_events: ["event_001"]
+  merged_events: []
+  deleted_or_deferred_events: []
+  protected_elements: ["foreshadow_001"]
+  scene_plan:
+    - scene_id: "scene_001"
+      purpose: "Trigger validation warnings"
+      source_events: ["event_missing"]
+scenes:
+  - id: "scene_001"
+    title: "Broken reference scene"
+    source_refs:
+      - chapter_id: "chapter_missing"
+        paragraph_range: "p_001"
+    dramatic_purpose: ["Validate missing refs"]
+    location:
+      name: "贝克街房间"
+      time: "day"
+      interior_exterior: "INT"
+    characters: ["char_missing"]
+    related_events: ["event_missing"]
+    foreshadowing:
+      setups: ["foreshadow_001"]
+      payoffs: []
+    action:
+      - "This scene intentionally references missing IDs."
+    dialogue:
+      - id: "line_001"
+        character_id: "char_missing"
+        line: "This character does not exist."
+audit_report:
+  continuity_warnings: []
+  unresolved_foreshadowing: []
+  dialogue_warnings: []
+  schema_warnings: []
+

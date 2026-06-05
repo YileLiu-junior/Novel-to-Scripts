@@ -1,0 +1,166 @@
+{
+  "story_bible": {
+    "characters": [
+      {
+        "id": "char_001",
+        "name": "约翰·华生",
+        "aliases": ["华生", "华生医生"],
+        "narrative_role": "point_of_view",
+        "goals": {
+          "explicit": "在伦敦重新安顿生活",
+          "hidden": "从战争创伤中恢复，并找到新的生活目的"
+        },
+        "voice_profile": {
+          "rhythm": "观察细致，叙述克制，常以医生视角解释事实",
+          "defense_mechanism": "用理性记录掩饰不安"
+        },
+        "source_refs": [
+          {
+            "chapter_id": "chapter_001",
+            "paragraph_range": "p_001-p_003"
+          }
+        ]
+      },
+      {
+        "id": "char_002",
+        "name": "歇洛克·福尔摩斯",
+        "aliases": ["福尔摩斯"],
+        "narrative_role": "detective",
+        "goals": {
+          "explicit": "验证自己的侦查方法",
+          "hidden": "获得足够复杂的案件来证明自身价值"
+        },
+        "voice_profile": {
+          "rhythm": "短促、精准、带有推理上的优越感",
+          "defense_mechanism": "用知识和冷静压过情绪"
+        },
+        "source_refs": [
+          {
+            "chapter_id": "chapter_001",
+            "paragraph_range": "p_002-p_003"
+          },
+          {
+            "chapter_id": "chapter_002",
+            "paragraph_range": "p_002-p_003"
+          }
+        ]
+      },
+      {
+        "id": "char_003",
+        "name": "斯坦福德",
+        "aliases": ["年轻的斯坦福德"],
+        "narrative_role": "connector",
+        "goals": {
+          "explicit": "把华生介绍给正在找合租者的福尔摩斯",
+          "hidden": "避免为两人的相处风险承担责任"
+        },
+        "voice_profile": {
+          "rhythm": "谨慎、委婉，先提醒风险再推进介绍",
+          "defense_mechanism": "用玩笑保持距离"
+        },
+        "source_refs": [
+          {
+            "chapter_id": "chapter_001",
+            "paragraph_range": "p_002-p_003"
+          }
+        ]
+      }
+    ],
+    "relationship_edges": [
+      {
+        "id": "rel_001",
+        "from": "char_001",
+        "to": "char_002",
+        "type": "new_flatmates_with_mutual_curiosity",
+        "current_state": "华生好奇，福尔摩斯愿意展示能力但保持神秘",
+        "evidence_level": "explicit",
+        "source_refs": [
+          {
+            "chapter_id": "chapter_002",
+            "paragraph_range": "p_001-p_003"
+          }
+        ]
+      }
+    ],
+    "knowledge_states": [
+      {
+        "character_id": "char_001",
+        "knows": ["event_001", "event_002"],
+        "does_not_know": ["event_003"]
+      },
+      {
+        "character_id": "char_002",
+        "knows": ["event_001", "event_002", "event_003"],
+        "does_not_know": []
+      }
+    ]
+  },
+  "events": [
+    {
+      "id": "event_001",
+      "title": "华生寻找住处",
+      "event_type": "setup",
+      "participants": ["char_001", "char_003"],
+      "summary": "华生因经济压力寻找住处，斯坦福德提到福尔摩斯。",
+      "source_refs": [
+        {
+          "chapter_id": "chapter_001",
+          "paragraph_range": "p_001-p_002"
+        }
+      ]
+    },
+    {
+      "id": "event_002",
+      "title": "福尔摩斯与华生开始合租",
+      "event_type": "relationship_turn",
+      "participants": ["char_001", "char_002"],
+      "summary": "两人决定合住贝克街，并建立观察与被观察的关系。",
+      "source_refs": [
+        {
+          "chapter_id": "chapter_002",
+          "paragraph_range": "p_001"
+        }
+      ]
+    },
+    {
+      "id": "event_003",
+      "title": "劳里斯顿花园疑案到来",
+      "event_type": "inciting_case",
+      "participants": ["char_001", "char_002"],
+      "summary": "格雷格森来信请求福尔摩斯协助调查一桩空屋凶案。",
+      "source_refs": [
+        {
+          "chapter_id": "chapter_003",
+          "paragraph_range": "p_001-p_003"
+        }
+      ]
+    }
+  ],
+  "causal_graph": {
+    "edges": [
+      {
+        "from": "event_001",
+        "to": "event_002",
+        "relation": "enables",
+        "explanation": "找住处的需求使华生进入福尔摩斯的生活空间。"
+      },
+      {
+        "from": "event_002",
+        "to": "event_003",
+        "relation": "enables",
+        "explanation": "合租关系使华生能够跟随福尔摩斯进入案件。"
+      }
+    ]
+  },
+  "foreshadowing": [
+    {
+      "id": "foreshadow_001",
+      "setup_event_id": "event_002",
+      "payoff_event_id": "event_003",
+      "payoff_scene_id": "scene_002",
+      "status": "planned",
+      "description": "福尔摩斯的推理能力先被日常观察展示，随后在正式案件中兑现。"
+    }
+  ]
+}
+

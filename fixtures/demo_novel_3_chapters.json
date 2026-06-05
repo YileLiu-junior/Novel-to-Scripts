@@ -1,0 +1,89 @@
+{
+  "fixture_id": "demo_novel_3_chapters",
+  "source_case_id": "sherlock_study_in_pink",
+  "source_kind": "real_project_data_excerpt",
+  "source_file": "research/novel-to-script-cases/01_sherlock_study_in_pink/a-study-in-scarlet_novel_zh.txt",
+  "project": {
+    "id": "project_demo_sherlock",
+    "title": "血字的研究 - 三章输入契约样本",
+    "target_format": "web_series"
+  },
+  "chapters": [
+    {
+      "id": "chapter_001",
+      "order": 1,
+      "title": "歇洛克·福尔摩斯先生",
+      "source_anchor": "第一部 第一章 歇洛克·福尔摩斯先生",
+      "source_file": "research/novel-to-script-cases/01_sherlock_study_in_pink/a-study-in-scarlet_novel_zh.txt",
+      "text": "华生退役回到伦敦，寻找更便宜的住处。斯坦福德提到实验室里的福尔摩斯，并安排两人见面。",
+      "paragraphs": [
+        {
+          "id": "p_001",
+          "order": 1,
+          "summary": "华生因伤病退役回国，经济压力迫使他寻找住处。"
+        },
+        {
+          "id": "p_002",
+          "order": 2,
+          "summary": "斯坦福德告诉华生，福尔摩斯也在寻找合租者。"
+        },
+        {
+          "id": "p_003",
+          "order": 3,
+          "summary": "华生对这个古怪而有学问的人产生兴趣。"
+        }
+      ]
+    },
+    {
+      "id": "chapter_002",
+      "order": 2,
+      "title": "演绎法",
+      "source_anchor": "第一部 第二章 演绎法",
+      "source_file": "research/novel-to-script-cases/01_sherlock_study_in_pink/a-study-in-scarlet_novel_zh.txt",
+      "text": "华生和福尔摩斯开始合住。华生观察到福尔摩斯知识结构奇特，并听到他解释侦探工作所需的演绎法。",
+      "paragraphs": [
+        {
+          "id": "p_001",
+          "order": 1,
+          "summary": "两人在贝克街合租，生活逐渐稳定。"
+        },
+        {
+          "id": "p_002",
+          "order": 2,
+          "summary": "华生列出福尔摩斯的知识范围，发现其知识有明确用途。"
+        },
+        {
+          "id": "p_003",
+          "order": 3,
+          "summary": "福尔摩斯展示观察和推理能力。"
+        }
+      ]
+    },
+    {
+      "id": "chapter_003",
+      "order": 3,
+      "title": "劳里斯顿花园疑案",
+      "source_anchor": "第一部 第三章 劳里斯顿花园疑案",
+      "source_file": "research/novel-to-script-cases/01_sherlock_study_in_pink/a-study-in-scarlet_novel_zh.txt",
+      "text": "一封来自格雷格森的信带来劳里斯顿花园凶案。福尔摩斯决定前往现场，华生随行。",
+      "paragraphs": [
+        {
+          "id": "p_001",
+          "order": 1,
+          "summary": "格雷格森来信请求福尔摩斯协助调查。"
+        },
+        {
+          "id": "p_002",
+          "order": 2,
+          "summary": "信中描述空屋内发现男尸且死因不明。"
+        },
+        {
+          "id": "p_003",
+          "order": 3,
+          "summary": "福尔摩斯和华生出发前往布里克斯顿路。"
+        }
+      ]
+    }
+  ]
+}
+
