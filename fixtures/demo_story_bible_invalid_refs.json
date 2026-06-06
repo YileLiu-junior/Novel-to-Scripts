@@ -1,0 +1,64 @@
+{
+  "schema_version": "story_ontology_evidence_1.5",
+  "adaptation_evidence_mode": "enabled",
+  "generated_by_skill": "story_ontology",
+  "input_artifact_type": "novel_analysis",
+  "story_bible": {
+    "characters": [
+      {
+        "id": "char_001",
+        "name": "测试角色"
+      }
+    ],
+    "relationship_edges": [],
+    "knowledge_states": [],
+    "continuity_anchors": [
+      {
+        "id": "anchor_001",
+        "anchor_type": "relationship_state",
+        "summary": "故意引用不存在的角色和章节，用于 deterministic reference validation。",
+        "applies_to": ["char_999"],
+        "source_refs": [{"chapter_id": "chapter_999"}]
+      }
+    ],
+    "dramatic_assets": {
+      "conflict_pool": [
+        {
+          "id": "conflict_001",
+          "conflict_axis": "测试冲突",
+          "participants": ["char_001"],
+          "related_events": ["event_999"],
+          "source_refs": [{"chapter_id": "chapter_001"}]
+        }
+      ],
+      "filmic_constraints": [
+        {
+          "id": "filmic_001",
+          "constraint_type": "internal_state_to_action",
+          "summary": "故意引用不存在的角色和事件。",
+          "related_characters": ["char_999"],
+          "related_events": ["event_999"],
+          "source_refs": [{"chapter_id": "chapter_001"}]
+        }
+      ]
+    }
+  },
+  "events": [
+    {
+      "id": "event_001",
+      "title": "测试事件",
+      "event_type": "setup",
+      "participants": ["char_001"],
+      "summary": "用于 invalid refs 的合法事件。",
+      "complete_event": true,
+      "event_flow": ["开始", "发展", "结果"],
+      "must_keep_together": true,
+      "conflict_axis": "测试冲突",
+      "source_refs": [{"chapter_id": "chapter_001"}]
+    }
+  ],
+  "causal_graph": {
+    "edges": []
+  },
+  "foreshadowing": []
+}

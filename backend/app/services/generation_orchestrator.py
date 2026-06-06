@@ -227,6 +227,13 @@ def _normalize_story_bible(story_bible: dict[str, Any]) -> dict[str, Any]:
     import re
     story_bible.setdefault("relationship_edges", [])
     story_bible.setdefault("knowledge_states", [])
+    story_bible.setdefault("continuity_anchors", [])
+    dramatic_assets = story_bible.get("dramatic_assets")
+    if not isinstance(dramatic_assets, dict):
+        dramatic_assets = {}
+    dramatic_assets.setdefault("conflict_pool", [])
+    dramatic_assets.setdefault("filmic_constraints", [])
+    story_bible["dramatic_assets"] = dramatic_assets
     # 补全角色必填字段 + 规范化角色 ID
     characters = story_bible.get("characters", [])
     for idx, char in enumerate(characters):
@@ -254,6 +261,30 @@ def _normalize_story_bible(story_bible: dict[str, Any]) -> dict[str, Any]:
     for ks in story_bible.get("knowledge_states", []):
         if isinstance(ks, dict) and "character_id" in ks:
             ks["character_id"] = _normalize_char_id(ks["character_id"])
+    # Evidence fields are source-grounded facts; normalize IDs but do not invent content.
+    for anchor in story_bible.get("continuity_anchors", []):
+        if isinstance(anchor, dict):
+            applies_to = anchor.get("applies_to")
+            if isinstance(applies_to, list):
+                anchor["applies_to"] = [_normalize_char_id(item) for item in applies_to if isinstance(item, str)]
+    for conflict in dramatic_assets.get("conflict_pool", []):
+        if isinstance(conflict, dict):
+            participants = conflict.get("participants")
+            if isinstance(participants, list):
+                conflict["participants"] = [_normalize_char_id(item) for item in participants if isinstance(item, str)]
+            related_events = conflict.get("related_events")
+            if isinstance(related_events, list):
+                conflict["related_events"] = [_normalize_event_id(item) for item in related_events if isinstance(item, str)]
+    for constraint in dramatic_assets.get("filmic_constraints", []):
+        if isinstance(constraint, dict):
+            related_characters = constraint.get("related_characters")
+            if isinstance(related_characters, list):
+                constraint["related_characters"] = [
+                    _normalize_char_id(item) for item in related_characters if isinstance(item, str)
+                ]
+            related_events = constraint.get("related_events")
+            if isinstance(related_events, list):
+                constraint["related_events"] = [_normalize_event_id(item) for item in related_events if isinstance(item, str)]
     return story_bible
 
 
@@ -572,6 +603,46 @@ def _normalize_all_references(
                 srefs = edge.get("source_refs")
                 if isinstance(srefs, list):
                     edge["source_refs"] = _normalize_source_refs_list(srefs, default_chapter_id)
+        for anchor in bible.get("continuity_anchors", []):
+            if isinstance(anchor, dict):
+                applies_to = anchor.get("applies_to")
+                if isinstance(applies_to, list):
+                    anchor["applies_to"] = [_resolve_char_id(c, char_lookup) for c in applies_to if isinstance(c, str)]
+                srefs = anchor.get("source_refs")
+                if isinstance(srefs, list):
+                    anchor["source_refs"] = _normalize_source_refs_list(srefs, default_chapter_id)
+        dramatic_assets = bible.get("dramatic_assets")
+        if isinstance(dramatic_assets, dict):
+            for conflict in dramatic_assets.get("conflict_pool", []):
+                if isinstance(conflict, dict):
+                    participants = conflict.get("participants")
+                    if isinstance(participants, list):
+                        conflict["participants"] = [
+                            _resolve_char_id(c, char_lookup) for c in participants if isinstance(c, str)
+                        ]
+                    related_events = conflict.get("related_events")
+                    if isinstance(related_events, list):
+                        conflict["related_events"] = [
+                            _resolve_event_id(e, event_lookup) for e in related_events if isinstance(e, str)
+                        ]
+                    srefs = conflict.get("source_refs")
+                    if isinstance(srefs, list):
+                        conflict["source_refs"] = _normalize_source_refs_list(srefs, default_chapter_id)
+            for constraint in dramatic_assets.get("filmic_constraints", []):
+                if isinstance(constraint, dict):
+                    related_characters = constraint.get("related_characters")
+                    if isinstance(related_characters, list):
+                        constraint["related_characters"] = [
+                            _resolve_char_id(c, char_lookup) for c in related_characters if isinstance(c, str)
+                        ]
+                    related_events = constraint.get("related_events")
+                    if isinstance(related_events, list):
+                        constraint["related_events"] = [
+                            _resolve_event_id(e, event_lookup) for e in related_events if isinstance(e, str)
+                        ]
+                    srefs = constraint.get("source_refs")
+                    if isinstance(srefs, list):
+                        constraint["source_refs"] = _normalize_source_refs_list(srefs, default_chapter_id)
 
     # foreshadowing → setup_event_id, payoff_event_id
     foreshadows = screenplay.get("foreshadowing", [])
@@ -870,7 +941,13 @@ class GenerationOrchestrator:
             self.llm_trace_service.record_fake_run(active_job.id, "novel_reader", novel_analysis)
 
             active_job = self.job_service.mark_step(active_job, "running", "story_ontology")
-            story_assets = self.story_ontology.run({"project": project_payload, **novel_analysis})
+            story_assets = self.story_ontology.run(
+                {
+                    "project": project_payload,
+                    "adaptation_config": adaptation_config.model_dump(),
+                    **novel_analysis,
+                }
+            )
             self.artifact_service.save_artifact(project_id, "story_bible", story_assets, active_job.id)
 
             active_job = self.job_service.mark_step(active_job, "running", "adaptation_planner")

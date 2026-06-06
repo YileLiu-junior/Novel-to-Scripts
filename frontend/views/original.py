@@ -177,6 +177,7 @@ def _render_generation_controls(project: dict, backend_project_id: str, chapters
         "fidelity_level": fidelity_level,
         "preserve_priorities": priorities,
         "dialogue_style": dialogue_style.strip() or "restrained_with_subtext",
+        "adaptation_evidence_mode": "enabled",
     }
 
     if len(chapters) < 3:

@@ -1,4 +1,8 @@
 {
+  "schema_version": "story_ontology_evidence_1.5",
+  "adaptation_evidence_mode": "enabled",
+  "generated_by_skill": "story_ontology",
+  "input_artifact_type": "novel_analysis",
   "story_bible": {
     "characters": [
       {
@@ -93,7 +97,89 @@
         "knows": ["event_001", "event_002", "event_003"],
         "does_not_know": []
       }
-    ]
+    ],
+    "continuity_anchors": [
+      {
+        "id": "anchor_001",
+        "anchor_type": "relationship_state",
+        "summary": "华生和福尔摩斯在合租前仍是彼此试探的陌生人，不能提前表现为亲密搭档。",
+        "applies_to": ["char_001", "char_002"],
+        "source_refs": [
+          {
+            "chapter_id": "chapter_002",
+            "paragraph_range": "p_001"
+          }
+        ]
+      },
+      {
+        "id": "anchor_002",
+        "anchor_type": "character_trait",
+        "summary": "福尔摩斯的兴奋来自复杂案件和推理机会，而不是一般社交热情。",
+        "applies_to": ["char_002"],
+        "source_refs": [
+          {
+            "chapter_id": "chapter_003",
+            "paragraph_range": "p_001-p_003"
+          }
+        ]
+      }
+    ],
+    "dramatic_assets": {
+      "conflict_pool": [
+        {
+          "id": "conflict_001",
+          "conflict_axis": "安顿需求 vs 合租风险",
+          "participants": ["char_001", "char_002", "char_003"],
+          "related_events": ["event_001", "event_002"],
+          "source_refs": [
+            {
+              "chapter_id": "chapter_001",
+              "paragraph_range": "p_001-p_003"
+            }
+          ]
+        },
+        {
+          "id": "conflict_002",
+          "conflict_axis": "日常倦怠 vs 复杂案件刺激",
+          "participants": ["char_001", "char_002"],
+          "related_events": ["event_003"],
+          "source_refs": [
+            {
+              "chapter_id": "chapter_003",
+              "paragraph_range": "p_001-p_003"
+            }
+          ]
+        }
+      ],
+      "filmic_constraints": [
+        {
+          "id": "filmic_001",
+          "constraint_type": "internal_state_to_action",
+          "summary": "华生的经济压力和不安需要通过试探、停顿、观察房间等可演动作表现，不能只靠旁白解释。",
+          "related_characters": ["char_001"],
+          "related_events": ["event_001", "event_002"],
+          "source_refs": [
+            {
+              "chapter_id": "chapter_001",
+              "paragraph_range": "p_001-p_003"
+            }
+          ]
+        },
+        {
+          "id": "filmic_002",
+          "constraint_type": "voiceover_to_visible_behavior",
+          "summary": "福尔摩斯从倦怠到兴奋的变化必须转化为语速、动作或注意力变化。",
+          "related_characters": ["char_002"],
+          "related_events": ["event_003"],
+          "source_refs": [
+            {
+              "chapter_id": "chapter_003",
+              "paragraph_range": "p_001-p_003"
+            }
+          ]
+        }
+      ]
+    }
   },
   "events": [
     {
@@ -102,6 +188,10 @@
       "event_type": "setup",
       "participants": ["char_001", "char_003"],
       "summary": "华生因经济压力寻找住处，斯坦福德提到福尔摩斯。",
+      "complete_event": true,
+      "event_flow": ["华生寻找住处", "斯坦福德提出合租对象", "斯坦福德提醒对方古怪", "华生决定见面"],
+      "must_keep_together": true,
+      "conflict_axis": "安顿需求 vs 合租风险",
       "source_refs": [
         {
           "chapter_id": "chapter_001",
@@ -115,6 +205,10 @@
       "event_type": "relationship_turn",
       "participants": ["char_001", "char_002"],
       "summary": "两人决定合住贝克街，并建立观察与被观察的关系。",
+      "complete_event": true,
+      "event_flow": ["两人见面", "交换合住条件", "福尔摩斯展示观察能力", "达成合租安排"],
+      "must_keep_together": true,
+      "conflict_axis": "互相好奇 vs 互相防备",
       "source_refs": [
         {
           "chapter_id": "chapter_002",
@@ -128,6 +222,10 @@
       "event_type": "inciting_case",
       "participants": ["char_001", "char_002"],
       "summary": "格雷格森来信请求福尔摩斯协助调查一桩空屋凶案。",
+      "complete_event": true,
+      "event_flow": ["来信送达", "福尔摩斯读出案件信息", "倦怠转为兴奋", "两人准备前往现场"],
+      "must_keep_together": true,
+      "conflict_axis": "日常倦怠 vs 复杂案件刺激",
       "source_refs": [
         {
           "chapter_id": "chapter_003",
@@ -163,4 +261,3 @@
     }
   ]
 }
-

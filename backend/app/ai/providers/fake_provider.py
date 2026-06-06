@@ -219,25 +219,28 @@ class FakeProvider(AiProvider):
         events = novel_analysis.get("events", []) if isinstance(novel_analysis.get("events"), list) else []
         if not events:
             events = self._build_novel_analysis(chapters).get("events", [])
-        return {
-            "story_bible": {
-                "characters": [
-                    {
-                        "id": "char_001",
-                        "name": "当前项目主角",
-                        "aliases": [],
-                        "narrative_role": "protagonist",
-                        "voice_profile": {
-                            "rhythm": "由上传原文的句式节奏模拟",
-                            "diction": "保留原文章节中的关键词和语气",
-                        },
-                        "source_refs": [{"chapter_id": first_chapter_id}],
-                    }
-                ],
-                "relationship_edges": [],
-                "knowledge_states": [{"character_id": "char_001", "knows": ["event_001"], "does_not_know": []}],
-            },
-            "events": events,
+        mode = self._adaptation_evidence_mode(novel_analysis)
+        enriched_events = [self._enrich_event(event, idx, chapters) for idx, event in enumerate(events, start=1)]
+        story_bible = {
+            "characters": [
+                {
+                    "id": "char_001",
+                    "name": "当前项目主角",
+                    "aliases": [],
+                    "narrative_role": "protagonist",
+                    "voice_profile": {
+                        "rhythm": "由上传原文的句式节奏模拟",
+                        "diction": "保留原文章节中的关键词和语气",
+                    },
+                    "source_refs": [{"chapter_id": first_chapter_id}],
+                }
+            ],
+            "relationship_edges": [],
+            "knowledge_states": [{"character_id": "char_001", "knows": ["event_001"], "does_not_know": []}],
+        }
+        payload = {
+            "story_bible": story_bible,
+            "events": enriched_events if mode == "enabled" else events,
             "causal_graph": {
                 "edges": [
                     {
@@ -260,6 +263,72 @@ class FakeProvider(AiProvider):
             ],
             "chapters_used": chapters,
         }
+        if mode == "minimal":
+            return payload
+        story_bible["continuity_anchors"] = [
+            {
+                "id": "anchor_001",
+                "anchor_type": "timeline",
+                "summary": "Fake Provider 保留当前项目前三章的原始顺序，避免后续场景解释脱离上传章节。",
+                "applies_to": ["char_001"],
+                "source_refs": [{"chapter_id": first_chapter_id}],
+            }
+        ]
+        story_bible["dramatic_assets"] = {
+            "conflict_pool": [
+                {
+                    "id": "conflict_001",
+                    "conflict_axis": enriched_events[0].get("conflict_axis", "当前章节目标 vs 眼前阻碍")
+                    if enriched_events
+                    else "当前章节目标 vs 眼前阻碍",
+                    "participants": ["char_001"],
+                    "related_events": [event.get("id") for event in enriched_events[:2] if event.get("id")],
+                    "source_refs": [{"chapter_id": first_chapter_id}],
+                }
+            ],
+            "filmic_constraints": [
+                {
+                    "id": "filmic_001",
+                    "constraint_type": "source_summary_to_action",
+                    "summary": "章节摘要只能作为证据，后续剧本需要把它转成可演、可见、可听的行动。",
+                    "related_characters": ["char_001"],
+                    "related_events": [enriched_events[0]["id"]] if enriched_events else [],
+                    "source_refs": [{"chapter_id": first_chapter_id}],
+                }
+            ],
+        }
+        return {
+            "schema_version": "story_ontology_evidence_1.5",
+            "adaptation_evidence_mode": mode,
+            "generated_by_skill": "story_ontology",
+            "input_artifact_type": "novel_analysis",
+            **payload,
+        }
+
+    def _adaptation_evidence_mode(self, input_data: dict[str, Any]) -> str:
+        """读取后端调试模式；缺失或非法值都回到用户默认的 enabled。"""
+        config = input_data.get("adaptation_config")
+        if isinstance(config, dict) and config.get("adaptation_evidence_mode") == "minimal":
+            return "minimal"
+        return "enabled"
+
+    def _enrich_event(self, event: dict[str, Any], idx: int, chapters: list[dict[str, Any]]) -> dict[str, Any]:
+        """为 fake StoryOntology 事件补上可审查证据字段，不创造改编决策。"""
+        enriched = copy.deepcopy(event)
+        chapter = chapters[min(idx - 1, len(chapters) - 1)] if chapters else {}
+        chapter_id = chapter.get("id") or f"chapter_{idx:03d}"
+        title = enriched.get("title") or f"事件 {idx}"
+        summary = enriched.get("summary") or title
+        enriched.setdefault("source_refs", [{"chapter_id": chapter_id}])
+        enriched["complete_event"] = True
+        enriched["event_flow"] = [
+            f"进入《{chapter.get('title') or title}》",
+            "提取原文行动",
+            "形成章节结果",
+        ]
+        enriched["must_keep_together"] = True
+        enriched["conflict_axis"] = f"{summary[:24]} vs 后续改编压缩"
+        return enriched
 
     def _build_adaptation_plan(self, input_data: dict[str, Any]) -> dict[str, Any]:
         events = input_data.get("events", []) if isinstance(input_data.get("events"), list) else []

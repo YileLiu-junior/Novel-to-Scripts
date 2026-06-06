@@ -20,6 +20,7 @@ def main() -> int:
         ROOT / "fixtures" / "source_manifest.json",
         ROOT / "fixtures" / "demo_novel_3_chapters.json",
         ROOT / "fixtures" / "demo_story_bible.json",
+        ROOT / "fixtures" / "demo_story_bible_invalid_refs.json",
         ROOT / "fixtures" / "demo_screenplay.json",
         ROOT / "fixtures" / "demo_audit_report.json",
         ROOT / "schemas" / "screenplay.schema.json",
@@ -46,4 +47,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

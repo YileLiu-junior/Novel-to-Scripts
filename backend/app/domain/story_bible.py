@@ -32,11 +32,45 @@ class KnowledgeState(BaseModel):
     knows: list[str] = Field(default_factory=list)
     does_not_know: list[str] = Field(default_factory=list)
 
-# 汇总上述三者
+
+# ContinuityAnchor 记录 StoryOntology 从原文中抽出的不可漂移事实，供 planner、validator 和前端追溯。
+class ContinuityAnchor(BaseModel):
+    id: str
+    anchor_type: str
+    summary: str
+    applies_to: list[str] = Field(default_factory=list)
+    source_refs: list[SourceRef] = Field(default_factory=list)
+
+
+class ConflictAsset(BaseModel):
+    id: str
+    conflict_axis: str
+    participants: list[str] = Field(default_factory=list)
+    related_events: list[str] = Field(default_factory=list)
+    source_refs: list[SourceRef] = Field(default_factory=list)
+
+
+class FilmicConstraint(BaseModel):
+    id: str
+    constraint_type: str
+    summary: str
+    related_characters: list[str] = Field(default_factory=list)
+    related_events: list[str] = Field(default_factory=list)
+    source_refs: list[SourceRef] = Field(default_factory=list)
+
+
+class DramaticAssets(BaseModel):
+    conflict_pool: list[ConflictAsset] = Field(default_factory=list)
+    filmic_constraints: list[FilmicConstraint] = Field(default_factory=list)
+
+
+# 汇总上述证据；新增字段均为 optional defaults，保证 legacy story_bible 可继续解析。
 class StoryBible(BaseModel):
     characters: list[Character] = Field(default_factory=list)
     relationship_edges: list[RelationshipEdge] = Field(default_factory=list)
     knowledge_states: list[KnowledgeState] = Field(default_factory=list)
+    continuity_anchors: list[ContinuityAnchor] = Field(default_factory=list)
+    dramatic_assets: DramaticAssets = Field(default_factory=DramaticAssets)
 
 # 叙事事件（类型、参与者、摘要）  
 class Event(BaseModel):
@@ -45,6 +79,10 @@ class Event(BaseModel):
     event_type: str
     participants: list[str] = Field(default_factory=list)
     summary: str
+    complete_event: bool = False
+    event_flow: list[str] = Field(default_factory=list)
+    must_keep_together: bool = False
+    conflict_axis: str | None = None
     source_refs: list[SourceRef] = Field(default_factory=list)
 
 # 事件的因果链条
@@ -66,4 +104,3 @@ class Foreshadowing(BaseModel):
     payoff_scene_id: str | None = None
     status: str = "candidate"
     description: str
-

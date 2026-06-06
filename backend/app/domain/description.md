@@ -44,21 +44,23 @@ Chapter → [Paragraph]
 
 ### `story_bible.py` — 故事圣经（叙事要素提取）
 
-LLM 做叙事分析后的结构化输出，是整个领域模型中体量最大的模块：
+LLM 做叙事分析后的结构化输出，也是 StoryOntology V1.5 的“改编证据（Adaptation Evidence）”承载层。它只保存 source-grounded facts：角色、关系、知情差、完整事件、一致性锚点、冲突轴和可视化表达约束；不决定 retained/merged/deleted/deferred，也不生成 scenes。
 
 | 模型 | 内容 |
 |---|---|
 | `Character` | 角色名、别名、叙事角色、目标、语态、出处引用 |
 | `RelationshipEdge` | 角色间关系（类型、当前状态、证据等级） |
 | `KnowledgeState` | 角色知情状态（知道什么 / 不知道什么） |
-| `StoryBible` | 汇总上述三者 |
-| `Event` | 叙事事件（类型、参与者、摘要） |
+| `ContinuityAnchor` | 一致性锚点（称呼、人设、道具、时间线或世界规则） |
+| `DramaticAssets` | 原文已有冲突轴与可视化表达约束 |
+| `StoryBible` | 汇总角色、关系、知情差和改编证据字段 |
+| `Event` | 叙事事件（类型、参与者、摘要、完整事件约束） |
 | `CausalEdge` / `CausalGraph` | 事件的因果链条 |
 | `Foreshadowing` | 伏笔（setup → payoff，含状态追踪） |
 
 ### `adaptation.py` — 改编配置与计划
 
-- `AdaptationConfig`：改编参数（忠实度 low/medium/high、对话风格、保留优先级等）
+- `AdaptationConfig`：改编参数（忠实度 low/medium/high、对话风格、保留优先级、`adaptation_evidence_mode` 等）
 - `AdaptationPlan`：具体操作 — 保留/合并/删除/推迟哪些事件，以及场景规划
 - 辅助模型：`MergedEvent`、`DeferredEvent`、`ScenePlanItem`
 
