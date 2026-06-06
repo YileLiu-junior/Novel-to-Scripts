@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.ai.providers.base import AiProviderConfigurationError
 from app.ai.providers.factory import build_ai_provider
 from app.ai.skills.adaptation_planner import AdaptationPlannerSkill
 from app.ai.skills.novel_reader import NovelReaderSkill
@@ -908,6 +909,11 @@ class GenerationOrchestrator:
         client: Any | None = None,
     ) -> "GenerationOrchestrator":
         provider = build_ai_provider(settings, fixtures=fixtures, client=client)
+        if getattr(provider, "name", None) != "deepseek":
+            raise AiProviderConfigurationError(
+                f"GenerationOrchestrator requires a real AI provider (got '{getattr(provider, 'name', 'unknown')}'). "
+                "Set XENGINEER_AI_PROVIDER=deepseek and provide a valid DEEPSEEK_API_KEY."
+            )
         return cls(
             novel_reader=NovelReaderSkill(provider),
             story_ontology=StoryOntologySkill(provider),

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 import unittest
+from unittest import mock
 
 from app.ai.providers.base import (
     AiProviderConfigurationError,
@@ -66,6 +67,17 @@ class AiProviderTest(unittest.TestCase):
 
         result = orchestrator.novel_reader.run({})
         self.assertEqual(result, {"ok": True})
+
+    def test_orchestrator_rejects_non_deepseek_provider(self) -> None:
+        fake = mock.Mock()
+        fake.name = "fake"
+        with mock.patch(
+            "app.services.generation_orchestrator.build_ai_provider",
+            return_value=fake,
+        ):
+            with self.assertRaises(AiProviderConfigurationError) as ctx:
+                GenerationOrchestrator.from_provider_settings()
+        self.assertIn("deepseek", str(ctx.exception).lower())
 
     def test_deepseek_provider_parses_structured_response(self) -> None:
         client = _DeepSeekClient('{"characters": [], "events": []}')
