@@ -6,27 +6,104 @@ Write screenplay scene structures from an adaptation plan.
 
 ## Output Shape
 
-Return JSON matching `schemas/screenplay.schema.json`. Do not return freeform
-Markdown.
+Return a JSON object with a single top-level key `scenes` containing an array of
+scene objects. Do NOT return freeform Markdown. Do NOT include fields like
+`story_bible`, `events`, `adaptation_config`, or `adaptation_plan` — only return
+`{"scenes": [...]}`.
 
-## Required Scene Fields
+## Scene Object Format (STRICT — every field must match exactly)
 
-- `id`
-- `title`
-- `source_refs`
-- `dramatic_purpose`
-- `location`
-- `characters`
-- `related_events`
-- `action`
-- `dialogue`
+Each scene object MUST follow this shape:
+
+```json
+{
+  "id": "scene_001",
+  "title": "Arrival at the Train Station",
+  "scene_heading": {
+    "sequence": 1,
+    "location": "Train Station",
+    "interior_exterior": "EXT",
+    "time_of_day": "day",
+    "text": "1. Train Station EXT day"
+  },
+  "source_refs": [
+    {
+      "chapter_id": "chapter_001",
+      "event_ids": ["event_001"]
+    }
+  ],
+  "dramatic_purpose": ["Establish Lin's arrival and the mysterious atmosphere"],
+  "location": {
+    "name": "Train Station",
+    "time": "day"
+  },
+  "characters": ["char_001"],
+  "related_events": ["event_001"],
+  "action": ["Lin steps off the train, looks around the nearly empty platform, and walks toward the exit."],
+  "content_blocks": [
+    {
+      "id": "block_001",
+      "block_type": "action",
+      "text": "Lin steps off the train, looks around the nearly empty platform, and walks toward the exit."
+    },
+    {
+      "id": "block_002",
+      "block_type": "dialogue",
+      "character_id": "char_001",
+      "dialogue_line_id": "line_001",
+      "text": "Lin: Hmm, not a soul in sight."
+    }
+  ],
+  "dialogue": [
+    {
+      "id": "line_001",
+      "character_id": "char_001",
+      "line": "Hmm, not a soul in sight.",
+      "surface_intent": "Observation",
+      "subtext": "Feeling uneasy",
+      "emotional_state": "Curious",
+      "action_hint": "Glances around"
+    }
+  ]
+}
+```
+
+### Field Type Reference
+
+| Field              | Type                    | Example                                          |
+|--------------------|-------------------------|--------------------------------------------------|
+| `id`               | string                  | `"scene_001"`                                    |
+| `title`            | string                  | `"Arrival at the Train Station"`                 |
+| `scene_heading`    | object                  | `{"sequence": 1, "location": "Train Station", "interior_exterior": "EXT", "time_of_day": "day", "text": "1. Train Station EXT day"}` |
+| `source_refs`      | array of objects        | `[{"chapter_id": "chapter_001", "event_ids": ["event_001"]}]` |
+| `dramatic_purpose` | array of strings        | `["Establish atmosphere", "Introduce character"]` |
+| `location`         | object                  | `{"name": "Train Station", "time": "day"}`        |
+| `characters`       | array of strings        | `["char_001"]`                                    |
+| `related_events`   | array of strings        | `["event_001"]`                                   |
+| `action`           | array of strings        | `["Lin steps off the train, looking around."]`    |
+| `content_blocks`   | array of objects        | Natural paragraphs below the scene heading       |
+| `dialogue`         | array of objects        | See dialogue fields below                        |
+
+### Dialogue Object Fields
+
+| Field             | Type   | Required | Example                          |
+|-------------------|--------|----------|----------------------------------|
+| `id`              | string | YES      | `"line_001"`                     |
+| `character_id`    | string | YES      | `"char_001"`                     |
+| `line`            | string | YES      | `"Hmm, not a soul in sight."`    |
+| `surface_intent`  | string | no       | `"Observation"`                  |
+| `subtext`         | string | no       | `"Feeling uneasy"`               |
+| `emotional_state` | string | no       | `"Curious"`                      |
+| `action_hint`     | string | no       | `"Glances around"`               |
 
 ## Constraints
 
-- Use only character IDs from `story_bible.characters`.
-- Use only event IDs from `events`.
-- Every scene needs at least one source ref.
-- Dialogue may include `surface_intent`, `subtext`, `emotional_state`, and
-  `action_hint`.
-- YAML export happens after validation; do not handcraft final YAML here.
-
+- Use only character IDs from `story_bible.characters` (the `id` field from each character entry).
+- Use only event IDs from `events` (the `id` field from each event entry).
+- Use chapter IDs from the `source.chapters` array in the input.
+- Every scene needs at least one `source_refs` entry.
+- Every scene needs at least one entry in `action` and `dramatic_purpose`.
+- Every scene needs `scene_heading` with sequence, location, INT/EXT value, time of day, and standalone heading text.
+- Every scene needs `content_blocks` that read as natural paragraphs under the heading.
+- Scene count should match the `scene_plan` from the adaptation plan.
+- Return ONLY the JSON object — no markdown wrappers, no explanations.
