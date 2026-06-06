@@ -1,14 +1,14 @@
-# S8 Orchestrator And Worker
+# S8 Orchestrator 与 Worker
 
-## Owner
+## 负责人
 
-Backend Builder.
+后端构建者（Backend Builder）。
 
-## Purpose
+## 目的
 
-Connect V0+V1 generation stages into one recoverable backend pipeline.
+把 V0+V1 generation stages 串成一条可恢复的 backend pipeline。
 
-## Files
+## 文件
 
 - `backend/app/services/generation_orchestrator.py`
 - `backend/app/services/job_service.py`
@@ -39,19 +39,17 @@ chapters
   -> minimal AuditReport
 ```
 
-## Rules
+## 规则
 
-- Use FastAPI `BackgroundTasks` for V1 async behavior.
-- `workers/jobs.py` wraps background functions only.
-- Do not introduce Redis.
-- Every step failure writes `generation_jobs.error`.
-- Every step success writes an artifact.
+- 使用 FastAPI `BackgroundTasks` 提供 V1 async behavior。
+- `workers/jobs.py` 只封装 background functions。
+- 不引入 Redis。
+- 每个 step failure 都写入 `generation_jobs.error`。
+- 每个 step success 都保存一个 artifact。
 
-## Acceptance
+## 验收标准
 
-- Fake provider can run the full V1 pipeline.
-- Mid-pipeline failure marks job `failed`.
-- Failure preserves `current_step` and error reason.
-- Successful artifacts include `story_bible`, `adaptation_plan`,
-  `screenplay_json`, and `screenplay_yaml`.
-
+- Fake provider 能跑完整 V1 pipeline。
+- Pipeline 中途失败时，job 标记为 `failed`。
+- Failure 保留 `current_step` 和 error reason。
+- 成功 artifacts 包含 `story_bible`、`adaptation_plan`、`screenplay_json` 和 `screenplay_yaml`。

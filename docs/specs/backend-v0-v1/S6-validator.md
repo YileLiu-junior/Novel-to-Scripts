@@ -1,15 +1,14 @@
 # S6 Validator
 
-## Owner
+## 负责人
 
-Validation Director.
+验证负责人（Validation Director）。
 
-## Purpose
+## 目的
 
-Give structural trust to deterministic code instead of asking the model to
-judge its own output.
+用 deterministic code 建立结构可信度，而不是要求 model 自己判断自己的输出是否正确。
 
-## Files
+## 文件
 
 - `backend/app/validators/chapter_validator.py`
 - `backend/app/validators/schema_validator.py`
@@ -17,28 +16,27 @@ judge its own output.
 - `backend/app/validators/audit_validator.py`
 - `backend/app/services/validation_service.py`
 
-## Rules
+## 规则
 
-- Validators do not call models.
-- Validators do not call network APIs.
-- Validators should be testable with fixtures alone.
-- Schema validation checks shape.
-- Reference validation checks cross-entity integrity.
-- Audit validation maps findings into user-visible warnings.
+- Validators 不调用 models。
+- Validators 不调用 network APIs。
+- Validators 应该仅依赖 fixtures 就能测试。
+- Schema validation 检查 shape。
+- Reference validation 检查跨实体引用完整性。
+- Audit validation 将 findings 映射为用户可见 warnings。
 
-## Minimal Checks
+## 最小检查
 
-- `source_refs.chapter_id` exists.
-- `scene.characters[]` exist in `story_bible.characters`.
-- `dialogue.character_id` belongs to current scene characters.
-- `related_events[]` exist in `events`.
-- `causal_graph.edges.from/to` exist in `events`.
-- `foreshadowing.setup_event_id` exists.
-- `foreshadowing.payoff_scene_id`, when set, exists in `scenes`.
+- `source_refs.chapter_id` 必须存在。
+- `scene.characters[]` 必须存在于 `story_bible.characters`。
+- `dialogue.character_id` 必须属于当前 scene characters。
+- `related_events[]` 必须存在于 `events`。
+- `causal_graph.edges.from/to` 必须存在于 `events`。
+- `foreshadowing.setup_event_id` 必须存在。
+- `foreshadowing.payoff_scene_id` 如果设置，必须存在于 `scenes`。
 
-## Acceptance
+## 验收标准
 
-- Missing character references return an error.
-- Missing event references return a warning or error according to severity.
-- `fixtures/demo_invalid_refs.yaml` triggers expected findings.
-
+- 缺失 character references 时返回 error。
+- 缺失 event references 时，根据 severity 返回 warning 或 error。
+- `fixtures/demo_invalid_refs.yaml` 触发预期 findings。

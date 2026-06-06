@@ -1,15 +1,14 @@
-# S4 API DTO And Router Skeleton
+# S4 API DTO 与 Router 骨架
 
-## Owner
+## 负责人
 
-Backend Builder.
+后端构建者（Backend Builder）。
 
-## Purpose
+## 目的
 
-Define frontend/backend HTTP boundaries without putting business logic inside
-routes.
+定义 frontend/backend 的 HTTP 边界，让 routes 只负责请求解析、服务调用和 DTO 返回，不把 business logic 放进 route 层。
 
-## Files
+## 文件
 
 - `backend/app/api/router.py`
 - `backend/app/api/routes_projects.py`
@@ -23,7 +22,7 @@ routes.
 - `backend/app/api/dto/*.py`
 - `docs/api/api-contract.md`
 
-## Minimal API
+## 最小 API
 
 ```text
 POST   /api/projects
@@ -41,17 +40,15 @@ GET    /api/projects/{project_id}/yaml/download
 GET    /api/projects/{project_id}/schema/download
 ```
 
-## Rules
+## 规则
 
-- Routes parse requests, call services, and return DTOs.
-- Routes do not compose prompts.
-- Routes do not call AI providers directly.
-- Routes do not write SQL directly.
+- Routes 解析 requests，调用 services，并返回 DTOs。
+- Routes 不 compose prompts。
+- Routes 不直接调用 AI providers。
+- Routes 不直接写 SQL。
 
-## Acceptance
+## 验收标准
 
-- Two saved chapters cause generation requests to return a clear cannot-generate
-  error.
-- Three saved chapters can create a job.
-- Job query returns `queued`, `running`, `succeeded`, or `failed`.
-
+- 保存两章时，generation requests 返回清晰的 `cannot-generate` error。
+- 保存三章后，可以创建一个 job。
+- Job query 返回 `queued`、`running`、`succeeded` 或 `failed`。

@@ -1,4 +1,4 @@
-# S5 持久化与产物
+# S5 持久化与 Artifacts
 
 ## 负责人
 
@@ -6,7 +6,7 @@
 
 ## 目的
 
-用本地文件存储持久化项目、章节、任务、产物和 LLM 追踪记录，使流水线可审查、可重试，并避免 V0+V1 引入数据库迁移、连接管理或外部服务复杂度。
+使用本地文件存储持久化 project、chapters、jobs、artifacts 和 LLM trace records，让 pipeline 可审查、可重试，并避免 V0+V1 引入数据库迁移、连接管理或外部服务复杂度。
 
 ## 文件
 
@@ -20,7 +20,7 @@
 
 ## 本地存储目录契约
 
-默认存储根目录为 `data/`，可通过后端配置覆盖。所有文件都使用 UTF-8 编码，JSON 文件使用 stable key order，便于 demo diff、人工检查和测试断言。该目录是 backend-owned local storage，前端和脚本只能通过 API 或 backend service 读取，不直接改写。
+默认存储根目录为 `data/`，可通过 backend config 覆盖。所有文件都使用 UTF-8 编码，JSON 文件使用 stable key order，便于 demo diff、人工检查和测试断言。该目录是 backend-owned local storage，frontend 和 scripts 只能通过 API 或 backend service 读取，不直接改写。
 
 ```text
 data/
@@ -53,7 +53,7 @@ llm_runs.jsonl
 ## 规则
 
 - V1 使用本地文件存储，不使用 SQLite、PostgreSQL、Redis 或外部对象存储。
-- Repository 层只暴露按领域对象读写的持久化操作；Service 层负责编排，不直接拼接本地路径。
+- Repository 层只暴露按 domain object 读写的持久化操作；Service 层负责编排，不直接拼接本地路径。
 - `ProjectRepository` 负责创建、读取和更新 `data/projects.json` 中的 project index。
 - `ChapterRepository` 负责读写 `projects/{project_id}/chapters.json`，并保持 `chapter_###` 和 `p_###` ID 稳定。
 - `JobRepository` 负责读写 `projects/{project_id}/jobs.json`，保存 job status、current step、error 和 artifact IDs。
@@ -67,8 +67,8 @@ llm_runs.jsonl
 
 ## 验收标准
 
-- 每个成功的生成步骤保存一个产物。
-- 重新生成同一产物类型时版本号递增。
-- 失败的任务保留已创建的产物。
-- 关闭后端后重新启动，仍能通过 local repositories 读取项目、章节、job、artifact 和 llm run。
+- 每个成功的生成步骤保存一个 artifact。
+- 重新生成同一 artifact type 时，版本号递增。
+- 失败的 job 保留已创建的 artifacts。
+- 关闭 backend 后重新启动，仍能通过 local repositories 读取 project、chapters、job、artifact 和 llm run。
 - 删除或破坏单个 artifact 文件时，错误能定位到具体 `project_id`、`artifact_type` 和版本文件名。

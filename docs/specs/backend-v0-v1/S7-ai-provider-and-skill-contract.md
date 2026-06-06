@@ -1,15 +1,14 @@
-# S7 AI Provider And Skill Contract
+# S7 AI Provider 与 Skill Contract
 
-## Owner
+## 负责人
 
-Skill Engineer.
+技能工程师（Skill Engineer）。
 
-## Purpose
+## 目的
 
-Keep prompts and model calls inside the AI layer while making fake generation
-stable enough for backend and frontend development.
+把 prompts 和 model calls 限定在 AI layer 内，同时让 fake generation 足够稳定，支撑 backend 和 frontend development。
 
-## Files
+## 文件
 
 - `backend/app/ai/providers/base.py`
 - `backend/app/ai/providers/fake_provider.py`
@@ -23,7 +22,7 @@ stable enough for backend and frontend development.
 - `backend/app/ai/skills/dialogue_doctor.py`
 - `backend/app/ai/prompts/*.md`
 
-## Required In V0+V1
+## V0+V1 必需项
 
 - `FakeProvider`
 - `NovelReaderSkill` minimal wrapper
@@ -31,23 +30,22 @@ stable enough for backend and frontend development.
 - `AdaptationPlannerSkill`
 - `ScreenplayYamlWriterSkill`
 
-## Placeholders
+## 占位项
 
 - `OpenAIProvider`
 - `ContinuityAuditorSkill`
 - `DialogueDoctorSkill`
 
-## Rules
+## 规则
 
-- Skill wrappers accept structured input and return structured output.
-- Skill wrappers do not save database records.
-- Skill wrappers do not decide job state.
-- Prompt text lives in `backend/app/ai/prompts/`.
-- Business services must not import real model SDKs directly.
+- Skill wrappers 接收 structured input，并返回 structured output。
+- Skill wrappers 不保存 database records。
+- Skill wrappers 不决定 job state。
+- Prompt text 放在 `backend/app/ai/prompts/`。
+- Business services 不得直接 import real model SDKs。
 
-## Acceptance
+## 验收标准
 
-- Fake provider returns deterministic output for the same inputs.
-- Missing required fields in skill output can fail the orchestrator.
-- Fake and real providers fit the same provider interface.
-
+- Fake provider 对相同 inputs 返回 deterministic output。
+- Skill output 缺失 required fields 时，orchestrator 可以失败并暴露错误。
+- Fake provider 和 real provider 适配同一个 provider interface。

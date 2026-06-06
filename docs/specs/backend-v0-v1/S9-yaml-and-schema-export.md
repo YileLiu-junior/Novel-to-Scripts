@@ -1,15 +1,14 @@
-# S9 YAML And Schema Export
+# S9 YAML 与 Schema Export
 
-## Owner
+## 负责人
 
-Backend Builder with Validation Director.
+后端构建者（Backend Builder），协同验证负责人（Validation Director）。
 
-## Purpose
+## 目的
 
-Produce visible, reviewable competition/demo assets while keeping internal
-truth in JSON/Pydantic.
+产出可见、可 review 的 competition/demo assets，同时让内部事实标准继续保持在 JSON/Pydantic 中。
 
-## Files
+## 文件
 
 - `backend/app/exporters/yaml_exporter.py`
 - `backend/app/exporters/schema_exporter.py`
@@ -19,16 +18,15 @@ truth in JSON/Pydantic.
 - `schemas/screenplay.schema.yaml`
 - `docs/schema/screenplay-schema-explained.md`
 
-## Rules
+## 规则
 
-- Exporters serialize already-validated structures.
-- Exporters do not fill missing fields.
-- Exporters do not repair model output.
-- User-edited YAML is parsed back into JSON before validation.
+- Exporters 只序列化已经 validation 通过的结构。
+- Exporters 不补齐 missing fields。
+- Exporters 不 repair model output。
+- 用户编辑过的 YAML 必须先 parse 回 JSON，再进入 validation。
 
-## Acceptance
+## 验收标准
 
-- YAML export can parse back to JSON.
-- YAML validation returns findings.
-- Download without `screenplay_json` returns a clear error.
-
+- YAML export 可以 parse 回 JSON。
+- YAML validation 返回 findings。
+- 缺少 `screenplay_json` 时，download 返回清晰 error。
