@@ -1,4 +1,4 @@
-schema_version: "1.0"
+schema_version: "1.1"
 project:
   id: "project_demo_invalid"
   title: "Broken refs contract fixture"
@@ -11,11 +11,28 @@ source:
     - id: "chapter_001"
       title: "歇洛克·福尔摩斯先生"
       order: 1
+    - id: "chapter_002"
+      title: "演绎法"
+      order: 2
+    - id: "chapter_003"
+      title: "劳里斯顿花园疑案"
+      order: 3
 adaptation_config:
   target_format: "web_series"
   fidelity_level: "high"
   preserve_priorities: ["relationship_arc"]
   dialogue_style: "restrained_with_subtext"
+script_structure:
+  story_synopsis: "This fixture has valid shape but intentionally broken references."
+  story_outline:
+    - id: "outline_001"
+      summary: "Broken outline item points to missing event and missing scene."
+      related_events: ["event_999"]
+      target_scenes: ["scene_999"]
+  literary_screenplay:
+    unit: "scene"
+    format_note: "Scene headings and content blocks are present; references are intentionally broken."
+    scene_ids: ["scene_001", "scene_999"]
 story_bible:
   characters:
     - id: "char_001"
@@ -24,6 +41,22 @@ story_bible:
       narrative_role: "point_of_view"
   relationship_edges: []
   knowledge_states: []
+core_elements:
+  actions:
+    - id: "action_001"
+      description: "This action points to a missing scene and event."
+      scene_id: "scene_999"
+      related_event_id: "event_999"
+  plot:
+    - event_id: "event_999"
+      function: "missing_event_for_reference_validation"
+  situations:
+    - id: "situation_001"
+      scene_id: "scene_999"
+      description: "This situation points to a missing scene."
+  theme: "Broken references should be detected deterministically."
+  protagonists: ["char_999"]
+  character_relationships: ["rel_999"]
 events:
   - id: "event_001"
     title: "华生寻找住处"
@@ -33,13 +66,13 @@ events:
 causal_graph:
   edges:
     - from: "event_001"
-      to: "event_missing"
+      to: "event_999"
       relation: "broken"
       explanation: "Intentional missing event reference."
 foreshadowing:
   - id: "foreshadow_001"
-    setup_event_id: "event_missing"
-    payoff_scene_id: "scene_missing"
+    setup_event_id: "event_999"
+    payoff_scene_id: "scene_999"
     status: "planned"
     description: "Intentional broken event and scene reference."
 adaptation_plan:
@@ -50,32 +83,46 @@ adaptation_plan:
   scene_plan:
     - scene_id: "scene_001"
       purpose: "Trigger validation warnings"
-      source_events: ["event_missing"]
+      source_events: ["event_999"]
 scenes:
   - id: "scene_001"
     title: "Broken reference scene"
+    scene_heading:
+      sequence: 1
+      location: "贝克街房间"
+      interior_exterior: "INT"
+      time_of_day: "day"
+      text: "1. 贝克街房间 内景 日"
     source_refs:
-      - chapter_id: "chapter_missing"
+      - chapter_id: "chapter_999"
         paragraph_range: "p_001"
     dramatic_purpose: ["Validate missing refs"]
     location:
       name: "贝克街房间"
       time: "day"
       interior_exterior: "INT"
-    characters: ["char_missing"]
-    related_events: ["event_missing"]
+    characters: ["char_999"]
+    related_events: ["event_999"]
     foreshadowing:
       setups: ["foreshadow_001"]
       payoffs: []
     action:
       - "This scene intentionally references missing IDs."
+    content_blocks:
+      - id: "block_001"
+        block_type: "action"
+        text: "This scene intentionally references missing IDs."
+      - id: "block_002"
+        block_type: "dialogue"
+        character_id: "char_999"
+        dialogue_line_id: "line_001"
+        text: "Missing Character: This character does not exist."
     dialogue:
       - id: "line_001"
-        character_id: "char_missing"
+        character_id: "char_999"
         line: "This character does not exist."
 audit_report:
   continuity_warnings: []
   unresolved_foreshadowing: []
   dialogue_warnings: []
   schema_warnings: []
-

@@ -1,7 +1,7 @@
-schema_version: "1.0"
+schema_version: "1.1"
 project:
   id: "project_demo_sherlock"
-  title: "血字的研究 - 结构化改编样例"
+  title: "血字的研究 - 结构化文学剧本样例"
   logline: "退役军医华生与古怪侦探福尔摩斯合租后，被一桩神秘凶案带入新的生活。"
   target_format: "web_series"
 source:
@@ -26,6 +26,25 @@ adaptation_config:
     - "deduction_showcase"
     - "case_inciting_event"
   dialogue_style: "restrained_with_subtext"
+script_structure:
+  story_synopsis: "退役军医华生在伦敦寻找新的生活落点，经斯坦福德介绍遇见福尔摩斯。两人因合租开始互相试探，随后一封来自警方的案件邀请把这段关系推入共同侦查。"
+  story_outline:
+    - id: "outline_001"
+      summary: "华生因经济压力寻找住处，斯坦福德提出福尔摩斯这个合租可能。"
+      related_events: ["event_001"]
+      target_scenes: ["scene_001"]
+    - id: "outline_002"
+      summary: "福尔摩斯与华生在贝克街谈合住规则，日常观察先展示福尔摩斯的能力。"
+      related_events: ["event_002"]
+      target_scenes: ["scene_001"]
+    - id: "outline_003"
+      summary: "警方来信把二人的生活安排转成案件行动，福尔摩斯的倦怠被复杂问题点亮。"
+      related_events: ["event_003"]
+      target_scenes: ["scene_002"]
+  literary_screenplay:
+    unit: "scene"
+    format_note: "每场以 scene_heading 单独成行，标题包含序号、地点、内外景和日夜晨昏；标题下方用 content_blocks 自然段展开动作与对白。"
+    scene_ids: ["scene_001", "scene_002"]
 story_bible:
   characters:
     - id: "char_001"
@@ -60,6 +79,35 @@ story_bible:
     - character_id: "char_001"
       knows: ["event_001", "event_002"]
       does_not_know: ["event_003"]
+core_elements:
+  actions:
+    - id: "action_001"
+      description: "华生打量贝克街房间，同时观察福尔摩斯如何反过来观察自己。"
+      scene_id: "scene_001"
+      related_event_id: "event_002"
+    - id: "action_002"
+      description: "福尔摩斯收到警方来信后立刻从倦怠转为兴奋，准备动身。"
+      scene_id: "scene_002"
+      related_event_id: "event_003"
+  plot:
+    - event_id: "event_001"
+      function: "setup_living_need"
+    - event_id: "event_002"
+      function: "relationship_turn"
+    - event_id: "event_003"
+      function: "case_inciting_event"
+  situations:
+    - id: "situation_001"
+      scene_id: "scene_001"
+      description: "两个陌生人决定是否共享生活空间，亲近和防备同时存在。"
+      pressure: "如果不能达成信任，华生无法进入福尔摩斯的侦探世界。"
+    - id: "situation_002"
+      scene_id: "scene_002"
+      description: "平静合租生活被案件打断，二人必须决定是否一起行动。"
+      pressure: "案件邀请把关系从谈判推向共同冒险。"
+  theme: "理性观察如何把孤独者带入新的共同生活。"
+  protagonists: ["char_001", "char_002"]
+  character_relationships: ["rel_001"]
 events:
   - id: "event_001"
     title: "华生寻找住处"
@@ -108,6 +156,12 @@ adaptation_plan:
 scenes:
   - id: "scene_001"
     title: "贝克街合租"
+    scene_heading:
+      sequence: 1
+      location: "贝克街房间"
+      interior_exterior: "INT"
+      time_of_day: "day"
+      text: "1. 贝克街房间 内景 日"
     source_refs:
       - chapter_id: "chapter_001"
         paragraph_range: "p_002-p_003"
@@ -125,6 +179,20 @@ scenes:
       payoffs: []
     action:
       - "华生打量房间，福尔摩斯已经把注意力放在更细微的观察上。"
+    content_blocks:
+      - id: "block_001"
+        block_type: "action"
+        text: "华生打量房间，福尔摩斯已经把注意力放在更细微的观察上。"
+      - id: "block_002"
+        block_type: "dialogue"
+        character_id: "char_001"
+        dialogue_line_id: "line_001"
+        text: "华生：如果房租真的能分摊，我愿意试试。"
+      - id: "block_003"
+        block_type: "dialogue"
+        character_id: "char_002"
+        dialogue_line_id: "line_002"
+        text: "福尔摩斯：那我们先弄清彼此不能忍受什么。"
     dialogue:
       - id: "line_001"
         character_id: "char_001"
@@ -133,8 +201,21 @@ scenes:
         subtext: "他需要一个新的开始，但不愿显得太脆弱"
         emotional_state: "controlled_uncertainty"
         action_hint: "他把手杖靠到椅边，目光仍停在福尔摩斯身上"
+      - id: "line_002"
+        character_id: "char_002"
+        line: "那我们先弄清彼此不能忍受什么。"
+        surface_intent: "确认合住规则"
+        subtext: "他把亲密关系也当成一组条件测试"
+        emotional_state: "clinical_interest"
+        action_hint: "他没有坐下，只是扫了一眼华生的手杖"
   - id: "scene_002"
     title: "案子敲门"
+    scene_heading:
+      sequence: 2
+      location: "贝克街客厅"
+      interior_exterior: "INT"
+      time_of_day: "morning"
+      text: "2. 贝克街客厅 内景 晨"
     source_refs:
       - chapter_id: "chapter_003"
         paragraph_range: "p_001-p_003"
@@ -150,6 +231,15 @@ scenes:
       payoffs: ["foreshadow_001"]
     action:
       - "一封来自苏格兰场的信被递进来，福尔摩斯的倦怠立刻被案件点亮。"
+    content_blocks:
+      - id: "block_004"
+        block_type: "action"
+        text: "一封来自苏格兰场的信被递进来，福尔摩斯的倦怠立刻被案件点亮。"
+      - id: "block_005"
+        block_type: "dialogue"
+        character_id: "char_002"
+        dialogue_line_id: "line_003"
+        text: "福尔摩斯：终于有件事不像例行公事。"
     dialogue:
       - id: "line_003"
         character_id: "char_002"
