@@ -92,6 +92,7 @@ Future versions 可以通过扩展 fields 和 services 加入更丰富的 story 
 ### Schema-First（Schema 优先）
 
 - `schemas/screenplay.schema.json` 是前后端之间的**唯一真相源**。所有数据结构、字段类型、必填项、约束都在这里定义。
+- Schema 不可再随意修改；任何修改 `schemas/` 下 schema assets 的行为，必须先说明改动原因、影响范围和兼容性风险，并得到用户明确审核通过后才能执行。
 - 后端保证产出符合 schema 的数据；前端按 schema 解析和渲染，不自行推测字段含义。
 - 改字段必须先从 schema 开始 → 再改 fixtures → 再改代码。不要跳过 schema 直接改代码。
 
