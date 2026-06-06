@@ -140,99 +140,23 @@ scene objects. Do NOT return freeform Markdown or prose. Do NOT include fields l
     "time_of_day": "dusk",
     "text": "1. 诛仙台 EXT 黄昏"
   },
-  "source_refs": [
-    {
-      "chapter_id": "chapter_002",
-      "event_ids": ["event_004"]
-    }
-  ],
-  "dramatic_purpose": [
-    "素锦自导自演陷害素素",
-    "夜华在偏信与真相之间做出残酷选择",
-    "素素失去双眼，命运急转直下"
-  ],
-  "location": {
-    "name": "诛仙台",
-    "time": "黄昏",
-    "interior_exterior": "EXT"
-  },
+  "source_refs": [{"chapter_id": "chapter_002"}],
+  "dramatic_purpose": ["素锦陷害素素", "夜华做出残酷选择"],
+  "location": {"name": "诛仙台", "time": "黄昏", "interior_exterior": "EXT"},
   "characters": ["char_001", "char_002", "char_003"],
   "related_events": ["event_004"],
   "action": [
-    "△素锦与素素站在诛仙台边，素锦突然抓住素素的手，自己向后倒入深渊边缘。",
-    "△素锦大声呼救，夜华闻声赶来。"
+    "△素锦与素素站在诛仙台边，素锦突然抓住素素的手。",
+    "△夜华闻声赶来，扶起倒在台边的素锦。"
   ],
   "content_blocks": [
-    {
-      "id": "block_001",
-      "block_type": "action",
-      "text": "诛仙台边，云烟缭绕。素锦引素素走到台边，突然抓住素素的手腕。"
-    },
-    {
-      "id": "block_002",
-      "block_type": "action",
-      "text": "素锦身子后仰，跌倒在台边，同时发出一声尖叫。"
-    },
-    {
-      "id": "block_003",
-      "block_type": "dialogue",
-      "character_id": "char_003",
-      "dialogue_line_id": "line_001",
-      "text": "素锦：（抓住素素的手，向后倒入深渊边缘）啊——救命！素素，你为何推我！"
-    },
-    {
-      "id": "block_004",
-      "block_type": "action",
-      "text": "夜华闻声飞身赶来，扶起倒在台边的素锦。"
-    },
-    {
-      "id": "block_005",
-      "block_type": "dialogue",
-      "character_id": "char_001",
-      "dialogue_line_id": "line_002",
-      "text": "素素：（惊慌后退，摇头）不，不是我！是她自己跳的，我没有推她！"
-    },
-    {
-      "id": "block_006",
-      "block_type": "dialogue",
-      "character_id": "char_002",
-      "dialogue_line_id": "line_003",
-      "text": "夜华：（目光冰冷地看着素素，沉默片刻）事到如今，还在狡辩。来人——剜去她的双眼，赔给素锦。"
-    },
-    {
-      "id": "block_007",
-      "block_type": "action",
-      "text": "天兵上前按住素素。素素拼命挣扎，看向夜华，夜华却别过头去。"
-    }
+    {"id": "block_001", "block_type": "action", "text": "△诛仙台边，云烟缭绕。素锦引素素走到台边。"},
+    {"id": "block_002", "block_type": "dialogue", "character_id": "char_003", "dialogue_line_id": "line_001", "text": "素锦：（抓住素素的手）啊——素素，你为何推我！"},
+    {"id": "block_003", "block_type": "dialogue", "character_id": "char_001", "dialogue_line_id": "line_002", "text": "素素：（惊慌后退）不，不是我！我没有推她！"}
   ],
   "dialogue": [
-    {
-      "id": "line_001",
-      "character_id": "char_003",
-      "line": "啊——救命！素素，你为何推我！",
-      "surface_intent": "诬陷",
-      "subtext": "我要让夜华相信是素素害我",
-      "emotional_state": "伪装惊恐",
-      "action_hint": "抓住素素的手，向后倒入深渊边缘"
-    },
-    {
-      "id": "line_002",
-      "character_id": "char_001",
-      "line": "不，不是我！是她自己跳的，我没有推她！",
-      "surface_intent": "辩解",
-      "subtext": "为什么没有人相信我",
-      "emotional_state": "恐惧而绝望",
-      "action_hint": "惊慌后退，摇头"
-    },
-    {
-      "id": "line_003",
-      "character_id": "char_002",
-      "line": "事到如今，还在狡辩。来人——剜去她的双眼，赔给素锦。",
-      "surface_intent": "裁决",
-      "subtext": "我不在乎真相，我必须给天族一个交代",
-      "emotional_state": "冷酷而矛盾",
-      "action_hint": "目光冰冷地看着素素，沉默片刻"
-    }
+    {"id": "line_001", "character_id": "char_003", "line": "啊——素素，你为何推我！", "surface_intent": "诬陷", "subtext": "让夜华相信是素素害我", "emotional_state": "伪装惊恐", "action_hint": "抓住素素的手"},
+    {"id": "line_002", "character_id": "char_001", "line": "不，不是我！我没有推她！", "surface_intent": "辩解", "subtext": "为什么没人相信我", "emotional_state": "恐惧绝望", "action_hint": "惊慌后退，摇头"}
   ]
 }
 ```

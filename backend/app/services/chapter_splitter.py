@@ -28,6 +28,8 @@ _CHAPTER_PATTERNS: list[tuple[str, int]] = [
     (r"^\s*Book\s+[\dIVXivx]+", 1),
     # 纯数字序号：1. / 1、/ 1．
     (r"^\s*\d+[\.、．]\s*\S", 1),
+    # 序章/前传/楔子 — 网文常见非"第X章"格式的章节起点
+    (r"^\s*(?:前传|序章|序|楔子|前言|引子|引章|楔|卷首)\s*[（(]?[零一二三四五六七八九十百千万\d]*[）)]?", 2),
 ]
 
 # 编译正则
@@ -42,13 +44,20 @@ _NON_STORY_HINTS = (
     "仅供预览",
     "请支持正版",
     "txt02.com",
+    "txt02",
+    "八零电子书",
     "本站",
     "下载",
     "手机阅读",
+    "古腾堡",
+    "gutenberg",
+    "电子书编号",
+    "project gutenberg",
+    "ebook",
 )
 
 _CATALOG_TITLES = ("目录", "目 录", "contents", "content")
-_PROLOGUE_TITLES = ("序章", "序", "楔子", "前言", "引子")
+_PROLOGUE_TITLES = ("序章", "序", "楔子", "前言", "引子", "前传", "引章")
 
 # ---------------------------------------------------------------------------
 # 切分结果
@@ -172,11 +181,61 @@ class ChapterSplitter:
 
     @staticmethod
     def _normalize_text(text: str) -> str:
-        """统一换行符，去掉首尾空白。"""
+        """统一换行符，去掉首尾空白，并将内联章节标记提升到行首。"""
         text = text.replace("\r\n", "\n").replace("\r", "\n")
-        # 去掉开头的空白行
         text = text.lstrip("\n")
-        return text.strip()
+        text = text.strip()
+
+        # ── 清除 ebook 水印分隔符 ──
+        # tgt: 行 — txt02 等工具生成的分节标记
+        text = re.sub(r"^\s*tgt:\s*$", "", text, flags=re.MULTILINE | re.IGNORECASE)
+
+        # 去空格反检测水印 — 盗版站通过字符间插空格躲避关键词检测
+        # 八  零  电  子  书 → 八零电子书
+        text = re.sub(
+            r"八\s+零\s+电\s+子\s+书",
+            "八零电子书",
+            text,
+        )
+        text = re.sub(
+            r"t\s*x\s*t\s*0\s*2\s*[.]\s*c\s*o\s*m",
+            "txt02.com",
+            text,
+            flags=re.IGNORECASE,
+        )
+
+        # ── 将常见的内联/非标准章节标记提升到行首 ──
+
+        # ——第X章—— 中文小说行内分隔符
+        text = re.sub(
+            r"——(第[零一二三四五六七八九十百千万\d]+[章节回卷部集])——",
+            r"\n\1\n",
+            text,
+        )
+
+        # [插图]第X章[插图] — 插图标签直接包围的章节标题
+        text = re.sub(
+            r"\[插图\](第[零一二三四五六七八九十百千万\d]+[章节回卷部集])\[插图\]",
+            r"\n\1\n",
+            text,
+        )
+
+        # [插图：·书名·第X章] — 插图版扉页格式（·分隔书名与章节号）
+        # 注意：不匹配 [插图：阅读简的书信，第34章] 这类插图说明
+        text = re.sub(
+            r"\[插图[：:]\s*[·]\s*[^\[\]·\n]+[·]\s*第([零一二三四五六七八九十百千万\d]+)[章][^\]]*\]",
+            r"\n第\1章\n",
+            text,
+        )
+
+        # [插图]...第X章...[插图] — 多插图标签变体（如 [插图] [插图] 第X章 [插图]）
+        text = re.sub(
+            r"(?:\[插图\]\s*)+(第[零一二三四五六七八九十百千万\d]+[章节回卷部集])(?:\s*\[插图\])+",
+            r"\n\1\n",
+            text,
+        )
+
+        return text
 
     # ------------------------------------------------------------------
     # 规则切分
@@ -204,7 +263,7 @@ class ChapterSplitter:
             if not chunk:
                 continue
             kind = self._classify_chunk(chunk)
-            if kind != "main_chapter":
+            if kind not in ("main_chapter", "prologue"):
                 start_line, end_line = self._line_range_for_offsets(text, start, end)
                 ignored.append(IgnoredSpan(kind, start_line, end_line, "不计入正文前三章"))
                 continue
@@ -303,15 +362,45 @@ class ChapterSplitter:
         """检查标题行是否符合本服务支持的章节标题格式。"""
         return any(compiled.match(title) for compiled, _priority in _COMPILED_PATTERNS)
 
+    _TOC_PAGE_NUMBER_RE = re.compile(r"\d{1,4}$")
+
     def _looks_like_catalog_entry(self, chunk: str) -> bool:
-        """目录项通常只有章节标题，没有正文内容，不能当作正文主章节。"""
+        """目录项不能当作正文主章节。
+
+        支持两种目录格式：
+        1. 单行标题（常见于网文）
+        2. 多行条目：首行为章节标题，后续行为短引用/页码（常见于古典小说插图版）
+        """
         lines = [line.strip() for line in chunk.splitlines() if line.strip()]
-        return len(lines) == 1 and self._looks_like_main_chapter_title(lines[0])
+        if not lines:
+            return False
+        if not self._looks_like_main_chapter_title(lines[0]):
+            return False
+
+        # 单行目录项
+        if len(lines) == 1:
+            return True
+
+        # 多行目录项：正文行都很短（< 120 字符），且至少有一行以数字结尾（页码）
+        body_lines = lines[1:]
+        body_text = "".join(body_lines)
+        if len(body_text) > 300:
+            return False  # 太长了，是真正文
+        if all(len(line) < 120 for line in body_lines) and any(
+            self._TOC_PAGE_NUMBER_RE.search(line) for line in body_lines
+        ):
+            return True
+        return False
 
     def _has_notice_hint_near_start(self, chunk: str, compact: str) -> bool:
-        """只把开头声明识别为 notice，避免正文中偶发“下载”等词误杀整章。"""
+        """只把开头声明识别为 notice，避免正文中偶发"下载"等词误杀整章。
+
+        关键：只检查 chunk 开头的有限字符，而不是前 N 行全文。
+        部分小说（如插图版）整章只有 1-2 个超长行，若不加长度限制会把
+        整章正文都纳入扫描，误伤正文中的"版权""下载"等词。
+        """
         lines = [line.strip().lower() for line in chunk.splitlines() if line.strip()]
-        head = "".join(lines[:3])
+        head = "".join(lines[:3])[:600]
         return any(hint.lower() in head for hint in _NON_STORY_HINTS) or (
             len(compact) <= 240 and any(hint.lower() in compact for hint in _NON_STORY_HINTS)
         )

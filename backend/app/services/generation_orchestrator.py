@@ -435,7 +435,30 @@ def _resolve_char_id(raw: str, lookup: dict[str, str]) -> str:
         for key, cid in lookup.items():
             if raw in key or key in raw:
                 return cid
+        # 进一步：2+ 字符公共子串匹配（如 "查尔斯·彬格莱" ↔ "彬格莱先生" 共享 "彬格莱"）
+        if len(raw) >= 2:
+            for key, cid in lookup.items():
+                if _shared_cjk_substring(raw, key, min_len=2):
+                    return cid
     return raw
+
+
+def _shared_cjk_substring(a: str, b: str, min_len: int = 2) -> bool:
+    """Return True if a and b share a common CJK substring of at least min_len chars.
+
+    Used for fuzzy-matching LLM-output character names against the canonical
+    character name table.  E.g. "查尔斯·彬格莱" ↔ "彬格莱先生" share "彬格莱".
+    """
+    if len(a) < min_len or len(b) < min_len:
+        return False
+    # Slide a window of size min_len over the shorter string
+    shorter, longer = (a, b) if len(a) <= len(b) else (b, a)
+    for i in range(len(shorter) - min_len + 1):
+        candidate = shorter[i:i + min_len]
+        # Only check windows that are purely CJK (skip mixed ASCII/CJK boundaries)
+        if all('一' <= c <= '鿿' for c in candidate) and candidate in longer:
+            return True
+    return False
 
 
 def _normalize_events(events: list[dict[str, Any]], char_lookup: dict[str, str] | None = None) -> list[dict[str, Any]]:
@@ -450,7 +473,19 @@ def _normalize_events(events: list[dict[str, Any]], char_lookup: dict[str, str] 
             # 确保 participants 中的角色 ID 也规范化
             participants = evt.get("participants")
             if isinstance(participants, list):
-                evt["participants"] = [_normalize_char_id(p) for p in participants if isinstance(p, str)]
+                resolved: list[str] = []
+                for p in participants:
+                    if not isinstance(p, str):
+                        continue
+                    if char_lookup:
+                        p = _resolve_char_id(p, char_lookup)
+                        # 有 lookup 时丢弃无法解析的幻觉条目
+                        if not re.match(r"^char_[0-9]{3}$", p):
+                            continue
+                    else:
+                        p = _normalize_char_id(p)
+                    resolved.append(p)
+                evt["participants"] = resolved
     return events
 
 
@@ -559,11 +594,20 @@ def _normalize_all_references(
 ) -> dict[str, Any]:
     """扫描 screenplay 中所有角色/事件引用/source_refs 字段，替换为规范格式。"""
     # events → participants, source_refs
+    import re as _re
     for evt in screenplay.get("events", []):
         if isinstance(evt, dict):
             participants = evt.get("participants")
             if isinstance(participants, list):
-                evt["participants"] = [_resolve_char_id(p, char_lookup) for p in participants if isinstance(p, str)]
+                resolved = []
+                for p in participants:
+                    if not isinstance(p, str):
+                        continue
+                    p = _resolve_char_id(p, char_lookup)
+                    if _re.match(r"^char_[0-9]{3}$", p):
+                        resolved.append(p)
+                    # else: drop unresolvable entry (LLM hallucination like book title)
+                evt["participants"] = resolved
             srefs = evt.get("source_refs")
             if isinstance(srefs, list):
                 evt["source_refs"] = _normalize_source_refs_list(srefs, default_chapter_id)
