@@ -1,0 +1,24 @@
+{
+  "case_id": "01-preamble-three-chapters",
+  "mode": "rule",
+  "status": "current_bug",
+  "problem": "当前实现会强制把字符偏移 0 加入 boundaries，导致声明文本被切成第 1 章。",
+  "chapters": [
+    {
+      "order": 1,
+      "title": "声明:本书为八零电子书(txt02.com)的用户自网络收集整理制作,仅供预览交流学习使用,版权归原作者和出版社所...",
+      "text_preview": "声明:本书为八零电子书(txt02.com)的用户自网络收集整理制作..."
+    },
+    {
+      "order": 2,
+      "title": "第一章 雨夜归来",
+      "text_preview": "第一章 雨夜归来"
+    },
+    {
+      "order": 3,
+      "title": "第二章 旧案重启",
+      "text_preview": "第二章 旧案重启"
+    }
+  ]
+}
+

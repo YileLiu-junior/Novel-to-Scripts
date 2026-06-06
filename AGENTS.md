@@ -85,6 +85,57 @@ Future versions 可以通过扩展 fields 和 services 加入更丰富的 story 
 - `backend/app/workers/`：V1 background task boundary；不能依赖 Redis。
 - `docs/specs/backend-v0-v1/`：S0-S10 implementation specs。
 
+## Frontend-Backend Contract（前后端契约与并行开发规则）
+
+以下规则是 V0+V1 前后端分离开发的基础，确保双方能独立工作、互不阻塞。
+
+### Schema-First（Schema 优先）
+
+- `schemas/screenplay.schema.json` 是前后端之间的**唯一真相源**。所有数据结构、字段类型、必填项、约束都在这里定义。
+- 后端保证产出符合 schema 的数据；前端按 schema 解析和渲染，不自行推测字段含义。
+- 改字段必须先从 schema 开始 → 再改 fixtures → 再改代码。不要跳过 schema 直接改代码。
+
+### API Contract（接口契约）
+
+- 前后端**只能通过 HTTP API 通信**。前端永远不直接 import 后端模块、不直接调后端函数。
+- 所有请求/响应类型用 Pydantic DTO 定义在 `backend/app/api/dto/`，前端侧对应 `frontend/api_client.py` 封装所有 HTTP 调用。
+- 前端 `api_client.py` 是前端访问后端的**唯一入口**——API path、请求体、错误处理全部集中在这里，不散落在 view 组件里。
+- 后端路由只做参数校验和调度，不写 prompt、不直接操作数据库、不 repair content。
+
+### Fake Provider（前端无需真实 AI）
+
+- 设置 `XENGINEER_AI_PROVIDER=fake` 后，后端全流水线用**确定性假数据**运行，不调用任何外部 AI API。
+- Fake Provider 优先读 `fixtures/projects/<项目名>/` 下的项目级 fixture；没有匹配 fixture 时根据当前章节动态构造项目相关假数据。
+- **前端开发者不需要 API Key、不需要等 AI 返回、秒级跑通全流水线**，可以独立开发和调试 UI。
+- Fake 和 Real provider 共享同一条 orchestrator path——fake 通了，换 real 只需要改环境变量。
+
+### Normalization + Validation Pipeline（归一化 + 校验管道）
+
+- **Normalizer**（`backend/app/validators/screenplay_normalizer.py`）：LLM 输出不可靠——可能缺字段、多 null、格式不对。归一化层在**校验之前**递归清洗数据：补全缺失字段、删除非法 null、对齐 schema 类型。不修业务内容，只修结构。
+- **Validator**（`backend/app/validators/schema_validator.py`）：用 jsonschema 做精确结构校验，返回带 `path` + `schema_path` 的结构化 findings，方便前端定位问题。
+- 校验结果写入 `audit_report`，前端可用 `ValidationFindingResponse` 展示给用户。
+- 规则：**代码负责结构，AI 负责内容**。ID 生成、引用检查、格式校验属于后端；角色动机、对白创作属于 AI。
+
+### Frontend State Management（前端状态管理）
+
+- `frontend/utils/state.py` 统一管理 Streamlit session_state，所有页面状态在这里初始化，不散落在各 view。
+- session 中持有 `backend_project_id`、`backend_job_id`、`backend_job_status`、`screenplay_data`、`rendered_markdown` 等后端联调快照，页面刷新不丢失。
+- `frontend/utils/storage.py` 负责本地 `data/projects.json` 的持久化，含旧数据自动迁移逻辑。
+- 前端项目创建时同时调用 `api_client.create_project()` 同步后端——后端不可用时保留本地项目，不阻塞首页流程。
+
+### Fixture Contract（Fixtures 契约）
+
+- `fixtures/` 只用于 demo、mock 和 contract 验证，**不是**真实项目运行时数据目录。
+- 真实项目数据写入 `backend/data/projects/{project_id}/`，结构为 `project.json` + `chapters/index.json` + `artifacts/index.json` + `jobs/index.json`。
+- 项目级 fixture 放在 `fixtures/projects/{safe_project_name}/`，Fake Provider 按项目标题/ID 匹配。
+
+### Export Pipeline（导出管道）
+
+- 内部统一用 JSON（校验、引用追踪、artifact 存储）。
+- 导出走：`screenplay_json` → `YAML`（人可读编辑）+ `Rendered Text/Markdown`（文学剧本排版）。
+- Exporter 只做格式转换，不 repair content、不补数据、不修改业务字段。
+- YAML 导出含完整 `adaptation_config` 和 `adaptation_plan`。
+
 ## Code Commenting Convention（代码注释约定）
 
 所有新增或修改的代码，都要保留 `backend/app/domain/` 及其 `description.md` 中已经形成的解释性风格：
