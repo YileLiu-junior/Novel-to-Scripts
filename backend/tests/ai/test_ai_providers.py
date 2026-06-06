@@ -10,7 +10,6 @@ from app.ai.providers.base import (
 )
 from app.ai.providers.deepseek_provider import DeepSeekProvider
 from app.ai.providers.factory import build_ai_provider
-from app.ai.providers.fake_provider import FakeProvider
 from app.core.settings import AiSettings, load_ai_settings
 from app.services.generation_orchestrator import GenerationOrchestrator
 
@@ -37,11 +36,15 @@ class _DeepSeekClient:
 
 
 class AiProviderTest(unittest.TestCase):
-    def test_provider_factory_defaults_to_fake(self) -> None:
-        settings = load_ai_settings({})
-        provider = build_ai_provider(settings)
+    def test_provider_factory_rejects_unknown_provider(self) -> None:
+        with self.assertRaises(ValueError) as ctx:
+            build_ai_provider(AiSettings(provider="fake"))
+        self.assertIn("Unsupported AI provider", str(ctx.exception))
 
-        self.assertIsInstance(provider, FakeProvider)
+    def test_provider_factory_rejects_empty_provider(self) -> None:
+        with self.assertRaises(ValueError) as ctx:
+            build_ai_provider(AiSettings(provider=""))
+        self.assertIn("Unsupported AI provider", str(ctx.exception))
 
     def test_provider_factory_builds_deepseek_with_injected_client(self) -> None:
         client = _DeepSeekClient("{}")
@@ -55,12 +58,14 @@ class AiProviderTest(unittest.TestCase):
         self.assertEqual(provider.model, "deepseek-test")
 
     def test_orchestrator_factory_composes_configured_provider(self) -> None:
+        client = _DeepSeekClient('{"ok": true}')
         orchestrator = GenerationOrchestrator.from_provider_settings(
-            load_ai_settings({}),
-            fixtures={"novel_reader": {"ok": True}},
+            AiSettings(provider="deepseek", deepseek_model="deepseek-test"),
+            client=client,
         )
 
-        self.assertEqual(orchestrator.novel_reader.run({}), {"ok": True})
+        result = orchestrator.novel_reader.run({})
+        self.assertEqual(result, {"ok": True})
 
     def test_deepseek_provider_parses_structured_response(self) -> None:
         client = _DeepSeekClient('{"characters": [], "events": []}')

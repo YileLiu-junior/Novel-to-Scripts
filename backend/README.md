@@ -18,8 +18,7 @@ thin until the implementation plan starts.
 
 ## LLM Provider
 
-The backend defaults to `FakeProvider` so the demo path runs without a real API
-key. To switch the AI layer to DeepSeek, set these environment variables before
+The backend defaults to `DeepSeekProvider`. Set these environment variables before
 starting FastAPI and install the optional DeepSeek transport:
 
 ```powershell
@@ -31,11 +30,13 @@ $env:DEEPSEEK_BASE_URL = "https://api.deepseek.com"
 $env:XENGINEER_LLM_TIMEOUT_SECONDS = "60"
 ```
 
+To run the backend without a real API key (for offline schema / validation work),
+pass an injected client via `build_ai_provider(settings, client=mock_client)` in tests.
+
 Check the provider boundary directly:
 
 ```powershell
 # from the repository root
-python scripts\check_llm_provider.py --provider fake
 python scripts\check_llm_provider.py --provider deepseek --model deepseek-v4-flash
 ```
 

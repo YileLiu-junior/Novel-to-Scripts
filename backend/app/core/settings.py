@@ -13,7 +13,7 @@ class AppSettings:
 
 @dataclass(frozen=True)
 class AiSettings:
-    provider: str = "fake"
+    provider: str = "deepseek"
     deepseek_model: str = "deepseek-v4-flash"
     deepseek_api_key: str | None = None
     deepseek_base_url: str = "https://api.deepseek.com"
@@ -36,7 +36,7 @@ def load_ai_settings(env: Mapping[str, str] | None = None) -> AiSettings:
         raise ValueError("XENGINEER_LLM_TIMEOUT_SECONDS must be a number") from exc
 
     return AiSettings(
-        provider=values.get("XENGINEER_AI_PROVIDER", "fake").strip().lower(),
+        provider=values.get("XENGINEER_AI_PROVIDER", "deepseek").strip().lower(),
         deepseek_model=values.get("XENGINEER_DEEPSEEK_MODEL") or values.get("DEEPSEEK_MODEL", "deepseek-v4-flash"),
         deepseek_api_key=values.get("DEEPSEEK_API_KEY"),
         deepseek_base_url=values.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),

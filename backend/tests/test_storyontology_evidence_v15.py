@@ -1,13 +1,10 @@
 from __future__ import annotations
 
-import copy
 import json
 from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
-from app.ai.providers.base import StructuredGenerationRequest
-from app.ai.providers.fake_provider import FakeProvider
 from app.domain.adaptation import AdaptationConfig
 from app.domain.story_bible import Event, StoryBible
 from app.validators.reference_validator import ReferenceValidator
@@ -56,56 +53,6 @@ def test_enriched_screenplay_fixture_passes_schema_validation() -> None:
 
     assert errors == []
 
-
-def test_fake_provider_outputs_enriched_evidence_by_default_and_minimal_for_debug() -> None:
-    provider = FakeProvider()
-    input_data = {
-        "project": {"id": "project_test", "title": "动态项目"},
-        "adaptation_config": {"adaptation_evidence_mode": "enabled"},
-        "chapters": [
-            {"id": "chapter_001", "title": "第一章", "text": "主角来到旧宅。"},
-            {"id": "chapter_002", "title": "第二章", "text": "主角听见隐秘提醒。"},
-            {"id": "chapter_003", "title": "第三章", "text": "主角做出选择。"},
-        ],
-        "events": [
-            {
-                "id": "event_001",
-                "title": "来到旧宅",
-                "event_type": "setup",
-                "participants": ["char_001"],
-                "summary": "主角来到旧宅。",
-                "source_refs": [{"chapter_id": "chapter_001"}],
-            }
-        ],
-    }
-
-    enabled = provider.generate_structured(
-        StructuredGenerationRequest(
-            skill_name="story_ontology",
-            prompt_name="story_ontology.md",
-            input_data=input_data,
-        )
-    ).parsed_output
-
-    assert enabled["schema_version"] == "story_ontology_evidence_1.5"
-    assert enabled["adaptation_evidence_mode"] == "enabled"
-    assert enabled["story_bible"]["continuity_anchors"]
-    assert enabled["story_bible"]["dramatic_assets"]["conflict_pool"]
-    assert enabled["events"][0]["complete_event"] is True
-
-    minimal_input = copy.deepcopy(input_data)
-    minimal_input["adaptation_config"]["adaptation_evidence_mode"] = "minimal"
-    minimal = provider.generate_structured(
-        StructuredGenerationRequest(
-            skill_name="story_ontology",
-            prompt_name="story_ontology.md",
-            input_data=minimal_input,
-        )
-    ).parsed_output
-
-    assert "schema_version" not in minimal
-    assert "continuity_anchors" not in minimal["story_bible"]
-    assert "complete_event" not in minimal["events"][0]
 
 
 def test_reference_validator_reports_storyontology_evidence_broken_refs() -> None:

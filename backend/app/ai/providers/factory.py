@@ -4,7 +4,6 @@ from typing import Any
 
 from app.ai.providers.base import AiProvider
 from app.ai.providers.deepseek_provider import DeepSeekProvider
-from app.ai.providers.fake_provider import FakeProvider
 from app.core.settings import AiSettings, load_ai_settings
 
 
@@ -15,8 +14,6 @@ def build_ai_provider(
     client: Any | None = None,
 ) -> AiProvider:
     active_settings = settings or load_ai_settings()
-    if active_settings.provider == "fake":
-        return FakeProvider(fixtures=fixtures)
     if active_settings.provider == "deepseek":
         return DeepSeekProvider(
             model=active_settings.deepseek_model,
