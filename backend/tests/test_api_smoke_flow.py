@@ -71,7 +71,7 @@ def test_api_rejects_two_chapters_then_generates_smoke_artifacts(monkeypatch, da
     assert job_data["status"] == "succeeded"
     assert job_data["current_step"] == "complete"
     assert job_data["error"] is None
-    assert len(job_data["artifact_ids"]) == 6
+    assert len(job_data["artifact_ids"]) == 7
 
     artifacts = client.get(f"/api/projects/{project_id}/artifacts")
     assert artifacts.status_code == 200
@@ -82,6 +82,7 @@ def test_api_rejects_two_chapters_then_generates_smoke_artifacts(monkeypatch, da
         "adaptation_plan",
         "screenplay_json",
         "screenplay_yaml",
+        "screenplay_rendered",
         "audit_report",
     }
 

@@ -8,6 +8,7 @@ from app.api import (
     routes_jobs,
     routes_projects,
     routes_schema,
+    routes_screenplay_render,
     routes_yaml,
 )
 
@@ -18,6 +19,7 @@ api_router.include_router(routes_chapters.router, prefix="/projects", tags=["cha
 api_router.include_router(routes_generation.router, prefix="/projects", tags=["generation"])
 api_router.include_router(routes_artifacts.router, prefix="/projects", tags=["artifacts"])
 api_router.include_router(routes_yaml.router, prefix="/projects", tags=["yaml"])
+api_router.include_router(routes_screenplay_render.router, prefix="/projects", tags=["screenplay_render"])
 api_router.include_router(routes_schema.router, prefix="/projects", tags=["schema"])
 api_router.include_router(routes_jobs.router, prefix="/jobs", tags=["jobs"])
 

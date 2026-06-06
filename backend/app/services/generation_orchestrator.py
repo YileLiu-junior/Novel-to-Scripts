@@ -15,6 +15,7 @@ from app.services.job_service import JobService
 from app.services.llm_trace_service import LlmTraceService
 from app.services.validation_service import ValidationService
 from app.services.yaml_service import YamlService
+from app.services.screenplay_render_service import ScreenplayRenderService
 
 
 _TIME_OF_DAY_LABELS = {
@@ -610,6 +611,33 @@ def _normalize_all_references(
     return screenplay
 
 
+def _make_placeholder_scene() -> dict[str, Any]:
+    """生成一个 schema-有效的占位场景，用于 LLM 未产出场景时保底。"""
+    return {
+        "id": "scene_001",
+        "title": "待补场景",
+        "scene_heading": {
+            "sequence": 1,
+            "location": "未指定",
+            "interior_exterior": "INT",
+            "time_of_day": "day",
+            "text": "1. 未指定 内景 日",
+        },
+        "source_refs": [{"chapter_id": "chapter_001"}],
+        "dramatic_purpose": ["待补戏剧目的"],
+        "location": {"name": "未指定", "time": "day", "interior_exterior": "INT"},
+        "characters": [],
+        "related_events": [],
+        "action": ["待补动作描述。"],
+        "content_blocks": [{
+            "id": "block_001",
+            "block_type": "action",
+            "text": "待补动作描述。",
+        }],
+        "dialogue": [],
+    }
+
+
 def _ensure_non_empty_arrays(screenplay: dict[str, Any]) -> dict[str, Any]:
     """最终安全网：确保所有 schema 中要求 minItems >= 1 的数组至少有一个元素。"""
     # story_outline
@@ -640,7 +668,21 @@ def _ensure_non_empty_arrays(screenplay: dict[str, Any]) -> dict[str, Any]:
         if not isinstance(core.get("protagonists"), list) or not core["protagonists"]:
             bible = screenplay.get("story_bible", {})
             chars = bible.get("characters", [])
-            core["protagonists"] = [c.get("id") for c in chars[:1] if c.get("id")] or ["char_001"]
+            if chars:
+                core["protagonists"] = [c.get("id") for c in chars[:1] if c.get("id")]
+            if not core["protagonists"]:
+                # 确保 story_bible 中有一个对应角色，避免引用校验报错
+                placeholder_char = {"id": "char_001", "name": "主角"}
+                if not isinstance(bible.get("characters"), list):
+                    bible["characters"] = []
+                if not any(c.get("id") == "char_001" for c in bible["characters"] if isinstance(c, dict)):
+                    bible["characters"].append(placeholder_char)
+                core["protagonists"] = ["char_001"]
+
+    # scenes: minItems 1 — 如果 LLM 没有输出任何场景，生成一个最小占位场景
+    scene_list = screenplay.get("scenes")
+    if not isinstance(scene_list, list) or not scene_list:
+        screenplay["scenes"] = [_make_placeholder_scene()]
 
     return screenplay
 
@@ -888,6 +930,12 @@ class GenerationOrchestrator:
             self.artifact_service.save_artifact(project_id, "screenplay_json", screenplay_json, active_job.id)
             self.artifact_service.save_artifact(project_id, "screenplay_yaml", yaml_text, active_job.id)
             self.artifact_service.save_artifact(project_id, "audit_report", audit_report, active_job.id)
+            # 渲染可读文学剧本文本
+            render_service = ScreenplayRenderService(
+                validation_service=self.validation_service,
+                artifact_service=self.artifact_service,
+            )
+            render_service.render_and_save(project_id, screenplay_json, active_job.id)
             return self.job_service.mark_step(active_job, "succeeded", "complete")
         except Exception as exc:
             return self.job_service.mark_step(active_job, "failed", active_job.current_step, str(exc))

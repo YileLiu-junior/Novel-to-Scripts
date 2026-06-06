@@ -15,6 +15,7 @@ ArtifactType = Literal[
     "adaptation_plan",
     "screenplay_json",
     "screenplay_yaml",
+    "screenplay_rendered",
     "audit_report",
 ]
 
