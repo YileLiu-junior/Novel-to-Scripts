@@ -1,0 +1,73 @@
+schema: "https://json-schema.org/draft/2020-12/schema"
+id: "https://xengineer.local/schemas/screenplay.schema.yaml"
+title: "XEngineer Structured Literary Screenplay"
+canonical_source: "schemas/screenplay.schema.json"
+schema_version: "1.1"
+
+required_top_level:
+  - schema_version
+  - project
+  - source
+  - adaptation_config
+  - script_structure
+  - story_bible
+  - core_elements
+  - events
+  - causal_graph
+  - foreshadowing
+  - adaptation_plan
+  - scenes
+  - audit_report
+
+literary_screenplay_requirements:
+  basic_unit: "scene"
+  scene_heading_is_standalone_line: true
+  scene_heading_fields:
+    - sequence
+    - location
+    - interior_exterior
+    - time_of_day
+    - text
+  scene_heading_enums:
+    interior_exterior:
+      - INT
+      - EXT
+      - INT/EXT
+    time_of_day:
+      - day
+      - night
+      - morning
+      - dusk
+  scene_content:
+    field: content_blocks
+    shape: "natural paragraphs below scene_heading"
+  structure_training:
+    - story_synopsis
+    - story_outline
+    - literary_screenplay
+  core_elements:
+    - actions
+    - plot
+    - situations
+    - theme
+    - protagonists
+    - character_relationships
+
+id_patterns:
+  chapter: "chapter_###"
+  paragraph: "p_###"
+  character: "char_###"
+  relationship: "rel_###"
+  event: "event_###"
+  outline: "outline_###"
+  action: "action_###"
+  situation: "situation_###"
+  scene: "scene_###"
+  content_block: "block_###"
+  dialogue_line: "line_###"
+  warning: "warning_###"
+
+validation_boundary:
+  schema_validation: "field presence, primitive types, arrays, object shape, required screenplay-format fields"
+  reference_validation: "cross-entity existence and membership checks in backend validators"
+  export_validation: "only validated JSON/Pydantic models are serialized to YAML"

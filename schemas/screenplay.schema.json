@@ -1,0 +1,438 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xengineer.local/schemas/screenplay.schema.json",
+  "title": "XEngineer Structured Literary Screenplay",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "project",
+    "source",
+    "adaptation_config",
+    "script_structure",
+    "story_bible",
+    "core_elements",
+    "events",
+    "causal_graph",
+    "foreshadowing",
+    "adaptation_plan",
+    "scenes",
+    "audit_report"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.1"
+    },
+    "project": {
+      "type": "object",
+      "required": ["id", "title", "target_format"],
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "logline": { "type": "string" },
+        "target_format": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "source": {
+      "type": "object",
+      "required": ["chapters"],
+      "properties": {
+        "case_id": { "type": "string" },
+        "novel_source_file": { "type": "string" },
+        "screenplay_reference_file": { "type": "string" },
+        "chapters": {
+          "type": "array",
+          "minItems": 3,
+          "items": { "$ref": "#/$defs/sourceChapter" }
+        }
+      },
+      "additionalProperties": true
+    },
+    "adaptation_config": {
+      "type": "object",
+      "required": ["target_format", "fidelity_level", "preserve_priorities", "dialogue_style"],
+      "properties": {
+        "target_format": { "type": "string" },
+        "fidelity_level": { "type": "string", "enum": ["low", "medium", "high"] },
+        "preserve_priorities": { "type": "array", "items": { "type": "string" } },
+        "dialogue_style": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "script_structure": {
+      "type": "object",
+      "description": "故事梗概、故事大纲和文学剧本格式声明，用于把结构训练结果固定在导出资产内。",
+      "required": ["story_synopsis", "story_outline", "literary_screenplay"],
+      "properties": {
+        "story_synopsis": { "type": "string", "minLength": 1 },
+        "story_outline": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/storyOutlineItem" }
+        },
+        "literary_screenplay": {
+          "type": "object",
+          "required": ["unit", "format_note", "scene_ids"],
+          "properties": {
+            "unit": { "type": "string", "const": "scene" },
+            "format_note": { "type": "string", "minLength": 1 },
+            "scene_ids": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "pattern": "^scene_[0-9]{3}$" }
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "story_bible": {
+      "type": "object",
+      "required": ["characters", "relationship_edges", "knowledge_states"],
+      "properties": {
+        "characters": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/character" }
+        },
+        "relationship_edges": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/relationshipEdge" }
+        },
+        "knowledge_states": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/knowledgeState" }
+        }
+      },
+      "additionalProperties": true
+    },
+    "core_elements": {
+      "type": "object",
+      "description": "文学剧本核心元素：动作、情节、情境、主题、主人公、人物关系。",
+      "required": ["actions", "plot", "situations", "theme", "protagonists", "character_relationships"],
+      "properties": {
+        "actions": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/coreAction" }
+        },
+        "plot": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/plotBeat" }
+        },
+        "situations": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/situation" }
+        },
+        "theme": { "type": "string", "minLength": 1 },
+        "protagonists": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "pattern": "^char_[0-9]{3}$" }
+        },
+        "character_relationships": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^rel_[0-9]{3}$" }
+        }
+      },
+      "additionalProperties": true
+    },
+    "events": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/event" }
+    },
+    "causal_graph": {
+      "type": "object",
+      "required": ["edges"],
+      "properties": {
+        "edges": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/causalEdge" }
+        }
+      },
+      "additionalProperties": true
+    },
+    "foreshadowing": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/foreshadowing" }
+    },
+    "adaptation_plan": {
+      "type": "object",
+      "required": ["retained_events", "merged_events", "deleted_or_deferred_events", "protected_elements", "scene_plan"],
+      "properties": {
+        "retained_events": { "type": "array", "items": { "type": "string" } },
+        "merged_events": { "type": "array", "items": { "type": "object" } },
+        "deleted_or_deferred_events": { "type": "array", "items": { "type": "object" } },
+        "protected_elements": { "type": "array", "items": { "type": "string" } },
+        "scene_plan": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/scenePlanItem" }
+        }
+      },
+      "additionalProperties": true
+    },
+    "scenes": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/scene" }
+    },
+    "audit_report": {
+      "type": "object",
+      "required": ["continuity_warnings", "unresolved_foreshadowing", "dialogue_warnings", "schema_warnings"],
+      "properties": {
+        "continuity_warnings": { "type": "array", "items": { "type": "object" } },
+        "unresolved_foreshadowing": { "type": "array", "items": { "type": "object" } },
+        "dialogue_warnings": { "type": "array", "items": { "type": "object" } },
+        "schema_warnings": { "type": "array", "items": { "type": "object" } }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "sourceChapter": {
+      "type": "object",
+      "required": ["id", "title", "order"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^chapter_[0-9]{3}$" },
+        "title": { "type": "string" },
+        "order": { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": true
+    },
+    "sourceRef": {
+      "type": "object",
+      "required": ["chapter_id"],
+      "properties": {
+        "chapter_id": { "type": "string", "pattern": "^chapter_[0-9]{3}$" },
+        "paragraph_range": { "type": "string" },
+        "quote": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "character": {
+      "type": "object",
+      "required": ["id", "name"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^char_[0-9]{3}$" },
+        "name": { "type": "string" },
+        "aliases": { "type": "array", "items": { "type": "string" } },
+        "narrative_role": { "type": "string" },
+        "voice_profile": { "type": "object" },
+        "source_refs": { "type": "array", "items": { "$ref": "#/$defs/sourceRef" } }
+      },
+      "additionalProperties": true
+    },
+    "relationshipEdge": {
+      "type": "object",
+      "required": ["id", "from", "to", "type"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^rel_[0-9]{3}$" },
+        "from": { "type": "string", "pattern": "^char_[0-9]{3}$" },
+        "to": { "type": "string", "pattern": "^char_[0-9]{3}$" },
+        "type": { "type": "string" },
+        "current_state": { "type": "string" },
+        "evidence_level": { "type": "string" },
+        "source_refs": { "type": "array", "items": { "$ref": "#/$defs/sourceRef" } }
+      },
+      "additionalProperties": true
+    },
+    "knowledgeState": {
+      "type": "object",
+      "required": ["character_id"],
+      "properties": {
+        "character_id": { "type": "string", "pattern": "^char_[0-9]{3}$" },
+        "knows": { "type": "array", "items": { "type": "string" } },
+        "does_not_know": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": true
+    },
+    "event": {
+      "type": "object",
+      "required": ["id", "title", "event_type", "participants", "summary"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^event_[0-9]{3}$" },
+        "title": { "type": "string" },
+        "event_type": { "type": "string" },
+        "participants": { "type": "array", "items": { "type": "string", "pattern": "^char_[0-9]{3}$" } },
+        "summary": { "type": "string" },
+        "source_refs": { "type": "array", "items": { "$ref": "#/$defs/sourceRef" } }
+      },
+      "additionalProperties": true
+    },
+    "causalEdge": {
+      "type": "object",
+      "required": ["from", "to", "relation", "explanation"],
+      "properties": {
+        "from": { "type": "string", "pattern": "^event_[0-9]{3}$" },
+        "to": { "type": "string", "pattern": "^event_[0-9]{3}$" },
+        "relation": { "type": "string" },
+        "explanation": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "foreshadowing": {
+      "type": "object",
+      "required": ["id", "setup_event_id", "status", "description"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^foreshadow_[0-9]{3}$" },
+        "setup_event_id": { "type": "string", "pattern": "^event_[0-9]{3}$" },
+        "payoff_event_id": { "type": "string", "pattern": "^event_[0-9]{3}$" },
+        "payoff_scene_id": { "type": "string", "pattern": "^scene_[0-9]{3}$" },
+        "status": { "type": "string" },
+        "description": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "storyOutlineItem": {
+      "type": "object",
+      "required": ["id", "summary", "related_events", "target_scenes"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^outline_[0-9]{3}$" },
+        "summary": { "type": "string", "minLength": 1 },
+        "related_events": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^event_[0-9]{3}$" }
+        },
+        "target_scenes": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^scene_[0-9]{3}$" }
+        }
+      },
+      "additionalProperties": true
+    },
+    "coreAction": {
+      "type": "object",
+      "required": ["id", "description", "scene_id"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^action_[0-9]{3}$" },
+        "description": { "type": "string", "minLength": 1 },
+        "scene_id": { "type": "string", "pattern": "^scene_[0-9]{3}$" },
+        "related_event_id": { "type": "string", "pattern": "^event_[0-9]{3}$" }
+      },
+      "additionalProperties": true
+    },
+    "plotBeat": {
+      "type": "object",
+      "required": ["event_id", "function"],
+      "properties": {
+        "event_id": { "type": "string", "pattern": "^event_[0-9]{3}$" },
+        "function": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": true
+    },
+    "situation": {
+      "type": "object",
+      "required": ["id", "scene_id", "description"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^situation_[0-9]{3}$" },
+        "scene_id": { "type": "string", "pattern": "^scene_[0-9]{3}$" },
+        "description": { "type": "string", "minLength": 1 },
+        "pressure": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "scenePlanItem": {
+      "type": "object",
+      "required": ["scene_id", "purpose", "source_events"],
+      "properties": {
+        "scene_id": { "type": "string", "pattern": "^scene_[0-9]{3}$" },
+        "purpose": { "type": "string" },
+        "source_events": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^event_[0-9]{3}$" }
+        }
+      },
+      "additionalProperties": true
+    },
+    "location": {
+      "type": "object",
+      "required": ["name", "time", "interior_exterior"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "time": { "type": "string", "enum": ["day", "night", "morning", "dusk"] },
+        "interior_exterior": { "type": "string", "enum": ["INT", "EXT", "INT/EXT"] }
+      },
+      "additionalProperties": true
+    },
+    "sceneHeading": {
+      "type": "object",
+      "required": ["sequence", "location", "interior_exterior", "time_of_day", "text"],
+      "properties": {
+        "sequence": { "type": "integer", "minimum": 1 },
+        "location": { "type": "string", "minLength": 1 },
+        "interior_exterior": { "type": "string", "enum": ["INT", "EXT", "INT/EXT"] },
+        "time_of_day": { "type": "string", "enum": ["day", "night", "morning", "dusk"] },
+        "text": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": true
+    },
+    "sceneContentBlock": {
+      "type": "object",
+      "required": ["id", "block_type", "text"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^block_[0-9]{3}$" },
+        "block_type": { "type": "string", "enum": ["action", "dialogue", "transition"] },
+        "text": { "type": "string", "minLength": 1 },
+        "character_id": { "type": "string", "pattern": "^char_[0-9]{3}$" },
+        "dialogue_line_id": { "type": "string", "pattern": "^line_[0-9]{3}$" }
+      },
+      "additionalProperties": true
+    },
+    "dialogueLine": {
+      "type": "object",
+      "required": ["id", "character_id", "line"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^line_[0-9]{3}$" },
+        "character_id": { "type": "string", "pattern": "^char_[0-9]{3}$" },
+        "line": { "type": "string" },
+        "surface_intent": { "type": "string" },
+        "subtext": { "type": "string" },
+        "emotional_state": { "type": "string" },
+        "action_hint": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "scene": {
+      "type": "object",
+      "required": [
+        "id",
+        "title",
+        "scene_heading",
+        "source_refs",
+        "dramatic_purpose",
+        "location",
+        "characters",
+        "related_events",
+        "action",
+        "content_blocks",
+        "dialogue"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^scene_[0-9]{3}$" },
+        "title": { "type": "string" },
+        "scene_heading": { "$ref": "#/$defs/sceneHeading" },
+        "source_refs": { "type": "array", "items": { "$ref": "#/$defs/sourceRef" } },
+        "dramatic_purpose": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "location": { "$ref": "#/$defs/location" },
+        "characters": { "type": "array", "items": { "type": "string", "pattern": "^char_[0-9]{3}$" } },
+        "related_events": { "type": "array", "items": { "type": "string", "pattern": "^event_[0-9]{3}$" } },
+        "foreshadowing": { "type": "object" },
+        "action": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "content_blocks": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/sceneContentBlock" }
+        },
+        "dialogue": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/dialogueLine" }
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

@@ -1,0 +1,300 @@
+schema_version: '1.1'
+project:
+  id: project_85fd46a2b384
+  title: 三生三世十里桃花
+  target_format: web_series
+source:
+  chapters:
+  - id: chapter_001
+    title: 前传（一）
+    order: 1
+  - id: chapter_002
+    title: 第一章第1节
+    order: 2
+  - id: chapter_003
+    title: 第一章二
+    order: 3
+adaptation_config:
+  target_format: web_series
+  fidelity_level: high
+  preserve_priorities:
+  - relationship_arc
+  - foreshadowing
+  dialogue_style: restrained_with_subtext
+script_structure:
+  story_synopsis: Fake Provider 根据当前上传章节生成的联调梗概：前传（一）；第一章第1节；第一章二
+  story_outline:
+  - id: outline_001
+    summary: 【Fake Provider】根据《前传（一）》构造：前传（一） 近来，我很有些嗜睡。 奈奈说：“大概是因为怀了孕，所以分外渴睡些，娘娘不必担心。”
+      奈奈是照顾我的婢女，也是整个洗梧宫唯一肯对我笑，唤我“娘娘”的仙子。其他仙子们大多看不起我。因为夜华并没有封给我什么名分。也因为，我没有仙籍，只是个凡人。
+      奈奈似乎推开了窗，有风拂进来，窗外传来谁的脚步声。奈奈的声音有些惊喜
+    related_events:
+    - event_001
+    target_scenes:
+    - scene_001
+  - id: outline_002
+    summary: 【Fake Provider】根据《第一章第1节》构造：第一章第1节 若水神君嫁去东海的大姑娘不满三年就给东海水君添了个男丁，若水东海两家皆大欢喜。
+      东海水君本人更是得意非凡，为儿子做满月酒的请柬撒遍了天上地下，连阿爹阿娘住的狐狸洞也给送来了份。 阿爹阿娘已经游方在外数百年。一二三哥相继安家立室分了封地，四哥则去了西山寻找走失的坐骑毕方鸟。是以，这狐狸洞如今只剩我一人当家。
+    related_events:
+    - event_002
+    target_scenes:
+    - scene_002
+  - id: outline_003
+    summary: 【Fake Provider】根据《第一章二》构造：第一章二 这下我倒笑不出来了。 北海水君那小娘子唤作少辛，这名字还是我给起的。 也记不清是多少年前，我和四哥去洞庭湖游玩，在半人高的芦苇荡里，发现了条被欺负得气息奄奄的小巴蛇。
+      我看着可怜，便央四哥将它带回了青丘。 那时小巴蛇已经修成了精，虽软趴软趴，但也勉强能化出个人形，这便是少辛。少辛在青丘养了两年伤，伤好后，说要
+    related_events:
+    - event_003
+    target_scenes:
+    - scene_003
+  literary_screenplay:
+    unit: scene
+    format_note: fake provider generated from current project chapters
+    scene_ids:
+    - scene_001
+    - scene_002
+    - scene_003
+story_bible:
+  characters:
+  - id: char_001
+    name: 当前项目主角
+    aliases: []
+    narrative_role: protagonist
+    voice_profile:
+      rhythm: 由上传原文的句式节奏模拟
+      diction: 保留原文章节中的关键词和语气
+    source_refs:
+    - chapter_id: chapter_001
+  relationship_edges: []
+  knowledge_states:
+  - character_id: char_001
+    knows:
+    - event_001
+    does_not_know: []
+core_elements:
+  actions:
+  - id: action_001
+    description: 【Fake Provider】根据《前传（一）》构造：前传（一） 近来，我很有些嗜睡。 奈奈说：“大概是因为怀了孕，所以分外渴睡些，娘娘不必担心。”
+      奈奈是照顾我的婢女，也是整个洗梧宫唯一肯对我笑，唤我“娘娘”的仙子。其他仙子们大多看不起我。因为夜华并没有封给我什么名分。也因为，我没有仙籍，只是个凡人。
+      奈奈似乎推开了窗，有风拂进来，窗外传来谁的脚步声。奈奈的声音有些惊喜
+    scene_id: scene_001
+    related_event_id: event_001
+  - id: action_002
+    description: 【Fake Provider】根据《第一章第1节》构造：第一章第1节 若水神君嫁去东海的大姑娘不满三年就给东海水君添了个男丁，若水东海两家皆大欢喜。
+      东海水君本人更是得意非凡，为儿子做满月酒的请柬撒遍了天上地下，连阿爹阿娘住的狐狸洞也给送来了份。 阿爹阿娘已经游方在外数百年。一二三哥相继安家立室分了封地，四哥则去了西山寻找走失的坐骑毕方鸟。是以，这狐狸洞如今只剩我一人当家。
+    scene_id: scene_002
+    related_event_id: event_002
+  - id: action_003
+    description: 【Fake Provider】根据《第一章二》构造：第一章二 这下我倒笑不出来了。 北海水君那小娘子唤作少辛，这名字还是我给起的。
+      也记不清是多少年前，我和四哥去洞庭湖游玩，在半人高的芦苇荡里，发现了条被欺负得气息奄奄的小巴蛇。 我看着可怜，便央四哥将它带回了青丘。 那时小巴蛇已经修成了精，虽软趴软趴，但也勉强能化出个人形，这便是少辛。少辛在青丘养了两年伤，伤好后，说要
+    scene_id: scene_003
+    related_event_id: event_003
+  plot:
+  - event_id: event_001
+    function: narrative
+  - event_id: event_002
+    function: narrative
+  - event_id: event_003
+    function: narrative
+  situations:
+  - id: situation_001
+    scene_id: scene_001
+    description: 验证当前项目章节《前传（一）》已进入生成链路。
+  - id: situation_002
+    scene_id: scene_002
+    description: 验证当前项目章节《第一章第1节》已进入生成链路。
+  - id: situation_003
+    scene_id: scene_003
+    description: 验证当前项目章节《第一章二》已进入生成链路。
+  theme: 待补主题
+  protagonists:
+  - char_001
+  character_relationships: []
+events:
+- id: event_001
+  title: 前传（一）
+  event_type: narrative
+  participants:
+  - char_001
+  summary: 前传（一） 近来，我很有些嗜睡。 奈奈说：“大概是因为怀了孕，所以分外渴睡些，娘娘不必担心。” 奈奈是照顾我的婢女，也是整个洗梧宫唯一肯对我笑，唤我“娘娘”的仙子。其他仙子们大多看不起我。因为夜华并没有封给我什么名分。也因为，我没有仙籍，只
+  source_refs:
+  - chapter_id: chapter_001
+  chapter_refs:
+  - chapter_id: chapter_001
+- id: event_002
+  title: 第一章第1节
+  event_type: narrative
+  participants:
+  - char_001
+  summary: 第一章第1节 若水神君嫁去东海的大姑娘不满三年就给东海水君添了个男丁，若水东海两家皆大欢喜。 东海水君本人更是得意非凡，为儿子做满月酒的请柬撒遍了天上地下，连阿爹阿娘住的狐狸洞也给送来了份。
+    阿爹阿娘已经游方在外数百年。一二三哥相继安家立室
+  source_refs:
+  - chapter_id: chapter_002
+  chapter_refs:
+  - chapter_id: chapter_002
+- id: event_003
+  title: 第一章二
+  event_type: narrative
+  participants:
+  - char_001
+  summary: 第一章二 这下我倒笑不出来了。 北海水君那小娘子唤作少辛，这名字还是我给起的。 也记不清是多少年前，我和四哥去洞庭湖游玩，在半人高的芦苇荡里，发现了条被欺负得气息奄奄的小巴蛇。
+    我看着可怜，便央四哥将它带回了青丘。 那时小巴蛇已经修成了精，
+  source_refs:
+  - chapter_id: chapter_003
+  chapter_refs:
+  - chapter_id: chapter_003
+causal_graph:
+  edges:
+  - from: event_001
+    to: event_002
+    relation: leads_to
+    explanation: fake provider 按上传章节顺序建立事件推进关系。
+  - from: event_002
+    to: event_003
+    relation: leads_to
+    explanation: fake provider 按上传章节顺序建立事件推进关系。
+foreshadowing:
+- id: foreshadow_001
+  setup_event_id: event_001
+  status: open
+  description: fake provider generated：根据当前原文保留待人工复核的伏笔位。
+  source_refs:
+  - chapter_id: chapter_001
+adaptation_plan:
+  retained_events:
+  - event_001
+  - event_002
+  - event_003
+  merged_events: []
+  deleted_or_deferred_events: []
+  protected_elements:
+  - event_001
+  scene_plan:
+  - scene_id: scene_001
+    purpose: 前传（一） 近来，我很有些嗜睡。 奈奈说：“大概是因为怀了孕，所以分外渴睡些，娘娘不必担心。” 奈奈是照顾我的婢女，也是整个洗梧宫唯一肯对我笑，唤我“娘娘”的仙子。其他仙子们大多看不起我。因为夜华并没有封给我什么名分。也因为，我没有仙籍，只
+    source_events:
+    - event_001
+  - scene_id: scene_002
+    purpose: 第一章第1节 若水神君嫁去东海的大姑娘不满三年就给东海水君添了个男丁，若水东海两家皆大欢喜。 东海水君本人更是得意非凡，为儿子做满月酒的请柬撒遍了天上地下，连阿爹阿娘住的狐狸洞也给送来了份。
+      阿爹阿娘已经游方在外数百年。一二三哥相继安家立室
+    source_events:
+    - event_002
+  - scene_id: scene_003
+    purpose: 第一章二 这下我倒笑不出来了。 北海水君那小娘子唤作少辛，这名字还是我给起的。 也记不清是多少年前，我和四哥去洞庭湖游玩，在半人高的芦苇荡里，发现了条被欺负得气息奄奄的小巴蛇。
+      我看着可怜，便央四哥将它带回了青丘。 那时小巴蛇已经修成了精，
+    source_events:
+    - event_003
+scenes:
+- id: scene_001
+  title: 前传（一）：模拟改编场景
+  scene_heading:
+    sequence: 1
+    location: 前传（一）
+    interior_exterior: INT
+    time_of_day: day
+    text: 1. 前传（一） 内景 日
+  source_refs:
+  - chapter_id: chapter_001
+  dramatic_purpose:
+  - 验证当前项目章节《前传（一）》已进入生成链路。
+  location:
+    name: 前传（一）
+    time: day
+    interior_exterior: INT
+  characters:
+  - char_001
+  related_events:
+  - event_001
+  action:
+  - 【Fake Provider】根据《前传（一）》构造：前传（一） 近来，我很有些嗜睡。 奈奈说：“大概是因为怀了孕，所以分外渴睡些，娘娘不必担心。” 奈奈是照顾我的婢女，也是整个洗梧宫唯一肯对我笑，唤我“娘娘”的仙子。其他仙子们大多看不起我。因为夜华并没有封给我什么名分。也因为，我没有仙籍，只是个凡人。
+    奈奈似乎推开了窗，有风拂进来，窗外传来谁的脚步声。奈奈的声音有些惊喜
+  content_blocks:
+  - id: block_001
+    block_type: action
+    text: 【Fake Provider】根据《前传（一）》构造：前传（一） 近来，我很有些嗜睡。 奈奈说：“大概是因为怀了孕，所以分外渴睡些，娘娘不必担心。”
+      奈奈是照顾我的婢女，也是整个洗梧宫唯一肯对我笑，唤我“娘娘”的仙子。其他仙子们大多看不起我。因为夜华并没有封给我什么名分。也因为，我没有仙籍，只是个凡人。
+      奈奈似乎推开了窗，有风拂进来，窗外传来谁的脚步声。奈奈的声音有些惊喜
+  dialogue:
+  - id: line_001
+    character_id: char_001
+    line: 这一场来自《前传（一）》，不是全局 demo fixture。
+    surface_intent: 说明当前场景来源
+    subtext: 提示用户当前处于 fake provider 模式
+    emotional_state: clear
+    action_hint: 指向章节标题
+- id: scene_002
+  title: 第一章第1节：模拟改编场景
+  scene_heading:
+    sequence: 2
+    location: 第一章第1节
+    interior_exterior: INT
+    time_of_day: day
+    text: 2. 第一章第1节 内景 日
+  source_refs:
+  - chapter_id: chapter_002
+  dramatic_purpose:
+  - 验证当前项目章节《第一章第1节》已进入生成链路。
+  location:
+    name: 第一章第1节
+    time: day
+    interior_exterior: INT
+  characters:
+  - char_001
+  related_events:
+  - event_002
+  action:
+  - 【Fake Provider】根据《第一章第1节》构造：第一章第1节 若水神君嫁去东海的大姑娘不满三年就给东海水君添了个男丁，若水东海两家皆大欢喜。 东海水君本人更是得意非凡，为儿子做满月酒的请柬撒遍了天上地下，连阿爹阿娘住的狐狸洞也给送来了份。
+    阿爹阿娘已经游方在外数百年。一二三哥相继安家立室分了封地，四哥则去了西山寻找走失的坐骑毕方鸟。是以，这狐狸洞如今只剩我一人当家。
+  content_blocks:
+  - id: block_002
+    block_type: action
+    text: 【Fake Provider】根据《第一章第1节》构造：第一章第1节 若水神君嫁去东海的大姑娘不满三年就给东海水君添了个男丁，若水东海两家皆大欢喜。
+      东海水君本人更是得意非凡，为儿子做满月酒的请柬撒遍了天上地下，连阿爹阿娘住的狐狸洞也给送来了份。 阿爹阿娘已经游方在外数百年。一二三哥相继安家立室分了封地，四哥则去了西山寻找走失的坐骑毕方鸟。是以，这狐狸洞如今只剩我一人当家。
+  dialogue:
+  - id: line_002
+    character_id: char_001
+    line: 这一场来自《第一章第1节》，不是全局 demo fixture。
+    surface_intent: 说明当前场景来源
+    subtext: 提示用户当前处于 fake provider 模式
+    emotional_state: clear
+    action_hint: 指向章节标题
+- id: scene_003
+  title: 第一章二：模拟改编场景
+  scene_heading:
+    sequence: 3
+    location: 第一章二
+    interior_exterior: INT
+    time_of_day: day
+    text: 3. 第一章二 内景 日
+  source_refs:
+  - chapter_id: chapter_003
+  dramatic_purpose:
+  - 验证当前项目章节《第一章二》已进入生成链路。
+  location:
+    name: 第一章二
+    time: day
+    interior_exterior: INT
+  characters:
+  - char_001
+  related_events:
+  - event_003
+  action:
+  - 【Fake Provider】根据《第一章二》构造：第一章二 这下我倒笑不出来了。 北海水君那小娘子唤作少辛，这名字还是我给起的。 也记不清是多少年前，我和四哥去洞庭湖游玩，在半人高的芦苇荡里，发现了条被欺负得气息奄奄的小巴蛇。
+    我看着可怜，便央四哥将它带回了青丘。 那时小巴蛇已经修成了精，虽软趴软趴，但也勉强能化出个人形，这便是少辛。少辛在青丘养了两年伤，伤好后，说要
+  content_blocks:
+  - id: block_003
+    block_type: action
+    text: 【Fake Provider】根据《第一章二》构造：第一章二 这下我倒笑不出来了。 北海水君那小娘子唤作少辛，这名字还是我给起的。 也记不清是多少年前，我和四哥去洞庭湖游玩，在半人高的芦苇荡里，发现了条被欺负得气息奄奄的小巴蛇。
+      我看着可怜，便央四哥将它带回了青丘。 那时小巴蛇已经修成了精，虽软趴软趴，但也勉强能化出个人形，这便是少辛。少辛在青丘养了两年伤，伤好后，说要
+  dialogue:
+  - id: line_003
+    character_id: char_001
+    line: 这一场来自《第一章二》，不是全局 demo fixture。
+    surface_intent: 说明当前场景来源
+    subtext: 提示用户当前处于 fake provider 模式
+    emotional_state: clear
+    action_hint: 指向章节标题
+audit_report:
+  continuity_warnings: []
+  unresolved_foreshadowing: []
+  dialogue_warnings: []
+  schema_warnings: []

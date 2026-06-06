@@ -1,0 +1,33 @@
+{
+  "items": [
+    {
+      "aliases": [
+        "三儿"
+      ],
+      "description": "",
+      "id": "char_001",
+      "name": "张三",
+      "narrative_role": "protagonist",
+      "source_refs": [
+        {
+          "chapter_id": "chapter_001"
+        }
+      ],
+      "voice_profile": {
+        "diction": "保留原文章节中的关键词和语气",
+        "rhythm": "由上传原文的句式节奏模拟"
+      }
+    },
+    {
+      "aliases": [],
+      "description": "",
+      "id": "char_002",
+      "name": "张四",
+      "narrative_role": "反派",
+      "voice_profile": {
+        "diction": "",
+        "rhythm": ""
+      }
+    }
+  ]
+}

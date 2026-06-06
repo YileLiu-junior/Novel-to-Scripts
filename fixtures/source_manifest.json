@@ -1,0 +1,29 @@
+{
+  "fixture_source": "real_project_data",
+  "primary_case": {
+    "case_id": "sherlock_study_in_pink",
+    "novel_source": "research/novel-to-script-cases/01_sherlock_study_in_pink/a-study-in-scarlet_novel_zh.txt",
+    "screenplay_source": "research/novel-to-script-cases/01_sherlock_study_in_pink/sherlock-a-study-in-pink_script_zh.txt",
+    "notes": [
+      "Use this case for contract fixtures because it contains both a novel source and a script adaptation reference.",
+      "Fixtures keep short working excerpts and source anchors instead of duplicating the full source files."
+    ]
+  },
+  "secondary_cases": [
+    {
+      "case_id": "latent_domestic_case",
+      "novel_source": "docs/Scripts/潜伏/潜伏_小说.txt",
+      "screenplay_source": "docs/Scripts/潜伏/潜伏_01-05集_剧本.txt",
+      "notes": [
+        "Useful as larger Chinese-language stress data.",
+        "Do not assume the novel and screenplay files are a direct one-to-one adaptation pair without manual review."
+      ]
+    }
+  ],
+  "source_policy": {
+    "fixture_text": "short working excerpts only",
+    "full_text": "load from source_file when needed by ingestion tests",
+    "generated_structures": "derived from the source anchors and used only as schema and pipeline contracts"
+  }
+}
+

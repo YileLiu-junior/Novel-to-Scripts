@@ -1,0 +1,31 @@
+{
+  "audit_report": {
+    "continuity_warnings": [
+      {
+        "id": "warning_001",
+        "severity": "info",
+        "target": {
+          "type": "scene",
+          "id": "scene_002"
+        },
+        "message": "福尔摩斯的能力兑现依赖 scene_001 的日常观察铺垫；如果删除 scene_001，需要补充能力展示。",
+        "needs_human_review": false
+      }
+    ],
+    "unresolved_foreshadowing": [],
+    "dialogue_warnings": [
+      {
+        "id": "warning_002",
+        "severity": "warning",
+        "target": {
+          "type": "dialogue",
+          "id": "line_003"
+        },
+        "message": "台词可以更克制，避免直接说明福尔摩斯对案件的兴奋。",
+        "needs_human_review": true
+      }
+    ],
+    "schema_warnings": []
+  }
+}
+

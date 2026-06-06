@@ -1,0 +1,18 @@
+{
+  "job_20260606133134_fb78a2fb": {
+    "artifact_ids": [
+      "artifact_project_72a055a65b09_novel_analysis_v001",
+      "artifact_project_72a055a65b09_story_bible_v001",
+      "artifact_project_72a055a65b09_adaptation_plan_v001",
+      "artifact_project_72a055a65b09_screenplay_json_v001",
+      "artifact_project_72a055a65b09_screenplay_yaml_v001",
+      "artifact_project_72a055a65b09_audit_report_v001",
+      "artifact_project_72a055a65b09_screenplay_rendered_v001"
+    ],
+    "current_step": "complete",
+    "error": null,
+    "id": "job_20260606133134_fb78a2fb",
+    "project_id": "project_72a055a65b09",
+    "status": "succeeded"
+  }
+}

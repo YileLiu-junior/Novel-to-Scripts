@@ -1,0 +1,115 @@
+{
+  "items": [
+    {
+      "action": [
+        "【Fake Provider】根据《第一章 雨夜来信》构造：第一章 雨夜来信 深夜十一点，南城的雨还没有停。 林晚站在旧公寓三楼的窗前，看着楼下被雨水冲得发亮的街道。路灯忽明忽暗，像一只快要闭上的眼睛。她刚刚结束一天的工作，桌上还摊着未整理完的案件资料。那些泛黄的照片、手写的笔录和模糊的监控截图，全都指向十年前那场没有结论的旧案。 她原本已经决定不再碰这件事。 十年前，她的父亲"
+      ],
+      "characters": [
+        "char_001"
+      ],
+      "dialogue": [
+        {
+          "action_hint": "指向章节标题",
+          "character_id": "char_001",
+          "emotional_state": "clear",
+          "id": "line_001",
+          "line": "这一场来自《第一章 雨夜来信》，不是全局 demo fixture。",
+          "subtext": "提示用户当前处于 fake provider 模式",
+          "surface_intent": "说明当前场景来源"
+        }
+      ],
+      "dramatic_purpose": [
+        "验证当前项目章节《第一章 雨夜来信》已进入生成链路。"
+      ],
+      "heading_text": "雨夜来信",
+      "id": "scene_001",
+      "interior_exterior": "未设置",
+      "location": "雨夜",
+      "related_events": [
+        "event_001"
+      ],
+      "sequence": 1,
+      "source_refs": [
+        {
+          "chapter_id": "chapter_001"
+        }
+      ],
+      "time": "day",
+      "title": "第一章 雨夜来信：模拟改编场景"
+    },
+    {
+      "action": [
+        "【Fake Provider】根据《第二章 旧钟楼》构造：第二章 旧钟楼 第二天晚上八点五十，林晚还是去了旧钟楼。 周砚原本坚决反对，但林晚没有退路。她已经等了十年，不能因为害怕就放弃唯一的线索。 旧钟楼位于南城老区边缘，周围的商铺早已搬空，只剩几栋废弃建筑立在雨后的雾气里。钟楼的大门半掩着，门缝里透出一点昏黄的光。 “你确定要进去？”周砚站在她身侧，目光始终盯着门内。 林晚"
+      ],
+      "characters": [
+        "char_001"
+      ],
+      "dialogue": [
+        {
+          "action_hint": "指向章节标题",
+          "character_id": "char_001",
+          "emotional_state": "clear",
+          "id": "line_002",
+          "line": "这一场来自《第二章 旧钟楼》，不是全局 demo fixture。",
+          "subtext": "提示用户当前处于 fake provider 模式",
+          "surface_intent": "说明当前场景来源"
+        }
+      ],
+      "dramatic_purpose": [
+        "验证当前项目章节《第二章 旧钟楼》已进入生成链路。"
+      ],
+      "heading_text": "2. 第二章 旧钟楼 内景 日",
+      "id": "scene_002",
+      "interior_exterior": "INT",
+      "location": "第二章 旧钟楼",
+      "related_events": [
+        "event_002"
+      ],
+      "sequence": 2,
+      "source_refs": [
+        {
+          "chapter_id": "chapter_002"
+        }
+      ],
+      "time": "day",
+      "title": "第二章 旧钟楼：模拟改编场景"
+    },
+    {
+      "action": [
+        "【Fake Provider】根据《第三章 第三把钥匙》构造：第三章 第三把钥匙 林晚没有想到，自己追查了十年的真相，竟然从周砚的沉默开始裂开。 他们回到公寓后，林晚把照片摊在桌上。照片中共有四个人：林启明、年轻时的周砚、一个戴眼镜的女人，以及一个站在阴影里的男人。照片背面写着一行字： “零号计划，启动前夜。” “零号计划是什么？”林晚问。 周砚站在窗边，雨水沿着玻璃缓慢滑落。他"
+      ],
+      "characters": [
+        "char_001"
+      ],
+      "dialogue": [
+        {
+          "action_hint": "指向章节标题",
+          "character_id": "char_001",
+          "emotional_state": "clear",
+          "id": "line_003",
+          "line": "这一场来自《第三章 第三把钥匙》，不是全局 demo fixture。",
+          "subtext": "提示用户当前处于 fake provider 模式",
+          "surface_intent": "说明当前场景来源"
+        }
+      ],
+      "dramatic_purpose": [
+        "验证当前项目章节《第三章 第三把钥匙》已进入生成链路。"
+      ],
+      "heading_text": "3. 第三章 第三把钥匙 内景 日",
+      "id": "scene_003",
+      "interior_exterior": "INT",
+      "location": "第三章 第三把钥匙",
+      "related_events": [
+        "event_003"
+      ],
+      "sequence": 3,
+      "source_refs": [
+        {
+          "chapter_id": "chapter_003"
+        }
+      ],
+      "time": "day",
+      "title": "第三章 第三把钥匙：模拟改编场景"
+    }
+  ]
+}

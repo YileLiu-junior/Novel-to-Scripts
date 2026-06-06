@@ -1,0 +1,6 @@
+__pycache__/
+*.py[cod]
+.tmp/
+scripts/configure_llm_env.ps1
+scripts/configure_deepseek_env.ps1
+.pytest_cache/
