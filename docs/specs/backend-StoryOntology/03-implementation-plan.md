@@ -23,7 +23,7 @@ origin: docs/specs/backend-StoryOntology/01-adaptation-evidence-requirements.md
 
 ## Requirements Traceability
 
-- 覆盖 `01-adaptation-evidence-requirements.md` 中的 R1-R14。
+- 覆盖 `01-adaptation-evidence-requirements.md` 中的 R1-R17。
 - 保留 `AGENTS.md` 中 Schema-first、API Contract、Fake Provider、Validation、Fixture Contract 和 Export Pipeline 约束。
 - 复用 `.tmp-novel-to-script-team` 中适合 V0+V1 的约束：冲突提取、一致性锚点、称呼规范、完整事件原则。
 - 排除长集数生产、付费卡点、分镜、生图和 hit-script retrieval flows。
@@ -88,7 +88,7 @@ V1.5 不追求 planner 全面理解所有 evidence，只要求 `must_keep_togeth
 
 ### D5. 用户价值以 `scene-to-evidence trace` 证明
 
-首版不新增后端接口，优先从既有 `screenplay_json` 和 `story_bible` artifact 中派生 trace。用户在结果页打开某个 scene 时，应能看到该 scene 对应的 event、conflict axis、source refs 和 continuity anchor。
+首版不新增后端接口，优先从既有 `screenplay_json` 和 `story_bible` artifact 中派生 trace。用户在结果页打开某个 scene 时，应能看到该 scene 对应的 event、conflict axis、source refs 和 continuity anchor。首版 trace 只放在 scene 卡片展开区，不在“改编证据”tab 中额外做跨场景索引。
 
 原因：
 
@@ -282,7 +282,7 @@ V1.5 不追求 planner 全面理解所有 evidence，只要求 `must_keep_togeth
 - local/session state 保存 `story_bible_artifact` 或 `adaptation_evidence` 快照。
 - 结果页新增或重命名 tab 为“改编证据”。
 - 展示完整事件、冲突轴、一致性锚点、可视化表达约束、关系与知情差。
-- 在 scene 卡片展开区增加 `scene-to-evidence trace`：关联 event、conflict axis、source refs 和 continuity anchor。
+- 在 scene 卡片展开区增加 `scene-to-evidence trace`：关联 event、conflict axis、source refs 和 continuity anchor；首版不做跨场景索引。
 - 在完整事件区域显示 planner 消费状态：`已保护`、`被拆分需说明`、`未关联场景`。
 - 正常用户界面不暴露 `minimal` 模式；如需 debug 入口，应通过内部参数、环境变量或开发者专用入口控制。
 - 修正 relationship table 读取 `from` 和 `to`，兼容旧字段。
