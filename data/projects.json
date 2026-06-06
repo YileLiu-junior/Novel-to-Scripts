@@ -48,6 +48,13 @@
     "target_format": "web_series",
     "title": "pride-and-prejudice_-0607-0702"
   },
+  "E2E-pride-and-pr-0607-0725": {
+    "id": "E2E-pride-and-pr-0607-0725",
+    "logline": "E2E pipeline test run",
+    "metadata": {},
+    "target_format": "web_series",
+    "title": "pride-and-prejudice_-0607-0725"
+  },
   "E2E-三生三世十里桃花-0607-0644": {
     "id": "E2E-三生三世十里桃花-0607-0644",
     "logline": "E2E pipeline test run",
