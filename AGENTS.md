@@ -1,25 +1,21 @@
-# Agent Operating Rules
+# Agent Operating Rules（Agent 操作规则）
 
-This repository is the working space for an AI novel-to-screenplay workbench.
-The current backend target is V0+V1: stable structured generation, artifact
-tracking, validation, and YAML export before any real model quality push.
+本仓库是一个“AI 小说转剧本”工作台的工程空间。
+当前 backend target 是 V0+V1：先做好 stable structured generation、artifact tracking、validation 和 YAML export，再推进真实 model quality。
 
-## Source Documents
+## Source Documents（源文档）
 
-- Product scope: `Pre-research/AI小说转剧本MVP方案细化.md`
-- Directory architecture: `docs/plans/2026-06-05-004-project-directory-structure.md`
-- Backend decision: `docs/plans/2026-06-05-005-v1-backend-framework-and-agent-team-decision.md`
-- Spec sequence and team plan: `docs/plans/2026-06-05-006-v0-v1-backend-spec-and-agent-team-plan.md`
-- Adapted reference ideas: `.tmp-novel-to-script-team/references/`
+- 产品范围：`Pre-research/AI小说转剧本MVP方案细化.md`
+- Directory architecture：`docs/plans/2026-06-05-004-project-directory-structure.md`
+- Backend decision：`docs/plans/2026-06-05-005-v1-backend-framework-and-agent-team-decision.md`
+- Spec sequence and team plan：`docs/plans/2026-06-05-006-v0-v1-backend-spec-and-agent-team-plan.md`
+- Adapted reference ideas：`.tmp-novel-to-script-team/references/`
 
-Use the temporary team references for quality gates, traceability, continuity,
-and review language. Do not copy its long-episode production, storyboard,
-image-generation, Seedance, or hit-script retrieval flows into this backend.
+临时团队参考资料只用于 quality gates、traceability、continuity 和 review language。不要把其中的 long-episode production、storyboard、image generation、Seedance 或 hit-script retrieval flows 复制进当前 backend。
 
-## Mission
+## Mission（使命）
 
-Build a structured adaptation backend that can turn at least three novel
-chapters into a traceable screenplay asset:
+构建一个 structured adaptation backend，能把至少三章小说转换成 traceable screenplay asset：
 
 ```text
 chapters
@@ -34,119 +30,130 @@ chapters
   -> minimal audit warnings
 ```
 
-The product story is not "AI writes a beautiful script in one prompt." It is:
-AI produces inspectable adaptation artifacts, while code enforces structure,
-references, job state, and export reliability.
+Product story 不是“AI 一次 prompt 写出漂亮剧本”。真正的 product story 是：AI 产出 inspectable adaptation artifacts，代码负责 enforce structure、references、job state 和 export reliability。
 
-## V0+V1 Scope
+## V0+V1 Scope（范围）
 
-V0 must support:
+V0 必须支持：
 
-- Create a project.
-- Save at least three chapters.
-- Generate stable `chapter_###` and `p_###` IDs.
-- Reject generation with fewer than three chapters.
-- Run a fake pipeline to produce `screenplay_json`.
-- Export `demo_screenplay.yaml`.
-- View or download the schema.
+- Create a project。
+- Save 至少三章 chapters。
+- Generate stable `chapter_###` 和 `p_###` IDs。
+- Reject generation when fewer than three chapters。
+- Run a fake pipeline to produce `screenplay_json`。
+- Export `demo_screenplay.yaml`。
+- View or download the schema。
 
-V1 must support:
+V1 必须支持：
 
-- `adaptation_config` with `target_format`, `fidelity_level`,
-  `preserve_priorities`, and `dialogue_style`.
-- `adaptation_plan` with retained, merged, deleted or deferred events,
-  protected elements, and scene plan.
-- Screenplay generation that consumes `adaptation_plan`.
-- YAML containing both adaptation config and adaptation plan.
-- One saved artifact per AI step.
-- Queryable job state, current step, error, and artifact IDs.
+- `adaptation_config`，包含 `target_format`、`fidelity_level`、`preserve_priorities` 和 `dialogue_style`。
+- `adaptation_plan`，包含 retained、merged、deleted or deferred events，protected elements，以及 scene plan。
+- Screenplay generation 必须 consume `adaptation_plan`。
+- YAML 必须同时包含 adaptation config 和 adaptation plan。
+- 每一个 AI step 都要保存一个 artifact。
+- Job state 可查询，包括 status、current step、error 和 artifact IDs。
 
-## Non-Goals
+## Non-Goals（非目标）
 
-Do not introduce these in V0+V1:
+V0+V1 不要引入：
 
-- Redis, Celery, RQ, or any external queue.
-- PostgreSQL JSONB or graph databases.
-- RDF or OWL ontology systems.
-- Budget risk scoring.
-- Final Draft or Fountain export.
-- Multi-user collaboration.
-- Complex version diff.
-- Real subagent runtime in the product backend.
-- Storyboard, video prompt, image generation, or hit-script retrieval flows.
+- Redis、Celery、RQ 或任何外部队列。
+- PostgreSQL JSONB 或图数据库。
+- RDF 或 OWL 本体系统。
+- 预算风险评分。
+- Final Draft 或 Fountain 导出。
+- 多用户协作。
+- 复杂版本 diff。
+- 产品 backend 里的真实 subagent runtime。
+- Storyboard、video prompt、image generation 或 hit-script retrieval flows。
 
-Future versions may add richer story bible, causal graph, dialogue doctoring,
-and audit loops by extending fields and services, not by replacing the V0+V1
-pipeline.
+Future versions 可以通过扩展 fields 和 services 加入更丰富的 story bible、causal graph、dialogue doctoring 和 audit loops，但不要替换 V0+V1 pipeline。
 
-## Directory Boundaries
+## Directory Boundaries（目录边界）
 
-- `fixtures/`: shared contract examples for backend, frontend, and tests.
-- `schemas/`: machine-readable and human-readable screenplay schema assets.
-- `backend/app/domain/`: Pydantic models only; no FastAPI, SQLAlchemy, or SDKs.
-- `backend/app/api/`: HTTP DTOs and routers; no prompts or direct database code.
-- `backend/app/services/`: workflow orchestration and use-case coordination.
-- `backend/app/ai/providers/`: fake and real provider boundaries.
-- `backend/app/ai/skills/`: skill wrappers; no database writes or job decisions.
-- `backend/app/ai/prompts/`: prompt format references and prompt text.
-- `backend/app/validators/`: deterministic validation; no model or network calls.
-- `backend/app/exporters/`: pure export logic; no content repair.
-- `backend/app/repositories/`: persistence access.
-- `backend/app/workers/`: V1 background task boundary; no Redis dependency.
-- `docs/specs/backend-v0-v1/`: S0-S10 implementation specs.
+- `fixtures/`：backend、frontend 和 tests 共享的 contract examples。
+- `schemas/`：machine-readable 和 human-readable screenplay schema assets。
+- `backend/app/domain/`：只放 Pydantic models；不能依赖 FastAPI、SQLAlchemy 或 SDK。
+- `backend/app/api/`：HTTP DTOs 和 routers；不能放 prompts，也不能直接写 database code。
+- `backend/app/services/`：workflow orchestration 和 use-case coordination。
+- `backend/app/ai/providers/`：fake provider 和 real provider 的边界。
+- `backend/app/ai/skills/`：skill wrappers；不能写数据库，也不能决定 job 流程。
+- `backend/app/ai/prompts/`：prompt 格式参考和 prompt 文本。
+- `backend/app/validators/`：deterministic validation；不能调用 models 或 network。
+- `backend/app/exporters/`：pure export logic；不能 repair content。
+- `backend/app/repositories/`：persistence access。
+- `backend/app/workers/`：V1 background task boundary；不能依赖 Redis。
+- `docs/specs/backend-v0-v1/`：S0-S10 implementation specs。
 
-## Agent Team
+## Code Commenting Convention（代码注释约定）
 
-- Showrunner: keeps V0+V1 scope, freezes demo path, owns gates.
-- Contract Architect: owns fixtures, schema, ID rules, DTO/API contracts.
-- Backend Builder: owns FastAPI, domain, services, repositories, workers, export.
-- Skill Engineer: owns provider contracts, skill wrappers, prompt references.
-- Validation Director: owns schema/reference validation and audit warning mapping.
-- Review Director: gives PASS/FAIL at gates with location, problem, and action.
-- Continuity Recorder: protects minimal events, foreshadowing, and knowledge state.
-- Demo Producer: owns smoke path, demo checklist, and frozen example assets.
+所有新增或修改的代码，都要保留 `backend/app/domain/` 及其 `description.md` 中已经形成的解释性风格：
 
-## Review Gates
+- 新建 code file 时，在 file header 添加简短注释，说明该文件在 novel-to-screenplay pipeline 中的具体 responsibility。
+- 在 large classes、large functions、orchestration steps、validation rules、exporters、provider adapters 或 non-obvious code blocks 前添加简短注释，说明这段代码 does what，以及 why it exists。
+- 在已有文件中新增代码块时，如果仅靠命名和类型不能立刻看出目的，要说明局部原因和预期用途。
+- 注释要 specific and operational，优先解释 business meaning、data flow、boundaries、invariants 和 failure behavior，不要复述 simple syntax。
+- 删除代码时不要额外添加“这里删掉了什么”的 tombstone notes；obsolete code 应干净移除。
 
-Gate 0 Scope:
+## Document and Output Language（文档和输出语言约定）
 
-- Changes serve V0+V1 only.
-- Future capabilities are reserved through fields or directories, not implemented.
+- 如果生成或修改的 Markdown 文件目的是给人阅读，面向用户的自然语言必须使用中文。
+- English technical nouns、domain terms、role names、field names 和 architecture terms 应优先保留英文原词；需要中文说明时，用“中文说明 + English term”的方式，避免后续 Agent 看不懂对应关系。
+- Machine contracts、test fixtures、schema、export examples、code identifiers、API field names、file paths 和 commands 可以保留英文或原始格式。
+- 如果 Markdown 同时包含 machine-readable snippets 和 explanation text，explanation text 用中文，machine-readable snippets 保持其 contract format。
 
-Gate 1 Contract:
+## Agent Team（Agent 团队）
 
-- Fixtures, schemas, Pydantic models, DTOs, and frontend expectations align.
-- Field changes start in fixtures before code.
+- Showrunner：守住 V0+V1 范围，冻结 demo path，负责 gates。
+- Contract Architect：负责 fixtures、schema、ID 规则、DTO/API contracts。
+- Backend Builder：负责 FastAPI、domain、services、repositories、workers 和 export。
+- Skill Engineer：负责 provider contracts、skill wrappers 和 prompt references。
+- Validation Director：负责 schema/reference validation 和 audit warning mapping。
+- Review Director：在 gates 给出 PASS/FAIL，并指出位置、问题和行动。
+- Continuity Recorder：保护最小事件、伏笔和知识状态。
+- Demo Producer：负责 smoke path、demo checklist 和冻结示例资产。
 
-Gate 2 Backend Boundary:
+## Review Gates（评审门）
 
-- API does not compose prompts.
-- Skills do not write database records.
-- Validators do not call models.
-- Exporters do not repair content.
-- Services orchestrate; they do not hold large prompt bodies.
+Gate 0 Scope：
 
-Gate 3 Artifact:
+- Changes 只服务 V0+V1。
+- Future capabilities 只能通过 fields 或 directories 预留，不能提前实现。
 
-- Every pipeline step saves an artifact.
-- Jobs expose status, current step, errors, and artifact IDs.
-- Fake and real providers share the same orchestrator path.
+Gate 1 Contract：
 
-Gate 4 Validation:
+- Fixtures、schemas、Pydantic models、DTOs 和 frontend expectations 必须对齐。
+- Field changes 必须先从 fixtures 开始，再改 code。
 
-- Broken references are detected deterministically.
-- Warnings point to concrete entity IDs.
-- `fixtures/demo_invalid_refs.yaml` triggers expected findings.
+Gate 2 Backend Boundary：
 
-Gate 5 Demo:
+- API 不 compose prompts。
+- Skills 不 write database records。
+- Validators 不 call models。
+- Exporters 不 repair content。
+- Services 负责 orchestrate；不要持有 large prompt bodies。
 
-- Smoke path runs without a real API key.
-- YAML is readable, parseable, and downloadable.
-- Demo can explain structured adaptation, not black-box generation.
+Gate 3 Artifact：
 
-## Execution Order
+- Pipeline 每一步都要保存 artifact。
+- Jobs expose status、current step、errors 和 artifact IDs。
+- Fake provider 和 real provider 共享同一条 orchestrator path。
 
-Work in this order unless a later approved plan says otherwise:
+Gate 4 Validation：
+
+- Broken references 必须被 deterministically detected。
+- Warnings 必须指向具体 entity IDs。
+- `fixtures/demo_invalid_refs.yaml` 必须触发预期 findings。
+
+Gate 5 Demo：
+
+- Smoke path 在没有 real API key 的情况下也能运行。
+- YAML 可读、可解析、可下载。
+- Demo 能解释 structured adaptation，而不是 black-box generation。
+
+## Execution Order（执行顺序）
+
+除非后续已有批准计划明确改动，否则按以下顺序推进：
 
 ```text
 S0 agent rules
@@ -162,6 +169,4 @@ S0 agent rules
   -> S10 smoke and acceptance
 ```
 
-The practical rule: fixture first, domain second, validators third, fake provider
-fourth, orchestrator fifth, real provider last.
-
+实践规则：fixture first，domain second，validators third，fake provider fourth，orchestrator fifth，real provider last。
