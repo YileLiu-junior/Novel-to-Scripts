@@ -183,7 +183,11 @@ GET    /api/projects/{project_id}/schema/download
 - `AdaptationPlan`
 - `ScenePlan`
 - `Scene`
+- `SceneHeading`
+- `SceneContentBlock`
 - `DialogueLine`
+- `ScriptStructure`
+- `CoreElements`
 - `AuditReport`
 - `AuditWarning`
 - `Artifact`

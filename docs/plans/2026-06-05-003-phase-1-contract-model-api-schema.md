@@ -28,7 +28,7 @@ created: 2026-06-05
 - 有稳定 ID 规则。
 - 有最小实体模型。
 - 有 API 路由草案。
-- 有 screenplay YAML 顶层结构。
+- 有 screenplay YAML 顶层结构，并包含文学剧本 `scene_heading`、`content_blocks`、`script_structure` 和 `core_elements`。
 - 有每个 skill 的输入输出边界。
 - 有三份 fixture 的字段口径：
   - `demo_novel_3_chapters.json`
@@ -140,8 +140,12 @@ created: 2026-06-05
 | Event | `event_###` | `event_001` |
 | Causal edge | `cause_###` | `cause_001` |
 | Foreshadowing | `foreshadow_###` | `foreshadow_001` |
+| Story outline | `outline_###` | `outline_001` |
 | Scene plan | `scene_plan_###` | `scene_plan_001` |
 | Scene | `scene_###` | `scene_001` |
+| Scene content block | `block_###` | `block_001` |
+| Core action | `action_###` | `action_001` |
+| Situation | `situation_###` | `situation_001` |
 | Dialogue line | `line_###` | `line_001` |
 | Warning | `warn_###` | `warn_001` |
 
@@ -296,12 +300,38 @@ created: 2026-06-05
 | `protected_elements` | string[] | 是 | 受保护关系/伏笔/事件 ID |
 | `scene_plan` | ScenePlan[] | 是 | 场景计划 |
 
-### 6.14 Scene
+### 6.14 ScriptStructure
+
+`ScriptStructure` 用于固定文学剧本训练链路：故事梗概、故事大纲、文学剧本。它不是生成流程的新阶段，而是最终 `screenplay_json` 中必须可见的结构说明。
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `story_synopsis` | string | 是 | 故事梗概 |
+| `story_outline` | StoryOutlineItem[] | 是 | 故事大纲，关联 event 和 scene |
+| `literary_screenplay.unit` | string | 是 | 固定为 `scene` |
+| `literary_screenplay.format_note` | string | 是 | 文学剧本格式说明 |
+| `literary_screenplay.scene_ids` | string[] | 是 | 剧本正文 scene 顺序 |
+
+### 6.15 CoreElements
+
+`CoreElements` 是核心元素索引层，把动作、情节、情境、主题、主人公、人物关系收拢到一个可校验位置。
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `actions` | CoreAction[] | 是 | 动作索引，引用 scene 和可选 event |
+| `plot` | PlotBeat[] | 是 | 情节索引，引用 event |
+| `situations` | Situation[] | 是 | 情境索引，引用 scene |
+| `theme` | string | 是 | 主题 |
+| `protagonists` | string[] | 是 | 主人公 `char_###` |
+| `character_relationships` | string[] | 是 | 人物关系 `rel_###` |
+
+### 6.16 Scene
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `id` | string | 是 | 场景 ID |
 | `title` | string | 是 | 场景标题 |
+| `scene_heading` | SceneHeading | 是 | 单独成行的文学剧本场景标题 |
 | `source_refs` | SourceRef[] | 是 | 来源 |
 | `dramatic_purpose` | string[] | 是 | 戏剧目的 |
 | `location` | Location | 是 | 场景地点 |
@@ -312,9 +342,30 @@ created: 2026-06-05
 | `foreshadowing.setups` | string[] | 否 | 埋设伏笔 |
 | `foreshadowing.payoffs` | string[] | 否 | 兑现伏笔 |
 | `action` | string[] | 是 | 动作描述 |
+| `content_blocks` | SceneContentBlock[] | 是 | 场景标题下方的自然段正文 |
 | `dialogue` | DialogueLine[] | 是 | 对白 |
 
-### 6.15 DialogueLine
+### 6.17 SceneHeading
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `sequence` | integer | 是 | 场次序号 |
+| `location` | string | 是 | 地点 |
+| `interior_exterior` | enum | 是 | `INT` / `EXT` / `INT/EXT` |
+| `time_of_day` | enum | 是 | `day` / `night` / `morning` / `dusk` |
+| `text` | string | 是 | 可直接单独成行显示的场景标题 |
+
+### 6.18 SceneContentBlock
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `id` | string | 是 | `block_###` |
+| `block_type` | enum | 是 | `action` / `dialogue` / `transition` |
+| `text` | string | 是 | 自然段正文 |
+| `character_id` | string | 否 | 对白段落对应角色 |
+| `dialogue_line_id` | string | 否 | 对白段落对应 line |
+
+### 6.19 DialogueLine
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
@@ -326,7 +377,7 @@ created: 2026-06-05
 | `emotional_state` | string | 否 | 情绪状态 |
 | `action_hint` | string | 是 | 可表演动作 |
 
-### 6.16 AuditWarning
+### 6.20 AuditWarning
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
@@ -485,11 +536,13 @@ Artifact 通用字段：
 ```json
 {
   "screenplay": {
-    "schema_version": "1.0",
+    "schema_version": "1.1",
     "project": {},
     "source": {},
     "adaptation_config": {},
+    "script_structure": {},
     "story_bible": {},
+    "core_elements": {},
     "events": [],
     "causal_graph": { "edges": [] },
     "foreshadowing": [],
@@ -503,6 +556,8 @@ Artifact 通用字段：
 
 - 输出 JSON，不直接输出 YAML。
 - scene 必须有 source_refs。
+- scene 必须有 scene_heading，且包含序号、地点、内外景、日夜晨昏和可单独成行的 text。
+- scene 必须有 content_blocks，表示标题下方自然段正文。
 - dialogue.character_id 必须来自 story_bible。
 - 每场必须有 dramatic_purpose、action、dialogue。
 
@@ -711,7 +766,7 @@ YAML 校验响应：
 ### 10.1 顶层结构
 
 ```yaml
-schema_version: "1.0"
+schema_version: "1.1"
 
 project:
   id: "proj_demo_001"
@@ -734,10 +789,26 @@ adaptation_config:
     - "foreshadowing"
   dialogue_style: "restrained"
 
+script_structure:
+  story_synopsis: ""
+  story_outline: []
+  literary_screenplay:
+    unit: "scene"
+    format_note: "每场以 scene_heading 单独成行，标题下方用 content_blocks 自然段展开。"
+    scene_ids: []
+
 story_bible:
   characters: []
   relationship_edges: []
   knowledge_states: []
+
+core_elements:
+  actions: []
+  plot: []
+  situations: []
+  theme: ""
+  protagonists: []
+  character_relationships: []
 
 events: []
 
@@ -767,9 +838,15 @@ audit_report:
 scenes:
   - id: "scene_001"
     title: "雨夜重逢"
+    scene_heading:
+      sequence: 1
+      location: "旧巷口"
+      interior_exterior: "EXT"
+      time_of_day: "night"
+      text: "1. 旧巷口 外景 夜"
     source_refs:
       - chapter_id: "chapter_001"
-        paragraph_range: "1-3"
+        paragraph_range: "p_001-p_003"
         quote: "林晚在雨夜回到旧巷。"
     dramatic_purpose:
       - "建立林晚与周砚的紧张关系"
@@ -794,6 +871,15 @@ scenes:
       payoffs: []
     action:
       - "林晚停在巷口，看见周砚手里攥着一块旧怀表。"
+    content_blocks:
+      - id: "block_001"
+        block_type: "action"
+        text: "林晚停在巷口，看见周砚手里攥着一块旧怀表。"
+      - id: "block_002"
+        block_type: "dialogue"
+        character_id: "char_001"
+        dialogue_line_id: "line_001"
+        text: "林晚：你怎么会在这里？"
     dialogue:
       - id: "line_001"
         character_id: "char_001"
@@ -817,6 +903,13 @@ scenes:
 | `causal_graph.edges.from/to` 必须存在于 `events` | error | 因果链不能断 |
 | `foreshadowing.setup_event_id` 必须存在于 `events` | warning | candidate 可宽松 |
 | `foreshadowing.payoff_scene_id` 如果非空，必须存在于 `scenes` | warning | 未兑现可进入 audit |
+| `script_structure.story_outline.related_events[]` 必须存在于 `events` | warning | 大纲不能引用不存在的情节 |
+| `script_structure.literary_screenplay.scene_ids[]` 必须存在于 `scenes` | warning | 文学剧本顺序不能指向空场 |
+| `core_elements.protagonists[]` 必须存在于 `story_bible.characters` | error | 主人公不能是幽灵角色 |
+| `core_elements.character_relationships[]` 必须存在于 `story_bible.relationship_edges` | warning | 人物关系索引不能断链 |
+| `core_elements.actions[].scene_id` 必须存在于 `scenes` | warning | 动作索引必须落到具体场 |
+| `core_elements.plot[].event_id` 必须存在于 `events` | warning | 情节索引必须落到具体事件 |
+| `content_blocks.character_id` 必须属于 scene characters | error | 自然段对白不能让未出场角色说话 |
 | 每个 scene 至少有一个 `dramatic_purpose` | warning | 保证不是流水账 |
 | 每句 dialogue 必须有 `surface_intent` 和 `subtext` | warning | 支撑潜台词亮点 |
 
@@ -880,11 +973,13 @@ scenes:
 最小字段：
 
 ```yaml
-schema_version: "1.0"
+schema_version: "1.1"
 project: {}
 source: {}
 adaptation_config: {}
+script_structure: {}
 story_bible: {}
+core_elements: {}
 events: []
 causal_graph:
   edges: []
@@ -944,6 +1039,8 @@ audit_report: {}
 - 所有 ID 能互相引用。
 - 至少 2 个角色、3 个事件、1 条关系、1 个伏笔。
 - 至少 2 场 scene。
+- 每场 scene 必须包含 `scene_heading` 和 `content_blocks`。
+- 顶层必须包含 `script_structure` 和 `core_elements`。
 - 至少 1 条 dialogue 带 surface_intent/subtext/action_hint。
 - 至少 1 条 audit warning 能定位到 scene 或 foreshadowing。
 ```

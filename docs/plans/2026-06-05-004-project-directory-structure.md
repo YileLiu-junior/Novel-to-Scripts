@@ -284,7 +284,7 @@ XEngineer/
 - `source.py`：`Chapter`、`Paragraph`。
 - `story_bible.py`：`Character`、`RelationshipEdge`、`KnowledgeState`、`VoiceProfile`。
 - `adaptation.py`：`AdaptationConfig`、`AdaptationPlan`、`ScenePlan`。
-- `screenplay.py`：`Scene`、`DialogueLine`、`Location`。
+- `screenplay.py`：`ScriptStructure`、`CoreElements`、`Scene`、`SceneHeading`、`SceneContentBlock`、`DialogueLine`。
 - `audit.py`：`AuditReport`、`AuditWarning`。
 - `artifacts.py`：`Artifact` 类型。
 - `jobs.py`：`GenerationJob` 状态。
@@ -481,7 +481,7 @@ fixture 不是一次性样例，而是前后端共同遵守的契约测试资产
 
 - `screenplay.schema.json`：机器可读 Schema。
 - `screenplay.schema.yaml`：YAML 版本 Schema。
-- `screenplay-schema-design.md`：给评审看的 Schema 设计说明。
+- `screenplay-schema-design.md`：给评审看的 Schema 设计说明，需解释文学剧本 `scene_heading`、`content_blocks`、`script_structure` 和 `core_elements`。
 - `openapi.snapshot.json`：后端导出的 API 快照。
 
 ### `docs/`
@@ -649,3 +649,5 @@ frontend/src/features/audit/
 ```
 
 这条路径跑通后，真实模型接入只是替换 provider 和 prompt，不需要推翻目录结构。
+
+`screenplay_json` 的 scene 必须符合文学剧本基础格式：以 scene 为单位，每场有单独成行的 `scene_heading`，并用 `content_blocks` 表示标题下方自然段正文。顶层还必须保留 `script_structure` 和 `core_elements`，让 demo 能解释故事梗概、故事大纲、主题、主人公和人物关系。

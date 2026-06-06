@@ -74,6 +74,8 @@ GET  /api/projects/{project_id}/yaml/download
 
 下载接口需要已存在 `screenplay_json` 或 `screenplay_yaml` 类型的 artifact。
 
+当前 screenplay schema version 为 `1.1`。导出的 YAML 必须包含 `script_structure`、`core_elements`，且每个 `scene` 必须包含 `scene_heading` 和 `content_blocks`。
+
 ## Schema
 
 ```text

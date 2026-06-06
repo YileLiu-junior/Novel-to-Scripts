@@ -232,7 +232,8 @@ backend/
 - `Foreshadowing`：setup/payoff、状态、描述。
 - `AdaptationConfig`：目标格式、忠实度、保留重点、台词风格。
 - `AdaptationPlan`：保留事件、合并事件、保护元素、scene plan。
-- `Scene`：场景、source refs、角色、动作、对白、因果、伏笔。
+- `Scene`：场景、`scene_heading`、`content_blocks`、source refs、角色、动作、对白、因果、伏笔。
+- `ScriptStructure` / `CoreElements`：故事梗概/大纲/文学剧本声明，以及动作、情节、情境、主题、主人公、人物关系索引。
 - `AuditReport`：连续性、伏笔、台词、Schema warning。
 
 ### 5.3 本地文件存储
