@@ -15,6 +15,10 @@ class ReplaceChaptersRequest(BaseModel):
 class ParagraphResponse(BaseModel):
     id: str
     order: int
+<<<<<<< HEAD
+=======
+    text: str | None = None
+>>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
     summary: str | None = None
 
 
@@ -22,6 +26,11 @@ class ChapterResponse(BaseModel):
     id: str
     order: int
     title: str
+<<<<<<< HEAD
+=======
+    text: str | None = None
+    word_count: int = 0
+>>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
     paragraphs: list[ParagraphResponse] = []
 
 
@@ -38,4 +47,7 @@ class AutoSplitResponse(BaseModel):
     chapters: list[ChapterInput]
     chapter_count: int
     mode_used: str
+<<<<<<< HEAD
 
+=======
+>>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)

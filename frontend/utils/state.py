@@ -28,6 +28,29 @@ def init_session_state():
     if "show_new_project_form" not in st.session_state:
         st.session_state.show_new_project_form = False
 
+<<<<<<< HEAD
+=======
+    # 后端联调状态：这些 key 对应 V0+V1 pipeline 的 project/job/artifact 进度。
+    # 页面刷新时保留它们，避免后端 job 轮询中断后白屏。
+    defaults = {
+        "backend_project_id": None,
+        "backend_chapters": [],
+        "backend_job_id": None,
+        "backend_job_status": "idle",
+        "backend_current_step": None,
+        "backend_error": None,
+        "backend_artifacts": [],
+        "screenplay_data": {},
+        "screenplay_yaml": "",
+        "rendered_markdown": "",
+        "selected_scene": None,
+        "selected_character": None,
+    }
+    for key, value in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
+
+>>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
 
 def go_home():
     """
@@ -36,6 +59,11 @@ def go_home():
     st.session_state.current_project_id = None
     st.session_state.current_section = "original"
     st.session_state.selected_act_id = None
+<<<<<<< HEAD
+=======
+    st.session_state.selected_scene = None
+    st.session_state.selected_character = None
+>>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
     st.session_state.show_new_project_form = False
     # 使用 rerun 让页面立即刷新
     st.rerun()
@@ -48,6 +76,11 @@ def enter_project(project_id: str):
     st.session_state.current_project_id = project_id
     st.session_state.current_section = "original"
     st.session_state.selected_act_id = None
+<<<<<<< HEAD
+=======
+    st.session_state.selected_scene = None
+    st.session_state.selected_character = None
+>>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
     st.session_state.show_new_project_form = False
     st.rerun()
 

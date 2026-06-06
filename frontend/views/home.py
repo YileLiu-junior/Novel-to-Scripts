@@ -4,6 +4,10 @@ home.py
 """
 
 import streamlit as st
+<<<<<<< HEAD
+=======
+from frontend import api_client
+>>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
 from frontend.utils import storage, state
 
 
@@ -46,6 +50,23 @@ def render():
                         st.error("项目名称不能为空")
                     else:
                         new_project = storage.create_project(name.strip(), description.strip())
+<<<<<<< HEAD
+=======
+                        # 创建项目时同步创建后端 project。后端不可用时保留本地项目，
+                        # 用户可稍后在原文页重新连接，不让首页流程中断。
+                        try:
+                            backend_project = api_client.create_project(
+                                title=name.strip(),
+                                logline=description.strip() or None,
+                            )
+                            storage.update_project(
+                                new_project["id"],
+                                {"backend_project_id": backend_project.get("id")},
+                            )
+                            new_project["backend_project_id"] = backend_project.get("id")
+                        except api_client.ApiClientError as exc:
+                            st.warning(f"本地项目已创建，但暂未连接后端：{exc.message}")
+>>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
                         st.success(f"项目「{new_project['name']}」创建成功！")
                         # 自动进入新项目
                         state.enter_project(new_project["id"])
