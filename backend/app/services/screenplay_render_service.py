@@ -1,11 +1,13 @@
-"""Screenplay render service — 编排校验 + 渲染 + 持久化为 artifact。"""
+"""Screenplay render service — 编排校验 + 渲染 + 持久化为 artifact + 导出 .md/.txt 文件。"""
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 from app.domain.artifacts import Artifact
 from app.exporters.screenplay_render_exporter import ScreenplayRenderExporter
+from app.repositories.file_store import default_data_root
 from app.services.artifact_service import ArtifactService
 from app.services.validation_service import ValidationService
 from app.validators.screenplay_normalizer import normalize_screenplay_for_export
@@ -31,7 +33,7 @@ class ScreenplayRenderService:
         screenplay_json: dict[str, Any],
         job_id: str | None = None,
     ) -> Artifact:
-        """校验 → 渲染 → 持久化为 screenlay_rendered artifact。"""
+        """校验 → 渲染 → 持久化为 artifact + 导出 .md / .txt 文件到 artifacts 目录。"""
         screenplay_json = normalize_screenplay_for_export(screenplay_json)
         # 校验
         findings = self.validation_service.validate_screenplay(screenplay_json)
@@ -70,10 +72,27 @@ class ScreenplayRenderService:
             },
         }
 
+        # 同时导出独立的 .md 和 .txt 文件到 artifacts 目录
+        self._write_standalone_files(project_id, markdown, text)
+
         # 持久化
         return self.artifact_service.save_artifact(
             project_id, "screenplay_rendered", rendered, job_id
         )
+
+    # ------------------------------------------------------------------
+    # 独立文件导出
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _write_standalone_files(
+        project_id: str, markdown: str, text: str
+    ) -> None:
+        """在项目 artifacts 目录写出 screenplay.md 和 screenplay.txt。"""
+        artifacts_dir = default_data_root() / "projects" / project_id / "artifacts"
+        artifacts_dir.mkdir(parents=True, exist_ok=True)
+        (artifacts_dir / "screenplay.md").write_text(markdown, encoding="utf-8")
+        (artifacts_dir / "screenplay.txt").write_text(text, encoding="utf-8")
 
     # ------------------------------------------------------------------
     # 查询已有

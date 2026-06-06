@@ -45,9 +45,6 @@ class ScreenplayRenderExporter:
         # 构建角色 ID → 名称映射
         char_names = self._build_char_name_map(screenplay)
 
-        # 构建 dialogue_line_id → dialogue 对象映射
-        dialogue_map = self._build_dialogue_map(screenplay)
-
         lines: list[str] = []
         md = format_ == "markdown"
 
@@ -90,37 +87,25 @@ class ScreenplayRenderExporter:
                     continue
 
                 if block_type == "dialogue":
-                    char_id = block.get("character_id", "")
-                    char_name = char_names.get(char_id, char_id)
-                    dl_id = block.get("dialogue_line_id", "")
-                    dl = dialogue_map.get(dl_id, {})
-
-                    # 角色名加粗（Markdown）
-                    speaker = f"**{char_name}**" if md else char_name
-
-                    # action_hint 以括号注的形式跟在角色名后
-                    action_hint = dl.get("action_hint", "").strip()
-                    if action_hint:
-                        line_text = dl.get("line", text).strip()
-                        if md:
-                            lines.append(f"{speaker}  ")
-                            lines.append(f"*（{action_hint}）*  ")
-                            lines.append(f"{line_text}")
+                    # 新 prompt 下 content_blocks.text 已包含完整中文剧本格式：
+                    # "角色名：（动作提示）台词正文"
+                    # 直接输出即可，无需二次拼装
+                    if md:
+                        # 对 dialogue block 做角色名加粗
+                        char_id = block.get("character_id", "")
+                        char_name = char_names.get(char_id, "")
+                        if char_name and text.startswith(char_name):
+                            # 分离角色名和后续内容
+                            rest = text[len(char_name):]
+                            lines.append(f"**{char_name}**{rest}")
                         else:
-                            lines.append(f"{speaker}")
-                            lines.append(f"（{action_hint}）")
-                            lines.append(line_text)
+                            lines.append(text)
                     else:
-                        line_text = dl.get("line", text).strip()
-                        if md:
-                            lines.append(f"{speaker}  ")
-                            lines.append(line_text)
-                        else:
-                            lines.append(speaker)
-                            lines.append(line_text)
+                        lines.append(text)
                 else:
-                    # action / transition 等
-                    lines.append(text)
+                    # action — 以中文剧本惯例的 △ 前缀输出
+                    action_text = text if text.startswith("△") else f"△{text}"
+                    lines.append(action_text)
 
                 lines.append("")
 
@@ -145,19 +130,6 @@ class ScreenplayRenderExporter:
                 if char_id and char_name:
                     name_map[char_id] = char_name
         return name_map
-
-    @staticmethod
-    def _build_dialogue_map(screenplay: dict[str, Any]) -> dict[str, dict[str, Any]]:
-        """从 scenes[].dialogue 构建 line_id → dialogue 对象映射。"""
-        dmap: dict[str, dict[str, Any]] = {}
-        for scene in screenplay.get("scenes", []):
-            if not isinstance(scene, dict):
-                continue
-            for line in scene.get("dialogue", []):
-                if isinstance(line, dict) and line.get("id"):
-                    dmap[line["id"]] = line
-        return dmap
-
 
 def heading_index(heading_text: str, fallback: int) -> str:
     """从 scene heading 中提取序号前缀，保持为 Markdown heading 文本。"""
