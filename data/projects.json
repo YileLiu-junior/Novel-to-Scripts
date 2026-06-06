@@ -1,4 +1,32 @@
 {
+  "E2E-PP-0607-0543": {
+    "id": "E2E-PP-0607-0543",
+    "logline": "傲慢与偏见 前三章 英国乡村 爱情与阶级",
+    "metadata": {},
+    "target_format": "web_series",
+    "title": "Pride-and-Prejudice-0607-0543"
+  },
+  "E2E-PP-0607-0553": {
+    "id": "E2E-PP-0607-0553",
+    "logline": "傲慢与偏见 前三章 英国乡村 爱情与阶级",
+    "metadata": {},
+    "target_format": "web_series",
+    "title": "Pride-and-Prejudice-0607-0553"
+  },
+  "E2E-PP-0607-0610": {
+    "id": "E2E-PP-0607-0610",
+    "logline": "傲慢与偏见 前三章 英国乡村 爱情与阶级",
+    "metadata": {},
+    "target_format": "web_series",
+    "title": "Pride-and-Prejudice-0607-0610"
+  },
+  "E2E-PP-0607-0623": {
+    "id": "E2E-PP-0607-0623",
+    "logline": "傲慢与偏见 前三章 英国乡村 爱情与阶级",
+    "metadata": {},
+    "target_format": "web_series",
+    "title": "Pride-and-Prejudice-0607-0623"
+  },
   "E2E-Pipeline-0607-0411": {
     "id": "E2E-Pipeline-0607-0411",
     "logline": "三生三世十里桃花 前3章 仙侠爱情 三世纠葛",
@@ -12,6 +40,34 @@
     "metadata": {},
     "target_format": "web_series",
     "title": "E2E-Pipeline-0607-0441"
+  },
+  "E2E-pride-and-pr-0607-0702": {
+    "id": "E2E-pride-and-pr-0607-0702",
+    "logline": "E2E pipeline test run",
+    "metadata": {},
+    "target_format": "web_series",
+    "title": "pride-and-prejudice_-0607-0702"
+  },
+  "E2E-三生三世十里桃花-0607-0644": {
+    "id": "E2E-三生三世十里桃花-0607-0644",
+    "logline": "E2E pipeline test run",
+    "metadata": {},
+    "target_format": "web_series",
+    "title": "三生三世十里桃花-0607-0644"
+  },
+  "E2E-三生三世十里桃花-0607-0657": {
+    "id": "E2E-三生三世十里桃花-0607-0657",
+    "logline": "E2E pipeline test run",
+    "metadata": {},
+    "target_format": "web_series",
+    "title": "三生三世十里桃花-0607-0657"
+  },
+  "E2E-三生三世十里桃花-0607-0712": {
+    "id": "E2E-三生三世十里桃花-0607-0712",
+    "logline": "E2E pipeline test run",
+    "metadata": {},
+    "target_format": "web_series",
+    "title": "三生三世十里桃花-0607-0712"
   },
   "project_023491a7dc65": {
     "id": "project_023491a7dc65",

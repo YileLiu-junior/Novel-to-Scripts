@@ -40,17 +40,21 @@ def test_rule_split_does_not_count_catalog_as_chapter() -> None:
     assert [chapter.title for chapter in result] == ["第一章 雨夜归来", "第二章 旧案重启", "第三章 钟声之后"]
 
 
-def test_rule_split_does_not_count_prologue_as_main_chapter() -> None:
+def test_rule_split_includes_prologue_as_chapter() -> None:
+    """序章/前传/楔子也是正文内容的一部分，应被纳入章节列表。"""
+    # 构造足够长度的正文以满足 _MIN_CHAPTER_BODY_CHARS (80)
+    body = "十" * 100
     raw = (
-        "楔子\n十年前的大火没有熄灭。\n\n"
-        "第一章 雨夜归来\n正文一。\n\n"
-        "第二章 旧案重启\n正文二。\n\n"
-        "第三章 钟声之后\n正文三。"
+        f"楔子\n{body}\n\n"
+        f"第一章 雨夜归来\n{body}\n\n"
+        f"第二章 旧案重启\n{body}\n\n"
+        f"第三章 钟声之后\n{body}"
     )
 
     result = ChapterSplitter().split(raw, mode="rule")
 
-    assert [chapter.title for chapter in result] == ["第一章 雨夜归来", "第二章 旧案重启", "第三章 钟声之后"]
+    # 楔子 应作为第一章纳入，后续为 第一章、第二章（第三章被截断因为只取前三章）
+    assert [chapter.title for chapter in result] == ["楔子", "第一章 雨夜归来", "第二章 旧案重启"]
 
 
 def test_auto_split_uses_ai_when_rule_has_too_few_main_chapters() -> None:
