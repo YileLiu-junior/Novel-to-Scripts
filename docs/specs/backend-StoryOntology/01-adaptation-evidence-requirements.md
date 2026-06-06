@@ -15,7 +15,7 @@ topic: backend-storyontology-adaptation-evidence
 
 当前主链路里 `StoryOntologySkill` 已经被调用，也会保存 `story_bible` artifact，但用户主要在最终 `screenplay_json` 里看到角色信息。这个体验容易让 StoryOntology 看起来只是后台中间步骤，无法证明后续剧本是如何从原文事实、冲突、关系和事件完整性推导出来的。
 
-用户真正需要感知的不是“系统多跑了一个 skill”，而是“剧本不是黑盒生成”。当一个 scene 出现时，用户应该能追到它来自哪些原文事件、哪些关系和知情差被保护、哪些事件不能被拆开、哪些信息必须影视化表达。
+用户真正需要感知的不是“系统多跑了一个 skill”，而是“剧本不是黑盒生成”。当一个 scene 出现时，用户应该能追到它来自哪些原文事件、哪些关系和知情差被保护、哪些事件不能被拆开、哪些信息必须转化为可演、可见、可听的表达。
 
 ---
 
@@ -61,13 +61,14 @@ topic: backend-storyontology-adaptation-evidence
 
 - R1. `StoryOntologySkill` 对外展示应定位为 `Adaptation Evidence`（改编证据层），而不是只展示为抽象 ontology。
 - R2. 结果页必须让用户看见 StoryOntology 产出的关键 evidence：完整事件、冲突轴、一致性锚点、关系和知情差。
-- R3. 文案应避免把 ontology 作为主界面术语；可以使用“改编证据”“故事圣经”“原文结构档案”等面向创作者的说法。
+- R3. 面向用户的主命名统一为“改编证据”；`story_bible` 只作为 artifact type、API field 或内部工程 term 使用，不作为主要 UI 文案。
 
 **后端输入输出**
 
-- R4. 后端生成请求应支持一个可见开关，用于控制 StoryOntology 是否输出 V1.5 改编证据层；开关默认启用，但不能绕过主 pipeline。
+- R4. 后端生成请求应支持一个后端可见的 `adaptation_evidence_mode`，用于控制 StoryOntology 输出 V1.5 改编证据层或 legacy minimal shape；默认启用 enriched evidence，但不能绕过主 pipeline。
 - R5. 启用开关后，`story_bible` artifact 必须包含能证明 StoryOntology 参与生成的版本和模式信息。
 - R6. Fake provider 和 real provider 必须共享同一 orchestrator path；fake 输出应根据当前章节构造 project-specific evidence。
+- R6a. `minimal` 只用于 backend/debug/legacy compatibility，不作为正常用户可见的前端开关。
 
 **结构与校验**
 
@@ -85,6 +86,8 @@ topic: backend-storyontology-adaptation-evidence
 
 - R13. 前端应通过 `frontend/api_client.py` 读取 story_bible artifact，view 组件不得散落 API path。
 - R14. 关系展示必须兼容 schema 当前的 `relationship_edges[].from` 和 `relationship_edges[].to`，避免关系方向失真。
+- R15. 结果页必须支持最小 `scene-to-evidence trace`：从某个 scene 追溯到对应 event、conflict axis、source refs 和 continuity anchor。
+- R16. 完整事件展示应体现 planner 对 `must_keep_together` 的消费状态，例如“已保护”“被拆分需说明”或“未关联场景”。
 
 ---
 
@@ -95,6 +98,8 @@ topic: backend-storyontology-adaptation-evidence
 - AE3. **Covers R8, R12.** Given StoryOntology 输出 `must_keep_together` event，when planner 生成 scene plan，then保留/合并/删除决策仍只出现在 `adaptation_plan`，StoryOntology artifact 不写改编决策。
 - AE4. **Covers R7, R10.** Given invalid fixture 中 evidence 引用不存在的 event 或 character，when 运行 deterministic validation，then 返回带 `target_id` 的 finding。
 - AE5. **Covers R9.** Given 一个旧项目只有旧版 `story_bible` artifact，when 前端刷新结果页，then evidence sections 显示为空或“暂无”，页面不崩溃。
+- AE6. **Covers R15.** Given 用户在结果页打开任一 scene，when 展开“改编证据溯源”，then 能看到关联 event、conflict axis、source refs 和 continuity anchor，而不需要阅读原始 JSON。
+- AE7. **Covers R11, R16.** Given 某个 event 标记为 `complete_event=true` 且 `must_keep_together=true`，when 前端展示改编证据，then 该 event 显示 planner 消费状态，并在被拆散或遗漏时引导用户查看 audit warning。
 
 ---
 
@@ -104,6 +109,7 @@ topic: backend-storyontology-adaptation-evidence
 - Demo 可以指向一个 scene，并追溯到对应 event、conflict axis、source refs 和 continuity anchor。
 - Fake provider 模式下不需要真实 API key，也能稳定展示 enriched evidence。
 - 断链引用能被 deterministic validator 发现，并写入 audit report。
+- 正常用户界面不出现 `minimal` 模式选择；该模式只保留为后端调试和旧数据兼容能力。
 - 后续实现人员可以从本目录文档直接进入执行计划，不需要重新发明字段和边界。
 
 ---
@@ -122,8 +128,8 @@ topic: backend-storyontology-adaptation-evidence
 
 - 使用 `Adaptation Evidence` 作为产品定位：比 “Ontology” 更容易让用户理解其价值。
 - 保持主 `/generate/screenplay` pipeline 不变：避免出现第二条 generation path。
-- 只引入少量 V1.5 字段：优先完整事件、一致性锚点、冲突轴和可影视化约束，暂缓更复杂的爽点、反转和长集数结构。
-- 开关只控制 evidence 丰富程度，不允许跳过 StoryOntology：主链路仍然稳定保存 `story_bible` artifact。
+- 只引入少量 V1.5 字段：优先完整事件、一致性锚点、冲突轴和可视化表达约束，暂缓更复杂的爽点、反转和长集数结构。
+- `adaptation_evidence_mode` 只控制 evidence 丰富程度，不允许跳过 StoryOntology；`minimal` 只作为 backend/debug/legacy compatibility 使用，正常用户界面不暴露。
 
 ---
 
@@ -140,5 +146,5 @@ topic: backend-storyontology-adaptation-evidence
 
 ### Deferred to Planning
 
-- [Affects R4][Technical] 开关应落在 `adaptation_config` 内，还是独立于生成请求 DTO。
+- [Affects R15][Product] `scene-to-evidence trace` 的首版展示深度是否只做到 scene card 展开区，还是同时在“改编证据”tab 中提供跨场景索引。
 - [Affects R11][Technical] `must_keep_together` 的最小校验是在 planner 阶段产生 warning，还是在 validation 阶段统一检查。

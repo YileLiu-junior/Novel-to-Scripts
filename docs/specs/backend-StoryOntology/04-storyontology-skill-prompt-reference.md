@@ -8,8 +8,10 @@
 
 - 原文中有哪些角色、关系和知情差。
 - 哪些事件是完整事件，不能被无依据拆碎。
-- 哪些冲突轴、一致性锚点和影视化约束需要被后续步骤看见。
+- 哪些冲突轴、一致性锚点和可视化表达约束需要被后续步骤看见。
 - 每个结构化事实来自哪些 chapter 或 paragraph。
+
+优先返回可信的少量 evidence，而不是为了填满字段编造信息。无法从输入确定的内容应保持为空数组，或标记为 `candidate`。
 
 ## Runtime Input
 
@@ -205,6 +207,8 @@
 
 仍必须保留 stable IDs 和 source refs。
 
+`minimal` 只用于 backend/debug/legacy compatibility。正常用户界面不应暴露该模式；即使收到 `minimal`，也不能跳过 StoryOntology step。
+
 ## Extraction Rules
 
 ### Characters
@@ -272,7 +276,9 @@
 
 ### Filmic Constraints
 
-`filmic_constraints` 记录后续剧本必须注意的可拍性问题：
+`filmic_constraints` 记录后续剧本必须注意的可视化表达约束。字段名保持 `filmic_constraints`，但面向用户的展示名是“可视化表达约束”。
+
+它只回答：哪些小说信息必须被转化为可演、可见、可听的表达。它不回答“怎么拍”。
 
 - 内心状态需要转为动作、台词或场面。
 - 旁白信息需要被视觉化。
@@ -300,6 +306,7 @@
 - 保留空数组。
 - 使用 `candidate` evidence_level。
 - 不编造不存在的 source refs。
+- 不为了满足完整 shape 而编造角色动机、冲突轴、一致性锚点或可视化表达约束。
 - 不用自然语言解释失败原因，仍返回 JSON object。
 
 ## Quality Checklist
@@ -315,3 +322,4 @@
 - 每个 enriched field 都有 source refs 或 related entity refs。
 - 没有 screenplay scene。
 - 没有改编决策。
+- 没有为了填满字段而过度推断；弱证据必须使用 `candidate` 或保持为空。

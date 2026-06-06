@@ -1,34 +1,4 @@
-"""
-original.py
-MAX_TEXT_LENGTH = 20000       # 原文最大字数
-MAX_FILE_SIZE = 100 * 1024    # 上传文件大小限制（100KB）
-TEXT_AREA_KEY = "original_text_input"      # text_area 的 session_state key
-PENDING_TEXT_KEY = "pending_original_text"  # 中转 key，用于 pending state 模式
-
-
-def truncate_text(text: str, max_length: int = MAX_TEXT_LENGTH) -> str:
-    """
-    截断文本到指定最大长度。
-    :param text: 原始文本
-    :param max_length: 最大字数
-    :return: 截断后的文本
-    """
-    if len(text) <= max_length:
-        return text
-    return text[:max_length]
-
-
-def decode_txt_file(uploaded_file) -> str | None:
-    """
-    解码上传的 txt 文件内容。
-    优先使用 UTF-8，失败后尝试 GBK。
-    :param uploaded_file: st.file_uploader 返回的文件对象
-    :return: 解码后的文本字符串；解码失败返回 None
-    """
-    raw_bytes = uploaded_file.read()
-    # 优先 UTF-8
-=======
-原文管理与生成流程页面。
+"""原文管理与生成流程页面。
 
 该页面遵循后端 V0+V1 contract：前端只上传并读取 txt 文本，再调用章节
 导入或自动拆章接口；生成流程通过 job 轮询和 artifact 拉取完成。

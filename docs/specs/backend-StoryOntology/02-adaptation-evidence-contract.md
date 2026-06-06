@@ -29,9 +29,10 @@
 - `adaptation_evidence_mode` 是 optional field。
 - 允许值：
   - `enabled`：默认值，StoryOntology 输出 V1.5 evidence。
-  - `minimal`：保留现有最小 story bible 输出，用于兼容旧 demo 或定位问题。
+  - `minimal`：保留现有最小 story bible 输出，仅用于 backend/debug/legacy compatibility，例如兼容旧 demo 或定位问题。
 - 不提供 `off`：StoryOntology 是 V1 pipeline 必经步骤，不能通过开关绕过。
-- 该字段进入 `adaptation_config`，让输入和最终 `screenplay_json.adaptation_config` 都能证明用户启用了 StoryOntology evidence。
+- 该字段进入 `adaptation_config`，让输入和最终 `screenplay_json.adaptation_config` 都能证明 StoryOntology evidence 已启用。
+- 正常用户界面不暴露 `minimal` 选择器；前端可以不传该字段，或固定传入 `enabled`。
 
 ## Artifact 输出形态
 
@@ -119,7 +120,7 @@
 
 ### `story_bible.dramatic_assets.filmic_constraints`
 
-用于记录“必须影视化表达”的原文信息。
+用于记录“必须转化为可演、可见、可听表达”的原文信息。该字段名保持 `filmic_constraints` 以降低 contract churn，但面向用户的展示名统一为“可视化表达约束”。
 
 建议 shape：
 
@@ -185,6 +186,12 @@ V1.5 只要求一个可测试的消费点：
 
 该规则不要求 planner 完美生成内容，只要求它尊重 StoryOntology 给出的完整事件约束。
 
+前端展示时应把该消费点转成用户可理解的状态，而不是只把 warning 藏在 audit report：
+
+- `已保护`：event 出现在 `adaptation_plan.scene_plan[*].source_events` 中，且没有被拆散到多个互不相连的 scene plan item。
+- `被拆分需说明`：`must_keep_together=true` 的 event 被拆到多个 scene plan item，且缺少明确 justification。
+- `未关联场景`：event 没有出现在任何 `scene_plan[*].source_events` 中。
+
 ## Validation 规则
 
 Deterministic validation 只检查结构和引用：
@@ -202,7 +209,7 @@ Validation 不检查：
 - 冲突是否精彩。
 - 角色动机是否高级。
 - event_flow 是否有商业爆点。
-- filmic constraint 是否有最佳拍法。
+- `filmic_constraints` 是否有最佳拍法。
 
 ## Export 规则
 
@@ -216,7 +223,7 @@ Validation 不检查：
 前端展示名称建议：
 
 - 主 tab：`改编证据`
-- 子区块：`完整事件`、`冲突轴`、`一致性锚点`、`关系与知情差`、`影视化约束`、`伏笔追踪`
+- 子区块：`完整事件`、`冲突轴`、`一致性锚点`、`关系与知情差`、`可视化表达约束`、`伏笔追踪`
 
 展示策略：
 
@@ -224,9 +231,11 @@ Validation 不检查：
 - artifact 缺失时，退回 `screenplay_json.story_bible`。
 - 旧 artifact 缺少 V1.5 字段时显示空态，不报错。
 - 所有 API 调用集中在 `frontend/api_client.py`。
+- 场景卡片应提供最小 `scene-to-evidence trace`，从 scene 追溯到关联 event、conflict axis、source refs 和 continuity anchor。
+- `可视化表达约束` 区块需要说明：这里不是拍摄指导或镜头设计，只指出小说信息中哪些内容必须被转化为可演、可见、可听的表达。
 
 ## 兼容规则
 
 - 旧 `story_bible` artifact 没有 `schema_version` 时视为 `legacy_minimal`。
 - `adaptation_evidence_mode` 缺失时视为 `enabled`，但前端应显示“旧数据未声明模式”或直接隐藏模式说明。
-- `minimal` 模式仍保存 `story_bible`、`events`、`causal_graph`、`foreshadowing`，只是不输出 V1.5 enriched fields。
+- `minimal` 模式仍保存 `story_bible`、`events`、`causal_graph`、`foreshadowing`，只是不输出 V1.5 enriched fields；该模式不作为正常用户配置项。

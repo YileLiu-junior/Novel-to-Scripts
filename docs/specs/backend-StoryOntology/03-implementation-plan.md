@@ -42,6 +42,12 @@ origin: docs/specs/backend-StoryOntology/01-adaptation-evidence-requirements.md
 - 不改变主 API path。
 - `schemas/screenplay.schema.json` 的 `adaptation_config.additionalProperties` 已允许扩展。
 
+产品约束：
+
+- `enabled` 是默认模式。
+- `minimal` 只用于 backend/debug/legacy compatibility，不作为正常用户可见的前端开关。
+- 前端可以不传该字段，或固定传入 `enabled`。
+
 ### D2. 不新增独立主 contract
 
 优先扩展 `schemas/screenplay.schema.json` 中现有 `story_bible` 和 `event` definitions。若后续添加 artifact helper schema，也必须从属于主 schema。
@@ -78,6 +84,17 @@ V1.5 不追求 planner 全面理解所有 evidence，只要求 `must_keep_togeth
 
 - 避免 enriched fields 变成纯展示 metadata。
 - 消费点小，容易测试。
+- 前端能把消费结果展示为“已保护”“被拆分需说明”或“未关联场景”，让用户感知 StoryOntology 不是后台隐形步骤。
+
+### D5. 用户价值以 `scene-to-evidence trace` 证明
+
+首版不新增后端接口，优先从既有 `screenplay_json` 和 `story_bible` artifact 中派生 trace。用户在结果页打开某个 scene 时，应能看到该 scene 对应的 event、conflict axis、source refs 和 continuity anchor。
+
+原因：
+
+- 避免 StoryOntology 只被理解为“系统多跑了一个 skill”。
+- 让 demo 可以解释“为什么这样改编”，而不是只展示最终剧本。
+- 数据源已在 artifact 中，适合小步增强前端展示。
 
 ---
 
@@ -100,7 +117,7 @@ V1.5 不追求 planner 全面理解所有 evidence，只要求 `must_keep_togeth
 - 在 `adaptation_config` 中增加 optional `adaptation_evidence_mode`。
 - 在 `story_bible` 中增加 optional `continuity_anchors` 和 `dramatic_assets`。
 - 在 `event` definition 中增加 optional `complete_event`、`event_flow`、`must_keep_together`、`conflict_axis`。
-- 更新 valid fixtures，让 demo 展示完整事件、冲突轴、一致性锚点和影视化约束。
+- 更新 valid fixtures，让 demo 展示完整事件、冲突轴、一致性锚点和可视化表达约束。
 - 新增 invalid fixture，包含不存在的 character/event/chapter 引用。
 
 **Test scenarios**
@@ -164,7 +181,7 @@ V1.5 不追求 planner 全面理解所有 evidence，只要求 `must_keep_togeth
 **Work**
 
 - 在 `adaptation_evidence_mode=enabled` 时输出 V1.5 enriched story assets。
-- 在 `minimal` 时保留当前最小 shape。
+- 在 `minimal` 时保留当前最小 shape；该模式只服务 backend/debug/legacy compatibility。
 - Fake output 必须继续基于当前项目章节动态生成，不回退到全局 demo。
 - 项目级 fixture 优先级保持不变。
 
@@ -219,6 +236,7 @@ V1.5 不追求 planner 全面理解所有 evidence，只要求 `must_keep_togeth
 - Given must-keep event，fake planner 的 scene plan 不拆散该 event。
 - Given 人为构造的拆散 plan，audit report 包含完整事件 warning。
 - Warning 指向具体 `event_id`。
+- 前端可根据 `adaptation_plan.scene_plan[*].source_events` 为完整事件派生“已保护”“被拆分需说明”或“未关联场景”。
 
 ---
 
@@ -263,13 +281,18 @@ V1.5 不追求 planner 全面理解所有 evidence，只要求 `must_keep_togeth
 - 前端通过 `api_client.get_artifact(project_id, "story_bible")` 拉取 evidence artifact。
 - local/session state 保存 `story_bible_artifact` 或 `adaptation_evidence` 快照。
 - 结果页新增或重命名 tab 为“改编证据”。
-- 展示完整事件、冲突轴、一致性锚点、影视化约束、关系与知情差。
+- 展示完整事件、冲突轴、一致性锚点、可视化表达约束、关系与知情差。
+- 在 scene 卡片展开区增加 `scene-to-evidence trace`：关联 event、conflict axis、source refs 和 continuity anchor。
+- 在完整事件区域显示 planner 消费状态：`已保护`、`被拆分需说明`、`未关联场景`。
+- 正常用户界面不暴露 `minimal` 模式；如需 debug 入口，应通过内部参数、环境变量或开发者专用入口控制。
 - 修正 relationship table 读取 `from` 和 `to`，兼容旧字段。
 - 旧 artifact 缺失 enriched sections 时显示空态。
 
 **Test scenarios**
 
 - Given enriched artifact，结果页展示完整事件和 anchors。
+- Given 用户展开任一 scene，页面展示对应 event、conflict axis、source refs 和 continuity anchor。
+- Given `must_keep_together` event 被拆散或遗漏，页面显示对应状态并引导查看 audit warning。
 - Given legacy artifact，页面不报错。
 - Relationship row 使用 `from/to` 正确展示角色名。
 - API path 只出现在 `frontend/api_client.py`。
@@ -315,7 +338,7 @@ V1.5 不追求 planner 全面理解所有 evidence，只要求 `must_keep_togeth
 
 - 记录 StoryOntology V1.5 是主链路增强，不是独立生成流程。
 - 更新未实现清单，把独立 `/generate/story-bible` 继续标记为后续项。
-- 更新接入指南，说明 `adaptation_evidence_mode` 和结果页 evidence artifact。
+- 更新接入指南，说明 `adaptation_evidence_mode`、`minimal` 的内部用途、结果页 evidence artifact 和 `scene-to-evidence trace`。
 
 **Test scenarios**
 
@@ -363,7 +386,7 @@ pytest backend/tests/ai/test_ai_providers.py
 
 ## Risks
 
-- 字段过多导致假复杂：本计划只保留完整事件、冲突轴、一致性锚点和影视化约束。
+- 字段过多导致假复杂：本计划只保留完整事件、冲突轴、一致性锚点和可视化表达约束。
 - Optional fields 腐化：用 fixtures、schema、domain 和 tests 固化 contract。
 - StoryOntology 越界做规划：文档和 prompt 明确 retained/merged/deleted/deferred 只能由 planner 输出。
 - 旧 artifact 兼容：前端和 planner 必须把缺失 sections 当空值处理。

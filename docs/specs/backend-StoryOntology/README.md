@@ -1,6 +1,6 @@
 # Backend StoryOntology 规格索引
 
-本目录记录 `StoryOntologySkill` 从“最小故事圣经”升级为 `Adaptation Evidence`（改编证据层）的需求、规则、执行计划和 prompt reference。
+本目录记录 `StoryOntologySkill` 从“最小 `story_bible` artifact”升级为 `Adaptation Evidence`（改编证据层）的需求、规则、执行计划和 prompt reference。
 
 ## 文档结构
 
