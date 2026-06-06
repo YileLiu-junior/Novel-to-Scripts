@@ -1,0 +1,17 @@
+{
+  "formats": {
+    "markdown": {
+      "content": "# full_txt_backend_chain_check\n> Full UTF-8 txt input routed through ChapterIntakeService and GenerationOrchestrator.\n\n**原著**: 第一章（1）、第一章第1节、第一章（2）\n\n## 1. 第一章（1） 内景 日\n\n【Fake Provider】根据《第一章（1）》构造：第一章（1）\n\n\n## 2. 第一章第1节 内景 日\n\n【Fake Provider】根据《第一章第1节》构造：第一章第1节 若水神君嫁去东海的大姑娘不满三年就给东海水君添了个男丁，若水东海两家皆大欢喜。 东海水君本人更是得意非凡，为儿子做满月酒的请柬撒遍了天上地下，连阿爹阿娘住的狐狸洞也给送来了份。 阿爹阿娘已经游方在外数百年。一二三哥相继安家立室分了封地，四哥则去了西山寻找走失的坐骑毕方鸟。是以，这狐狸洞如今只剩我一人当家。\n\n\n## 3. 第一章（2） 内景 日\n\n【Fake Provider】根据《第一章（2）》构造：第一章（2）\n",
+      "filename": "screenplay.md",
+      "media_type": "text/markdown; charset=utf-8"
+    },
+    "text": {
+      "content": "full_txt_backend_chain_check\nFull UTF-8 txt input routed through ChapterIntakeService and GenerationOrchestrator.\n\n原著: 第一章（1）、第一章第1节、第一章（2）\n\n1. 第一章（1） 内景 日\n\n【Fake Provider】根据《第一章（1）》构造：第一章（1）\n\n\n2. 第一章第1节 内景 日\n\n【Fake Provider】根据《第一章第1节》构造：第一章第1节 若水神君嫁去东海的大姑娘不满三年就给东海水君添了个男丁，若水东海两家皆大欢喜。 东海水君本人更是得意非凡，为儿子做满月酒的请柬撒遍了天上地下，连阿爹阿娘住的狐狸洞也给送来了份。 阿爹阿娘已经游方在外数百年。一二三哥相继安家立室分了封地，四哥则去了西山寻找走失的坐骑毕方鸟。是以，这狐狸洞如今只剩我一人当家。\n\n\n3. 第一章（2） 内景 日\n\n【Fake Provider】根据《第一章（2）》构造：第一章（2）\n",
+      "filename": "screenplay.txt",
+      "media_type": "text/plain; charset=utf-8"
+    }
+  },
+  "render_version": "1.0",
+  "source_artifact_id": "artifact_project_a97020dfdd77_screenplay_json_v001",
+  "source_artifact_type": "screenplay_json"
+}

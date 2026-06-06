@@ -1,0 +1,70 @@
+{
+  "mode_used": "ai",
+  "ignored_spans": [
+    {
+      "kind": "copyright_notice",
+      "start_line": 1,
+      "end_line": 1,
+      "reason": "fake provider detected non-story notice"
+    },
+    {
+      "kind": "copyright_notice",
+      "start_line": 3887,
+      "end_line": 3887,
+      "reason": "fake provider detected non-story notice"
+    },
+    {
+      "kind": "copyright_notice",
+      "start_line": 7497,
+      "end_line": 7497,
+      "reason": "fake provider detected non-story notice"
+    }
+  ],
+  "warnings": [],
+  "ai_plan": {
+    "ignored_spans": [
+      {
+        "kind": "copyright_notice",
+        "start_line": 1,
+        "end_line": 1,
+        "reason": "fake provider detected non-story notice"
+      },
+      {
+        "kind": "copyright_notice",
+        "start_line": 3887,
+        "end_line": 3887,
+        "reason": "fake provider detected non-story notice"
+      },
+      {
+        "kind": "copyright_notice",
+        "start_line": 7497,
+        "end_line": 7497,
+        "reason": "fake provider detected non-story notice"
+      }
+    ],
+    "candidate_chapters": [
+      {
+        "chapter_kind": "main_chapter",
+        "title": "第一章（1）",
+        "start_line": 338,
+        "end_line": 341,
+        "confidence": 0.9
+      },
+      {
+        "chapter_kind": "main_chapter",
+        "title": "第一章第1节",
+        "start_line": 342,
+        "end_line": 443,
+        "confidence": 0.9
+      },
+      {
+        "chapter_kind": "main_chapter",
+        "title": "第一章（2）",
+        "start_line": 444,
+        "end_line": 447,
+        "confidence": 0.9
+      }
+    ],
+    "warnings": []
+  }
+}

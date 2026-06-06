@@ -1,0 +1,531 @@
+{
+  "adaptation_config": {
+    "adaptation_evidence_mode": "enabled",
+    "dialogue_style": "cinematic",
+    "fidelity_level": "medium",
+    "preserve_priorities": [
+      "character_arc",
+      "major_events",
+      "tone"
+    ],
+    "target_format": "web_series"
+  },
+  "adaptation_plan": {
+    "deleted_or_deferred_events": [],
+    "merged_events": [],
+    "protected_elements": [
+      "event_001"
+    ],
+    "retained_events": [
+      "event_001",
+      "event_002",
+      "event_003"
+    ],
+    "scene_plan": [
+      {
+        "purpose": "第一章（1）",
+        "scene_id": "scene_001",
+        "source_events": [
+          "event_001"
+        ]
+      },
+      {
+        "purpose": "第一章第1节 若水神君嫁去东海的大姑娘不满三年就给东海水君添了个男丁，若水东海两家皆大欢喜。 东海水君本人更是得意非凡，为儿子做满月酒的请柬撒遍了天上地下，连阿爹阿娘住的狐狸洞也给送来了份。 阿爹阿娘已经游方在外数百年。一二三哥相继安家立室",
+        "scene_id": "scene_002",
+        "source_events": [
+          "event_002"
+        ]
+      },
+      {
+        "purpose": "第一章（2）",
+        "scene_id": "scene_003",
+        "source_events": [
+          "event_003"
+        ]
+      }
+    ]
+  },
+  "audit_report": {
+    "continuity_warnings": [],
+    "dialogue_warnings": [],
+    "schema_warnings": [],
+    "unresolved_foreshadowing": []
+  },
+  "causal_graph": {
+    "edges": [
+      {
+        "explanation": "fake provider 按上传章节顺序建立事件推进关系。",
+        "from": "event_001",
+        "relation": "leads_to",
+        "to": "event_002"
+      },
+      {
+        "explanation": "fake provider 按上传章节顺序建立事件推进关系。",
+        "from": "event_002",
+        "relation": "leads_to",
+        "to": "event_003"
+      }
+    ]
+  },
+  "core_elements": {
+    "actions": [
+      {
+        "description": "【Fake Provider】根据《第一章（1）》构造：第一章（1）",
+        "id": "action_001",
+        "related_event_id": "event_001",
+        "scene_id": "scene_001"
+      },
+      {
+        "description": "【Fake Provider】根据《第一章第1节》构造：第一章第1节 若水神君嫁去东海的大姑娘不满三年就给东海水君添了个男丁，若水东海两家皆大欢喜。 东海水君本人更是得意非凡，为儿子做满月酒的请柬撒遍了天上地下，连阿爹阿娘住的狐狸洞也给送来了份。 阿爹阿娘已经游方在外数百年。一二三哥相继安家立室分了封地，四哥则去了西山寻找走失的坐骑毕方鸟。是以，这狐狸洞如今只剩我一人当家。",
+        "id": "action_002",
+        "related_event_id": "event_002",
+        "scene_id": "scene_002"
+      },
+      {
+        "description": "【Fake Provider】根据《第一章（2）》构造：第一章（2）",
+        "id": "action_003",
+        "related_event_id": "event_003",
+        "scene_id": "scene_003"
+      }
+    ],
+    "character_relationships": [],
+    "plot": [
+      {
+        "event_id": "event_001",
+        "function": "narrative"
+      },
+      {
+        "event_id": "event_002",
+        "function": "narrative"
+      },
+      {
+        "event_id": "event_003",
+        "function": "narrative"
+      }
+    ],
+    "protagonists": [
+      "char_001"
+    ],
+    "situations": [
+      {
+        "description": "验证当前项目章节《第一章（1）》已进入生成链路。",
+        "id": "situation_001",
+        "scene_id": "scene_001"
+      },
+      {
+        "description": "验证当前项目章节《第一章第1节》已进入生成链路。",
+        "id": "situation_002",
+        "scene_id": "scene_002"
+      },
+      {
+        "description": "验证当前项目章节《第一章（2）》已进入生成链路。",
+        "id": "situation_003",
+        "scene_id": "scene_003"
+      }
+    ],
+    "theme": "Full UTF-8 txt input routed through ChapterIntakeService and GenerationOrchestrator."
+  },
+  "events": [
+    {
+      "chapter_refs": [
+        {
+          "chapter_id": "chapter_001"
+        }
+      ],
+      "complete_event": true,
+      "conflict_axis": "第一章（1） vs 后续改编压缩",
+      "event_flow": [
+        "进入《第一章（1）》",
+        "提取原文行动",
+        "形成章节结果"
+      ],
+      "event_type": "narrative",
+      "id": "event_001",
+      "must_keep_together": true,
+      "participants": [
+        "char_001"
+      ],
+      "source_refs": [
+        {
+          "chapter_id": "chapter_001"
+        }
+      ],
+      "summary": "第一章（1）",
+      "title": "第一章（1）"
+    },
+    {
+      "chapter_refs": [
+        {
+          "chapter_id": "chapter_002"
+        }
+      ],
+      "complete_event": true,
+      "conflict_axis": "第一章第1节 若水神君嫁去东海的大姑娘不满三年就 vs 后续改编压缩",
+      "event_flow": [
+        "进入《第一章第1节》",
+        "提取原文行动",
+        "形成章节结果"
+      ],
+      "event_type": "narrative",
+      "id": "event_002",
+      "must_keep_together": true,
+      "participants": [
+        "char_001"
+      ],
+      "source_refs": [
+        {
+          "chapter_id": "chapter_002"
+        }
+      ],
+      "summary": "第一章第1节 若水神君嫁去东海的大姑娘不满三年就给东海水君添了个男丁，若水东海两家皆大欢喜。 东海水君本人更是得意非凡，为儿子做满月酒的请柬撒遍了天上地下，连阿爹阿娘住的狐狸洞也给送来了份。 阿爹阿娘已经游方在外数百年。一二三哥相继安家立室",
+      "title": "第一章第1节"
+    },
+    {
+      "chapter_refs": [
+        {
+          "chapter_id": "chapter_003"
+        }
+      ],
+      "complete_event": true,
+      "conflict_axis": "第一章（2） vs 后续改编压缩",
+      "event_flow": [
+        "进入《第一章（2）》",
+        "提取原文行动",
+        "形成章节结果"
+      ],
+      "event_type": "narrative",
+      "id": "event_003",
+      "must_keep_together": true,
+      "participants": [
+        "char_001"
+      ],
+      "source_refs": [
+        {
+          "chapter_id": "chapter_003"
+        }
+      ],
+      "summary": "第一章（2）",
+      "title": "第一章（2）"
+    }
+  ],
+  "foreshadowing": [
+    {
+      "description": "fake provider generated：根据当前原文保留待人工复核的伏笔位。",
+      "id": "foreshadow_001",
+      "setup_event_id": "event_001",
+      "source_refs": [
+        {
+          "chapter_id": "chapter_001"
+        }
+      ],
+      "status": "open"
+    }
+  ],
+  "project": {
+    "id": "project_a97020dfdd77",
+    "logline": "Full UTF-8 txt input routed through ChapterIntakeService and GenerationOrchestrator.",
+    "target_format": "web_series",
+    "title": "full_txt_backend_chain_check"
+  },
+  "scenes": [
+    {
+      "action": [
+        "【Fake Provider】根据《第一章（1）》构造：第一章（1）"
+      ],
+      "characters": [
+        "char_001"
+      ],
+      "content_blocks": [
+        {
+          "block_type": "action",
+          "id": "block_001",
+          "text": "【Fake Provider】根据《第一章（1）》构造：第一章（1）"
+        }
+      ],
+      "dialogue": [
+        {
+          "action_hint": "指向章节标题",
+          "character_id": "char_001",
+          "emotional_state": "clear",
+          "id": "line_001",
+          "line": "这一场来自《第一章（1）》，不是全局 demo fixture。",
+          "subtext": "提示用户当前处于 fake provider 模式",
+          "surface_intent": "说明当前场景来源"
+        }
+      ],
+      "dramatic_purpose": [
+        "验证当前项目章节《第一章（1）》已进入生成链路。"
+      ],
+      "id": "scene_001",
+      "location": {
+        "interior_exterior": "INT",
+        "name": "第一章（1）",
+        "time": "day"
+      },
+      "related_events": [
+        "event_001"
+      ],
+      "scene_heading": {
+        "interior_exterior": "INT",
+        "location": "第一章（1）",
+        "sequence": 1,
+        "text": "1. 第一章（1） 内景 日",
+        "time_of_day": "day"
+      },
+      "source_refs": [
+        {
+          "chapter_id": "chapter_001"
+        }
+      ],
+      "title": "第一章（1）：模拟改编场景"
+    },
+    {
+      "action": [
+        "【Fake Provider】根据《第一章第1节》构造：第一章第1节 若水神君嫁去东海的大姑娘不满三年就给东海水君添了个男丁，若水东海两家皆大欢喜。 东海水君本人更是得意非凡，为儿子做满月酒的请柬撒遍了天上地下，连阿爹阿娘住的狐狸洞也给送来了份。 阿爹阿娘已经游方在外数百年。一二三哥相继安家立室分了封地，四哥则去了西山寻找走失的坐骑毕方鸟。是以，这狐狸洞如今只剩我一人当家。"
+      ],
+      "characters": [
+        "char_001"
+      ],
+      "content_blocks": [
+        {
+          "block_type": "action",
+          "id": "block_002",
+          "text": "【Fake Provider】根据《第一章第1节》构造：第一章第1节 若水神君嫁去东海的大姑娘不满三年就给东海水君添了个男丁，若水东海两家皆大欢喜。 东海水君本人更是得意非凡，为儿子做满月酒的请柬撒遍了天上地下，连阿爹阿娘住的狐狸洞也给送来了份。 阿爹阿娘已经游方在外数百年。一二三哥相继安家立室分了封地，四哥则去了西山寻找走失的坐骑毕方鸟。是以，这狐狸洞如今只剩我一人当家。"
+        }
+      ],
+      "dialogue": [
+        {
+          "action_hint": "指向章节标题",
+          "character_id": "char_001",
+          "emotional_state": "clear",
+          "id": "line_002",
+          "line": "这一场来自《第一章第1节》，不是全局 demo fixture。",
+          "subtext": "提示用户当前处于 fake provider 模式",
+          "surface_intent": "说明当前场景来源"
+        }
+      ],
+      "dramatic_purpose": [
+        "验证当前项目章节《第一章第1节》已进入生成链路。"
+      ],
+      "id": "scene_002",
+      "location": {
+        "interior_exterior": "INT",
+        "name": "第一章第1节",
+        "time": "day"
+      },
+      "related_events": [
+        "event_002"
+      ],
+      "scene_heading": {
+        "interior_exterior": "INT",
+        "location": "第一章第1节",
+        "sequence": 2,
+        "text": "2. 第一章第1节 内景 日",
+        "time_of_day": "day"
+      },
+      "source_refs": [
+        {
+          "chapter_id": "chapter_002"
+        }
+      ],
+      "title": "第一章第1节：模拟改编场景"
+    },
+    {
+      "action": [
+        "【Fake Provider】根据《第一章（2）》构造：第一章（2）"
+      ],
+      "characters": [
+        "char_001"
+      ],
+      "content_blocks": [
+        {
+          "block_type": "action",
+          "id": "block_003",
+          "text": "【Fake Provider】根据《第一章（2）》构造：第一章（2）"
+        }
+      ],
+      "dialogue": [
+        {
+          "action_hint": "指向章节标题",
+          "character_id": "char_001",
+          "emotional_state": "clear",
+          "id": "line_003",
+          "line": "这一场来自《第一章（2）》，不是全局 demo fixture。",
+          "subtext": "提示用户当前处于 fake provider 模式",
+          "surface_intent": "说明当前场景来源"
+        }
+      ],
+      "dramatic_purpose": [
+        "验证当前项目章节《第一章（2）》已进入生成链路。"
+      ],
+      "id": "scene_003",
+      "location": {
+        "interior_exterior": "INT",
+        "name": "第一章（2）",
+        "time": "day"
+      },
+      "related_events": [
+        "event_003"
+      ],
+      "scene_heading": {
+        "interior_exterior": "INT",
+        "location": "第一章（2）",
+        "sequence": 3,
+        "text": "3. 第一章（2） 内景 日",
+        "time_of_day": "day"
+      },
+      "source_refs": [
+        {
+          "chapter_id": "chapter_003"
+        }
+      ],
+      "title": "第一章（2）：模拟改编场景"
+    }
+  ],
+  "schema_version": "1.1",
+  "script_structure": {
+    "literary_screenplay": {
+      "format_note": "fake provider generated from current project chapters",
+      "scene_ids": [
+        "scene_001",
+        "scene_002",
+        "scene_003"
+      ],
+      "unit": "scene"
+    },
+    "story_outline": [
+      {
+        "id": "outline_001",
+        "related_events": [
+          "event_001"
+        ],
+        "summary": "【Fake Provider】根据《第一章（1）》构造：第一章（1）",
+        "target_scenes": [
+          "scene_001"
+        ]
+      },
+      {
+        "id": "outline_002",
+        "related_events": [
+          "event_002"
+        ],
+        "summary": "【Fake Provider】根据《第一章第1节》构造：第一章第1节 若水神君嫁去东海的大姑娘不满三年就给东海水君添了个男丁，若水东海两家皆大欢喜。 东海水君本人更是得意非凡，为儿子做满月酒的请柬撒遍了天上地下，连阿爹阿娘住的狐狸洞也给送来了份。 阿爹阿娘已经游方在外数百年。一二三哥相继安家立室分了封地，四哥则去了西山寻找走失的坐骑毕方鸟。是以，这狐狸洞如今只剩我一人当家。",
+        "target_scenes": [
+          "scene_002"
+        ]
+      },
+      {
+        "id": "outline_003",
+        "related_events": [
+          "event_003"
+        ],
+        "summary": "【Fake Provider】根据《第一章（2）》构造：第一章（2）",
+        "target_scenes": [
+          "scene_003"
+        ]
+      }
+    ],
+    "story_synopsis": "Fake Provider 根据当前上传章节生成的联调梗概：第一章（1）；第一章第1节；第一章（2）"
+  },
+  "source": {
+    "chapters": [
+      {
+        "id": "chapter_001",
+        "order": 1,
+        "title": "第一章（1）"
+      },
+      {
+        "id": "chapter_002",
+        "order": 2,
+        "title": "第一章第1节"
+      },
+      {
+        "id": "chapter_003",
+        "order": 3,
+        "title": "第一章（2）"
+      }
+    ]
+  },
+  "story_bible": {
+    "characters": [
+      {
+        "aliases": [],
+        "id": "char_001",
+        "name": "当前项目主角",
+        "narrative_role": "protagonist",
+        "source_refs": [
+          {
+            "chapter_id": "chapter_001"
+          }
+        ],
+        "voice_profile": {
+          "diction": "保留原文章节中的关键词和语气",
+          "rhythm": "由上传原文的句式节奏模拟"
+        }
+      }
+    ],
+    "continuity_anchors": [
+      {
+        "anchor_type": "timeline",
+        "applies_to": [
+          "char_001"
+        ],
+        "id": "anchor_001",
+        "source_refs": [
+          {
+            "chapter_id": "chapter_001"
+          }
+        ],
+        "summary": "Fake Provider 保留当前项目前三章的原始顺序，避免后续场景解释脱离上传章节。"
+      }
+    ],
+    "dramatic_assets": {
+      "conflict_pool": [
+        {
+          "conflict_axis": "第一章（1） vs 后续改编压缩",
+          "id": "conflict_001",
+          "participants": [
+            "char_001"
+          ],
+          "related_events": [
+            "event_001",
+            "event_002"
+          ],
+          "source_refs": [
+            {
+              "chapter_id": "chapter_001"
+            }
+          ]
+        }
+      ],
+      "filmic_constraints": [
+        {
+          "constraint_type": "source_summary_to_action",
+          "id": "filmic_001",
+          "related_characters": [
+            "char_001"
+          ],
+          "related_events": [
+            "event_001"
+          ],
+          "source_refs": [
+            {
+              "chapter_id": "chapter_001"
+            }
+          ],
+          "summary": "章节摘要只能作为证据，后续剧本需要把它转成可演、可见、可听的行动。"
+        }
+      ]
+    },
+    "knowledge_states": [
+      {
+        "character_id": "char_001",
+        "does_not_know": [],
+        "knows": [
+          "event_001"
+        ]
+      }
+    ],
+    "relationship_edges": []
+  }
+}
