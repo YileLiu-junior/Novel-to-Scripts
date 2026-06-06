@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 from app.exporters.yaml_exporter import YamlExporter
 from app.services.artifact_service import ArtifactService
 from app.services.validation_service import ValidationService
 from app.validators.screenplay_normalizer import normalize_screenplay_for_export
+
+
+logger = logging.getLogger(__name__)
 
 
 class YamlService:
@@ -23,12 +27,31 @@ class YamlService:
         screenplay = normalize_screenplay_for_export(screenplay)
         findings = self.validation_service.validate_screenplay(screenplay)
         errors = [finding for finding in findings if finding.severity == "error"]
+        warnings = [finding for finding in findings if finding.severity == "warning"]
+        if warnings:
+            logger.warning("export_validated found %s warning(s)", len(warnings))
+            for w in warnings:
+                logger.debug(
+                    "%s; path=%s; schema_path=%s",
+                    w.message,
+                    w.path or "<root>",
+                    w.schema_path or "<schema-root>",
+                )
         if errors:
+            logger.error("export_validated found %s error(s)", len(errors))
+            for e in errors:
+                logger.debug(
+                    "%s; path=%s; schema_path=%s",
+                    e.message,
+                    e.path or "<root>",
+                    e.schema_path or "<schema-root>",
+                )
             first = errors[0]
             raise ValueError(
                 "Cannot export invalid screenplay: "
                 f"{first.message}; path={first.path or '<root>'}; "
-                f"schema_path={first.schema_path or '<schema-root>'}"
+                f"schema_path={first.schema_path or '<schema-root>'}; "
+                f"{len(errors)} total error(s), {len(warnings)} warning(s)"
             )
         return self.exporter.export(screenplay)
 

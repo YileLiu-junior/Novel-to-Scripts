@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import json
+import logging
+import re
+import time
 from pathlib import Path
 from typing import Any
 
@@ -11,6 +14,25 @@ from app.ai.providers.base import (
     StructuredGenerationRequest,
     StructuredGenerationResult,
 )
+
+logger = logging.getLogger(__name__)
+
+# Network-layer exceptions from the OpenAI SDK that are worth retrying.
+# Auth errors, bad requests, etc. will never succeed on retry — skip those.
+_RETRYABLE_EXCEPTIONS: tuple[type[BaseException], ...] = ()
+try:
+    from openai import (
+        APIConnectionError,
+        APITimeoutError,
+        RateLimitError,
+    )
+    _RETRYABLE_EXCEPTIONS = (
+        APIConnectionError,   # network hiccup
+        APITimeoutError,      # timed out
+        RateLimitError,       # 429 — retry after backoff
+    )
+except ImportError:
+    pass
 
 
 class DeepSeekProvider(AiProvider):
@@ -77,10 +99,28 @@ class DeepSeekProvider(AiProvider):
         return OpenAI(api_key=api_key, base_url=base_url, timeout=timeout_seconds)
 
     def _create_chat_completion(self, **kwargs: Any):
-        try:
-            return self.client.chat.completions.create(model=self.model, stream=False, **kwargs)
-        except Exception as exc:
-            raise AiProviderResponseError(f"DeepSeek request failed: {exc}") from exc
+        max_retries = 3
+        last_error = None
+        for attempt in range(max_retries):
+            try:
+                return self.client.chat.completions.create(
+                    model=self.model, stream=False, **kwargs
+                )
+            except _RETRYABLE_EXCEPTIONS as exc:
+                last_error = exc
+                if attempt < max_retries - 1:
+                    wait = 2 ** (attempt + 1)  # 2s, 4s, 8s
+                    logger.warning(
+                        "DeepSeek %s (attempt %d/%d), retrying in %ds…",
+                        type(exc).__name__, attempt + 1, max_retries, wait,
+                    )
+                    time.sleep(wait)
+            except Exception as exc:
+                # Non-retryable failure (auth, bad request, etc.) — fail fast
+                raise AiProviderResponseError(f"DeepSeek request failed: {exc}") from exc
+        raise AiProviderResponseError(
+            f"DeepSeek request failed after {max_retries} attempts: {last_error}"
+        ) from last_error
 
     def _render_structured_prompt(self, request: StructuredGenerationRequest) -> str:
         prompt_path = self.prompts_dir / request.prompt_name
@@ -108,10 +148,35 @@ class DeepSeekProvider(AiProvider):
         raise AiProviderResponseError("DeepSeek response did not include message content")
 
     def _parse_json_object(self, raw_output: str) -> dict[str, Any]:
+        # Try direct parse first
         try:
             parsed = json.loads(raw_output)
-        except json.JSONDecodeError as exc:
-            raise AiProviderResponseError("DeepSeek response was not valid JSON") from exc
-        if not isinstance(parsed, dict):
-            raise AiProviderResponseError("DeepSeek structured response must be a JSON object")
-        return parsed
+            if isinstance(parsed, dict):
+                return parsed
+        except json.JSONDecodeError:
+            pass
+
+        # LLM may wrap JSON in markdown code blocks; try to extract
+        md_match = re.search(r"```(?:json)?\s*([\s\S]*?)```", raw_output)
+        if md_match:
+            try:
+                parsed = json.loads(md_match.group(1).strip())
+                if isinstance(parsed, dict):
+                    logger.warning("DeepSeek returned markdown-wrapped JSON; extracted via code block")
+                    return parsed
+            except json.JSONDecodeError:
+                pass
+
+        # Last resort: find first { and last }
+        brace_start = raw_output.find("{")
+        brace_end = raw_output.rfind("}")
+        if brace_start != -1 and brace_end > brace_start:
+            try:
+                parsed = json.loads(raw_output[brace_start:brace_end + 1])
+                if isinstance(parsed, dict):
+                    logger.warning("DeepSeek returned non-JSON text; extracted via brace matching")
+                    return parsed
+            except json.JSONDecodeError:
+                pass
+
+        raise AiProviderResponseError("DeepSeek response was not valid JSON")

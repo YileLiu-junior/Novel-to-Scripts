@@ -151,6 +151,86 @@ class AiProviderTest(unittest.TestCase):
                 )
             )
 
+    # ── JSON extraction fallback tests ──────────────────────────────────
+
+    def test_json_extraction_from_markdown_code_block(self) -> None:
+        """LLM returns JSON wrapped in ```json ... ``` — extract it."""
+        provider = DeepSeekProvider(
+            model="deepseek-test",
+            client=_DeepSeekClient('```json\n{"scenes": [{"id": "scene_001"}]}\n```'),
+        )
+        result = provider.generate_structured(
+            StructuredGenerationRequest(
+                skill_name="screenplay_writer",
+                prompt_name="screenplay_writer.md",
+                input_data={},
+            )
+        )
+        self.assertEqual(result.parsed_output, {"scenes": [{"id": "scene_001"}]})
+
+    def test_json_extraction_via_brace_matching(self) -> None:
+        """LLM returns prose with embedded JSON — extract via brace matching."""
+        provider = DeepSeekProvider(
+            model="deepseek-test",
+            client=_DeepSeekClient('Here is the output:\n\n{"events": [{"id": "event_001"}]}\n\nHope this helps.'),
+        )
+        result = provider.generate_structured(
+            StructuredGenerationRequest(
+                skill_name="story_ontology",
+                prompt_name="story_ontology.md",
+                input_data={},
+            )
+        )
+        self.assertEqual(result.parsed_output, {"events": [{"id": "event_001"}]})
+
+    def test_json_fallback_rejects_garbled_output(self) -> None:
+        """Completely garbled output should still raise AiProviderResponseError."""
+        provider = DeepSeekProvider(
+            model="deepseek-test",
+            client=_DeepSeekClient("I'm sorry, I cannot do that."),
+        )
+        with self.assertRaises(AiProviderResponseError):
+            provider.generate_structured(
+                StructuredGenerationRequest(
+                    skill_name="novel_reader",
+                    prompt_name="novel_reader.md",
+                    input_data={},
+                )
+            )
+
+    # ── Retry behavior tests ────────────────────────────────────────────
+    # DeepSeekProvider uses the OpenAI-compatible SDK under the hood.
+    # The retry logic catches specific network-layer exceptions by type.
+    # Tests below patch _RETRYABLE_EXCEPTIONS to include a local stub rather
+    # than importing from openai directly — keeping test deps on the provider
+    # module only.
+
+    class _StubNetworkError(OSError):
+        """Stub for connection/timeout/rate-limit exceptions."""
+
+    def test_retry_on_network_error(self) -> None:
+        """Network errors in _RETRYABLE_EXCEPTIONS should be retried up to 3x."""
+        import app.ai.providers.deepseek_provider as dp
+        client = mock.MagicMock()
+        client.chat.completions.create.side_effect = self._StubNetworkError("boom")
+        provider = DeepSeekProvider(model="deepseek-test", client=client)
+
+        with mock.patch.object(dp, "_RETRYABLE_EXCEPTIONS", (self._StubNetworkError,)):
+            with self.assertRaises(AiProviderResponseError) as ctx:
+                provider.generate_text("test")
+        self.assertIn("after 3 attempts", str(ctx.exception))
+        self.assertEqual(client.chat.completions.create.call_count, 3)
+
+    def test_no_retry_on_unknown_error(self) -> None:
+        """Exceptions not in _RETRYABLE_EXCEPTIONS should fail immediately."""
+        client = mock.MagicMock()
+        client.chat.completions.create.side_effect = ValueError("bad request")
+        provider = DeepSeekProvider(model="deepseek-test", client=client)
+
+        with self.assertRaises(AiProviderResponseError):
+            provider.generate_text("test")
+        self.assertEqual(client.chat.completions.create.call_count, 1)
+
 
 if __name__ == "__main__":
     unittest.main()

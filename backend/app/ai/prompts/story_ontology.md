@@ -247,14 +247,15 @@
 
 使用 `continuity_anchors` 记录不可漂移事实：
 
-- 称呼规范。
-- 人设固定点。
-- 关键道具。
-- 时间线事实。
-- 世界规则。
-- 当前关系状态。
+- 称呼规范 (`addressing_rule`)。
+- 人设固定点 (`character_trait`)。
+- 当前关系状态 (`relationship_state`)。
+- 关键道具 (`object`)。
+- 时间线事实 (`timeline`)。
+- 世界规则 (`world_rule`)。
+- 身份锚点 (`identity_anchor`)——角色的核心身份事实，如真实姓名、血统、封印等。
 
-每条 anchor 必须有 `source_refs`。
+**`anchor_type` 只能是上述 7 种值之一。** 每条 anchor 必须有 `source_refs`。
 
 ### Complete Events
 

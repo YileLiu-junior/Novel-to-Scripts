@@ -5,3 +5,4 @@ scripts/configure_llm_env.ps1
 scripts/configure_deepseek_env.ps1
 .pytest_cache/
 BACKEND_UNIMPLEMENTED_VERSION_MAP.md
+data/

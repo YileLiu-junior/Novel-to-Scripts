@@ -290,7 +290,7 @@
         "id": { "type": "string", "pattern": "^anchor_[0-9]{3}$" },
         "anchor_type": {
           "type": "string",
-          "enum": ["addressing_rule", "character_trait", "relationship_state", "object", "timeline", "world_rule"]
+          "enum": ["addressing_rule", "character_trait", "relationship_state", "object", "timeline", "world_rule", "identity_anchor"]
         },
         "summary": { "type": "string", "minLength": 1 },
         "applies_to": { "type": "array", "items": { "type": "string" } },

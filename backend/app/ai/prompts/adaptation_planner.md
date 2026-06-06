@@ -55,6 +55,22 @@ Plan what the screenplay should retain, merge, defer, or protect.
 | `purpose`      | string        | YES      | `"Establish protagonist arrival"`  |
 | `source_events`| array[string] | YES      | `["event_001"]`                    |
 
+## Screenplay Scope Constraint
+
+The screenplay must ONLY adapt events from the chapters the Novel Reader processed —
+prologue/chapter_000 (if it qualified) through chapter 3. Do not adapt material from
+chapters beyond chapter 3.
+
+When building the scene plan:
+- Start from the first deep-read chapter (prologue/chapter_000 if it qualified, otherwise chapter 1)
+- Cover events through chapter 3
+- Do not include events that belong to chapters beyond chapter 3
+
+## Language
+
+**ALL text fields MUST be written in Chinese (中文).** This includes `purpose`, `reason`,
+and any other descriptive text. Only IDs (scene_001, event_001, etc.) remain in English.
+
 ## Constraints
 
 - High fidelity cannot delete protected relationships or foreshadowing.
@@ -62,4 +78,5 @@ Plan what the screenplay should retain, merge, defer, or protect.
 - Do not write final dialogue.
 - Scene plan must reference event IDs.
 - EVERY scene_plan item MUST include `scene_id`, `purpose`, and `source_events`.
+- Scene plan must respect the Screenplay Scope Constraint — only deep-read chapter events.
 

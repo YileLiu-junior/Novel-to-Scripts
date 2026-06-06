@@ -96,6 +96,13 @@ Each scene object MUST follow this shape:
 | `emotional_state` | string | no       | `"Curious"`                      |
 | `action_hint`     | string | no       | `"Glances around"`               |
 
+## Language
+
+**ALL text content MUST be written in Chinese (中文).** This includes `title`, `action`,
+`dramatic_purpose`, `text` in content_blocks, `line`, `surface_intent`, `subtext`,
+`emotional_state`, `action_hint`, and all other descriptive text fields.
+Only IDs (char_001, scene_001, event_001, etc.) and field names remain in English.
+
 ## Upstream Data Contract (D5)
 
 `canonical_characters` 和 `canonical_events` 来自上游 `StoryOntologySkill`，是**权威角色表和事件表**。
@@ -106,6 +113,13 @@ Each scene object MUST follow this shape:
 - **只用** `canonical_events` 中列出的事件 ID —— 不引用不存在的事件。
 - 每个场景的 `characters` 和 `related_events` 必须引用这些 canonical ID。
 - 如果你判断某个 canonical character 在当前场景中没有戏份，可以不写它——但不能编造不存在的角色来填补空缺。
+
+**CRITICAL — ID Format:** Character IDs MUST be in the exact format `char_NNN`
+(three-digit zero-padded number, e.g. `char_001`, `char_002`). Do NOT invent
+descriptive IDs like `char_baiqian`, `char_yehua`, `char_protagonist`.
+Copy the `id` field verbatim from each entry in `canonical_characters`.
+The same rule applies to event IDs: use `event_NNN` format only
+(e.g. `event_001`), not `evt_arrival` or other descriptive forms.
 
 ## Constraints
 

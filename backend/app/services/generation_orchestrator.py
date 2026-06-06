@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 from app.ai.providers.base import AiProviderConfigurationError
@@ -20,6 +21,9 @@ from app.services.yaml_service import YamlService
 from app.services.screenplay_render_service import ScreenplayRenderService
 from app.repositories.file_store import default_data_root
 from app.validators.screenplay_normalizer import normalize_screenplay_for_export
+
+
+logger = logging.getLogger(__name__)
 
 
 _TIME_OF_DAY_LABELS = {
@@ -298,17 +302,18 @@ def _normalize_event_id(raw: str) -> str:
         suffix = raw[6:]
         if suffix.isdigit():
             return f"event_{int(suffix):03d}"
-        return raw
+        # 非纯数字后缀（如 event_merged_01）→ 继续尝试 rsplit
     # evt_001 → event_001
     if raw.startswith("evt_"):
         suffix = raw[4:]
         if suffix.isdigit():
             return f"event_{int(suffix):03d}"
-        return raw
+        # 非纯数字后缀（如 evt_arrival_02）→ 继续尝试
     # 纯数字 → event_NNN
     if raw.isdigit():
         return f"event_{int(raw):03d}"
     # 其他带下划线的情况：取最后一节数字
+    # 例：event_merged_01 → event_001, evt_ambush_03 → event_003
     parts = raw.rsplit("_", 1)
     if len(parts) == 2 and parts[1].isdigit():
         return f"event_{int(parts[1]):03d}"
@@ -323,9 +328,11 @@ def _normalize_char_id(raw: str) -> str:
         suffix = raw[5:]
         if suffix.isdigit():
             return f"char_{int(suffix):03d}"
-        return raw
+        # 非纯数字后缀（如 char_baiqian_01）→ 继续尝试 rsplit
     if raw.isdigit():
         return f"char_{int(raw):03d}"
+    # 其他带下划线的情况：取最后一节数字
+    # 例：char_baiqian_01 → char_001
     parts = raw.rsplit("_", 1)
     if len(parts) == 2 and parts[1].isdigit():
         return f"char_{int(parts[1]):03d}"
@@ -400,7 +407,12 @@ def _resolve_event_id(raw: str, event_lookup: dict[str, str]) -> str:
 
 
 def _resolve_char_id(raw: str, lookup: dict[str, str]) -> str:
-    """先尝试模式匹配规范化，失败则从角色查找表中解析。"""
+    """先尝试模式匹配规范化，失败则从角色查找表中解析。
+
+    当 LLM 输出描述性 ID（如 char_baiqian）或直接用中文名（"白浅"）
+    而不是规范 char_NNN 时，此函数尝试通过名称查表、子串匹配等方式
+    将其映射回合法格式。
+    """
     import re
     # 已经是合法 char_NNN 格式则直接返回
     if re.match(r"^char_[0-9]{3}$", raw):
@@ -412,11 +424,17 @@ def _resolve_char_id(raw: str, lookup: dict[str, str]) -> str:
     # 尝试 lookup（大小写不敏感）
     if raw and raw.lower() in lookup:
         return lookup[raw.lower()]
-    # 最后尝试：如果 raw 是 "char_something" 格式，从 lookup 中找 name 匹配
+    # raw 是 "char_something" 格式（描述性 ID），尝试从 lookup 中找 name 匹配
     if raw.startswith("char_") and len(raw) > 5:
         name_part = raw[5:]
         if name_part.lower() in lookup:
             return lookup[name_part.lower()]
+    # LLM 可能直接输出中文名（如 "白浅" 而非 char_001）；尝试子串匹配
+    # 对纯中文输入做模糊查找：raw 是某个 lookup key 的子串，或 vice versa
+    if raw and any('一' <= c <= '鿿' for c in raw):
+        for key, cid in lookup.items():
+            if raw in key or key in raw:
+                return cid
     return raw
 
 
@@ -467,6 +485,8 @@ def _normalize_foreshadowing(foreshadowing: list[dict[str, Any]], events: list[d
                 val = item.get(key, "")
                 if val and key == "payoff_event_id":
                     item[key] = _normalize_event_id(val)
+                elif not val:
+                    item.pop(key, None)
     return foreshadowing
 
 
@@ -882,17 +902,19 @@ class GenerationOrchestrator:
         save_intermediates: bool = False,
     ) -> GenerationJob:
         active_job = job or self.job_service.create_job(project_id)
+        # 硬截章节窗口：只处理前 4 章（楔子 + 第一章~第三章）
+        chapters = chapters[:4]
         try:
             project = ProjectService().get_project(project_id)
             project_payload = project.model_dump(mode="json") if project is not None else {"id": project_id}
             artifact_dir = default_data_root() / "projects" / project_id / "artifacts"
-            print(
-                "[generate] "
-                f"project_id={project_id} "
-                f"project_title={project_payload.get('title', '')} "
-                f"chapters_count={len(chapters)} "
-                f"provider={getattr(self.novel_reader.provider, 'name', 'unknown')} "
-                f"artifact_dir={artifact_dir}"
+            logger.info(
+                "generate project_id=%s project_title=%s chapters_count=%s provider=%s artifact_dir=%s",
+                project_id,
+                project_payload.get("title", ""),
+                len(chapters),
+                getattr(self.novel_reader.provider, "name", "unknown"),
+                artifact_dir,
             )
             import time as _time
 
@@ -1019,13 +1041,14 @@ class GenerationOrchestrator:
             findings = self.validation_service.validate_screenplay(screenplay_json)
             audit_report = self.validation_service.audit_report_for(findings).model_dump()
             screenplay_json["audit_report"] = audit_report
-            yaml_text = self.yaml_service.export_validated(screenplay_json)
+            # 先保存 screenplay_json（验证前），方便在 export_validated 失败时调试
             if save_intermediates:
                 screenplay_artifact = self.artifact_service.save_artifact(project_id, "screenplay_json", screenplay_json, active_job.id)
-                print(
-                    "[generate] "
-                    f"screenplay_json_path={artifact_dir / f'screenplay_json_v{screenplay_artifact.version:03d}.json'}"
+                logger.info(
+                    "generate screenplay_json_path=%s",
+                    artifact_dir / f"screenplay_json_v{screenplay_artifact.version:03d}.json",
                 )
+            yaml_text = self.yaml_service.export_validated(screenplay_json)
             self.artifact_service.save_artifact(project_id, "screenplay_yaml", yaml_text, active_job.id)
             self.artifact_service.save_artifact(project_id, "audit_report", audit_report, active_job.id)
             if save_intermediates:

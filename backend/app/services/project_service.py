@@ -13,9 +13,9 @@ class ProjectService:
     def __init__(self, repository: ProjectRepository | None = None) -> None:
         self.repository = repository or ProjectRepository()
 
-    def create_project(self, title: str, logline: str | None = None, target_format: str = "web_series") -> Project:
+    def create_project(self, title: str, logline: str | None = None, target_format: str = "web_series", project_id: str | None = None) -> Project:
         project = Project(
-            id=f"project_{uuid4().hex[:12]}",
+            id=project_id or f"project_{uuid4().hex[:12]}",
             title=title,
             logline=logline,
             target_format=target_format,

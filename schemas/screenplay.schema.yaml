@@ -426,6 +426,7 @@ $defs:
         - object
         - timeline
         - world_rule
+        - identity_anchor
       summary:
         type: string
         minLength: 1
