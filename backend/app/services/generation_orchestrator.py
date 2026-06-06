@@ -111,12 +111,31 @@ def _normalize_scenes(
         if not isinstance(scene, dict):
             continue
 
-        # --- source_refs: 字符串 → 对象 ---
+        # --- source_refs: 字符串 → 对象 (schema sourceRef 仅要求 chapter_id) ---
         raw_refs = scene.get("source_refs", [])
-        if raw_refs and isinstance(raw_refs[0], str):
-            scene["source_refs"] = [
-                {"chapter_id": default_chapter_id, "event_ids": raw_refs}
-            ]
+        if not raw_refs or not isinstance(raw_refs, list):
+            scene["source_refs"] = [{"chapter_id": default_chapter_id}]
+        elif isinstance(raw_refs[0], str):
+            # DeepSeek 经常把 event ID 写进 source_refs；新 schema 中 source_refs 指向章节
+            scene["source_refs"] = [{"chapter_id": default_chapter_id}]
+        else:
+            # 已经是对象列表，确保每条都有 chapter_id
+            for ref in raw_refs:
+                if isinstance(ref, dict):
+                    ref.setdefault("chapter_id", default_chapter_id)
+                    # 移除旧格式的 event_ids（新 schema 的 sourceRef 没有此字段）
+                    ref.pop("event_ids", None)
+            scene["source_refs"] = raw_refs
+
+        # --- related_events: 规范化事件 ID ---
+        related = scene.get("related_events")
+        if isinstance(related, list):
+            scene["related_events"] = [_normalize_event_id(e) for e in related if isinstance(e, str)]
+
+        # --- characters: 规范化角色 ID ---
+        chars = scene.get("characters")
+        if isinstance(chars, list):
+            scene["characters"] = [_normalize_char_id(c) for c in chars if isinstance(c, str)]
 
         # --- dramatic_purpose: 字符串 → 数组 ---
         dp = scene.get("dramatic_purpose")
@@ -200,24 +219,184 @@ def _normalize_scenes(
 
 
 def _normalize_story_bible(story_bible: dict[str, Any]) -> dict[str, Any]:
-    """确保 story_bible 含 schema 要求的必填字段。"""
+    """确保 story_bible 含 schema 要求的必填字段，并统一 ID 格式。"""
+    import re
     story_bible.setdefault("relationship_edges", [])
     story_bible.setdefault("knowledge_states", [])
-    # 补全角色必填字段
+    # 补全角色必填字段 + 规范化角色 ID
     characters = story_bible.get("characters", [])
-    for char in characters:
+    for idx, char in enumerate(characters):
         if isinstance(char, dict):
-            char.setdefault("name", char.get("id", "unknown"))
+            raw_id = char.get("id", "")
+            normalized = _normalize_char_id(raw_id)
+            # 如果规范化后仍不是合法 char_NNN 格式，则基于索引生成
+            if not re.match(r"^char_[0-9]{3}$", normalized):
+                normalized = f"char_{(idx + 1):03d}"
+            char["id"] = normalized
+            # 确保 name 存在
+            char.setdefault("name", char.get("name") or raw_id or normalized)
+    # 规范化关系边
+    edges = story_bible.get("relationship_edges", [])
+    for idx, edge in enumerate(edges):
+        if isinstance(edge, dict):
+            if "id" not in edge or not edge["id"]:
+                edge["id"] = f"rel_{idx + 1:03d}"
+            # 规范化 from/to 角色 ID
+            for key in ("from", "to"):
+                if key in edge:
+                    edge[key] = _normalize_char_id(edge[key])
+            edge.setdefault("type", "unspecified")
+    # 规范化 knowledge_states
+    for ks in story_bible.get("knowledge_states", []):
+        if isinstance(ks, dict) and "character_id" in ks:
+            ks["character_id"] = _normalize_char_id(ks["character_id"])
     return story_bible
 
 
-def _normalize_events(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """确保事件列表含 schema 要求的必填字段。"""
+def _normalize_event_id(raw: str) -> str:
+    """将模型可能输出的各种事件 ID 统一为零填充的 event_NNN 格式。"""
+    if not raw:
+        return raw
+    # event_N 或 event_NN → 补零到 event_NNN
+    if raw.startswith("event_"):
+        suffix = raw[6:]
+        if suffix.isdigit():
+            return f"event_{int(suffix):03d}"
+        return raw
+    # evt_001 → event_001
+    if raw.startswith("evt_"):
+        suffix = raw[4:]
+        if suffix.isdigit():
+            return f"event_{int(suffix):03d}"
+        return raw
+    # 纯数字 → event_NNN
+    if raw.isdigit():
+        return f"event_{int(raw):03d}"
+    # 其他带下划线的情况：取最后一节数字
+    parts = raw.rsplit("_", 1)
+    if len(parts) == 2 and parts[1].isdigit():
+        return f"event_{int(parts[1]):03d}"
+    return raw
+
+
+def _normalize_char_id(raw: str) -> str:
+    """将模型可能输出的各种角色 ID 统一为零填充的 char_NNN 格式。"""
+    if not raw:
+        return raw
+    if raw.startswith("char_"):
+        suffix = raw[5:]
+        if suffix.isdigit():
+            return f"char_{int(suffix):03d}"
+        return raw
+    if raw.isdigit():
+        return f"char_{int(raw):03d}"
+    parts = raw.rsplit("_", 1)
+    if len(parts) == 2 and parts[1].isdigit():
+        return f"char_{int(parts[1]):03d}"
+    return raw
+
+
+def _build_character_lookup(story_bible: dict[str, Any]) -> dict[str, str]:
+    """从 story_bible 构建 name/alias → char_id 的查找表。"""
+    lookup: dict[str, str] = {}
+    for char in story_bible.get("characters", []):
+        if not isinstance(char, dict):
+            continue
+        char_id = char.get("id", "")
+        if not char_id:
+            continue
+        # 直接 name → id
+        name = char.get("name", "")
+        if name:
+            lookup[name] = char_id
+            lookup[name.lower()] = char_id
+        # aliases → id
+        for alias in char.get("aliases", []):
+            if isinstance(alias, str) and alias:
+                lookup[alias] = char_id
+                lookup[alias.lower()] = char_id
+    return lookup
+
+
+def _build_event_lookup(events: list[dict[str, Any]]) -> dict[str, str]:
+    """从事件列表构建 title/description → event_id 的查找表。"""
+    lookup: dict[str, str] = {}
+    for evt in events:
+        if not isinstance(evt, dict):
+            continue
+        eid = evt.get("id", "")
+        if not eid:
+            continue
+        # title → id
+        title = evt.get("title", "")
+        if title:
+            lookup[title.lower()] = eid
+        # 从 id 本身推导 (如 evt_arrival → 匹配 arrival)
+        # 在 _resolve_event_id 中处理
+    return lookup
+
+
+def _resolve_event_id(raw: str, event_lookup: dict[str, str]) -> str:
+    """规范化事件 ID：先尝试零填充，再尝试事件查找表。"""
+    import re
+    if not raw:
+        return raw
+    # 已经是合法 event_NNN 格式
+    if re.match(r"^event_[0-9]{3}$", raw):
+        return raw
+    # 尝试模式规范化
+    normalized = _normalize_event_id(raw)
+    if re.match(r"^event_[0-9]{3}$", normalized):
+        return normalized
+    # 尝试从事件查找表中匹配
+    if raw.lower() in event_lookup:
+        return event_lookup[raw.lower()]
+    # 如果 raw 是 evt_something 格式，尝试将 something 部分与事件 title 匹配
+    if raw.startswith("evt_"):
+        name_part = raw[4:].lower().replace("_", " ")
+        if name_part in event_lookup:
+            return event_lookup[name_part]
+        # 模糊匹配：查找包含 name_part 的事件
+        for title, eid in event_lookup.items():
+            if name_part in title or title in name_part:
+                return eid
+    return raw
+
+
+def _resolve_char_id(raw: str, lookup: dict[str, str]) -> str:
+    """先尝试模式匹配规范化，失败则从角色查找表中解析。"""
+    import re
+    # 已经是合法 char_NNN 格式则直接返回
+    if re.match(r"^char_[0-9]{3}$", raw):
+        return raw
+    # 尝试通过规范化修正（如 char_1 → char_001）
+    normalized = _normalize_char_id(raw)
+    if re.match(r"^char_[0-9]{3}$", normalized):
+        return normalized
+    # 尝试 lookup（大小写不敏感）
+    if raw and raw.lower() in lookup:
+        return lookup[raw.lower()]
+    # 最后尝试：如果 raw 是 "char_something" 格式，从 lookup 中找 name 匹配
+    if raw.startswith("char_") and len(raw) > 5:
+        name_part = raw[5:]
+        if name_part.lower() in lookup:
+            return lookup[name_part.lower()]
+    return raw
+
+
+def _normalize_events(events: list[dict[str, Any]], char_lookup: dict[str, str] | None = None) -> list[dict[str, Any]]:
+    """确保事件列表含 schema 要求的必填字段，并统一 ID 格式。"""
     for evt in events:
         if isinstance(evt, dict):
+            evt["id"] = _normalize_event_id(evt.get("id", ""))
+            evt.setdefault("title", evt.get("id", "未命名事件"))
             evt.setdefault("event_type", "narrative")
             evt.setdefault("participants", [])
             evt.setdefault("summary", evt.get("description", evt.get("title", "")))
+            # 确保 participants 中的角色 ID 也规范化
+            participants = evt.get("participants")
+            if isinstance(participants, list):
+                evt["participants"] = [_normalize_char_id(p) for p in participants if isinstance(p, str)]
     return events
 
 
@@ -231,15 +410,239 @@ def _normalize_causal_graph(causal_graph: dict[str, Any]) -> dict[str, Any]:
     return causal_graph
 
 
-def _normalize_foreshadowing(foreshadowing: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """确保伏笔列表含 schema 要求的必填字段。"""
-    for item in foreshadowing:
+def _normalize_foreshadowing(foreshadowing: list[dict[str, Any]], events: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    """确保伏笔列表含 schema 要求的必填字段，并规范化 ID。"""
+    event_ids = [e.get("id") for e in (events or []) if e.get("id")]
+    for idx, item in enumerate(foreshadowing):
         if isinstance(item, dict):
-            item.setdefault("id", f"foreshadow_{len(foreshadowing):03d}")
-            item.setdefault("setup_event_id", "")
+            item.setdefault("id", f"foreshadow_{(idx + 1):03d}")
+            # 规范化 setup_event_id
+            setup = item.get("setup_event_id", "")
+            if setup:
+                item["setup_event_id"] = _normalize_event_id(setup)
+            elif event_ids:
+                item["setup_event_id"] = event_ids[0] if idx == 0 else event_ids[min(idx, len(event_ids) - 1)]
+            else:
+                item["setup_event_id"] = f"event_{(idx + 1):03d}"
             item.setdefault("status", "open")
-            item.setdefault("description", "")
+            item.setdefault("description", item.get("description") or "待定伏笔")
+            # 规范化 payoff IDs
+            for key in ("payoff_event_id", "payoff_scene_id"):
+                val = item.get(key, "")
+                if val and key == "payoff_event_id":
+                    item[key] = _normalize_event_id(val)
     return foreshadowing
+
+
+def _normalize_adaptation_plan(plan: dict[str, Any]) -> dict[str, Any]:
+    """规范化 adaptation_plan 中的事件 ID 引用，并补全 scene_plan 的必填字段。"""
+    # retained_events
+    retained = plan.get("retained_events", [])
+    if isinstance(retained, list):
+        plan["retained_events"] = [_normalize_event_id(e) for e in retained if isinstance(e, str)]
+    # scene_plan: 补全 schema 要求的 scene_id / purpose / source_events
+    scene_plan = plan.get("scene_plan", [])
+    if isinstance(scene_plan, list):
+        for idx, item in enumerate(scene_plan):
+            if isinstance(item, dict):
+                # scene_id 缺失时自动生成
+                item.setdefault("scene_id", f"scene_{(idx + 1):03d}")
+                # purpose 缺失时从其他字段推导
+                if "purpose" not in item:
+                    item["purpose"] = item.get("description") or item.get("summary") or f"Scene {idx + 1}"
+                # 规范化 source_events 中的事件 ID
+                src = item.get("source_events", [])
+                if isinstance(src, list):
+                    item["source_events"] = [_normalize_event_id(e) for e in src if isinstance(e, str)]
+                elif not src:
+                    item["source_events"] = []
+    # merged_events 规范化
+    merged = plan.get("merged_events", [])
+    if isinstance(merged, list):
+        for item in merged:
+            if isinstance(item, dict) and isinstance(item.get("from"), list):
+                item["from"] = [_normalize_event_id(e) for e in item["from"] if isinstance(e, str)]
+    # deleted_or_deferred_events: 确保是对象列表
+    deferred = plan.get("deleted_or_deferred_events", [])
+    if not isinstance(deferred, list):
+        plan["deleted_or_deferred_events"] = []
+    # protected_elements: 确保是字符串列表
+    protected = plan.get("protected_elements", [])
+    if not isinstance(protected, list):
+        plan["protected_elements"] = []
+    return plan
+
+
+def _normalize_source_refs_list(refs: list[Any], default_chapter_id: str = "chapter_001") -> list[dict[str, Any]]:
+    """将 source_refs 中的字符串条目转为合法的 sourceRef 对象。"""
+    result: list[dict[str, Any]] = []
+    for ref in refs:
+        if isinstance(ref, dict):
+            ref.setdefault("chapter_id", ref.get("chapter_id") or default_chapter_id)
+            ref.pop("event_ids", None)  # 移除旧格式字段
+            result.append(ref)
+        elif isinstance(ref, str):
+            # "chapter_001:p_001" → {"chapter_id": "chapter_001", "paragraph_range": "p_001"}
+            if ":" in ref:
+                parts = ref.split(":", 1)
+                obj: dict[str, Any] = {"chapter_id": parts[0].strip() or default_chapter_id}
+                if len(parts) > 1 and parts[1].strip():
+                    obj["paragraph_range"] = parts[1].strip()
+                result.append(obj)
+            else:
+                # 纯字符串，可能为 chapter ID 或 event ID
+                result.append({"chapter_id": default_chapter_id})
+    return result or [{"chapter_id": default_chapter_id}]
+
+
+def _normalize_all_references(
+    screenplay: dict[str, Any],
+    char_lookup: dict[str, str],
+    event_lookup: dict[str, str],
+    default_chapter_id: str = "chapter_001",
+) -> dict[str, Any]:
+    """扫描 screenplay 中所有角色/事件引用/source_refs 字段，替换为规范格式。"""
+    # events → participants, source_refs
+    for evt in screenplay.get("events", []):
+        if isinstance(evt, dict):
+            participants = evt.get("participants")
+            if isinstance(participants, list):
+                evt["participants"] = [_resolve_char_id(p, char_lookup) for p in participants if isinstance(p, str)]
+            srefs = evt.get("source_refs")
+            if isinstance(srefs, list):
+                evt["source_refs"] = _normalize_source_refs_list(srefs, default_chapter_id)
+
+    # scenes → characters, dialogue, content_blocks, related_events, source_refs
+    for scene in screenplay.get("scenes", []):
+        if not isinstance(scene, dict):
+            continue
+        chars = scene.get("characters")
+        if isinstance(chars, list):
+            scene["characters"] = [_resolve_char_id(c, char_lookup) for c in chars if isinstance(c, str)]
+        for line in scene.get("dialogue", []):
+            if isinstance(line, dict) and "character_id" in line:
+                line["character_id"] = _resolve_char_id(line["character_id"], char_lookup)
+        for block in scene.get("content_blocks", []):
+            if isinstance(block, dict) and "character_id" in block and block["character_id"]:
+                block["character_id"] = _resolve_char_id(block["character_id"], char_lookup)
+        related = scene.get("related_events")
+        if isinstance(related, list):
+            scene["related_events"] = [_resolve_event_id(e, event_lookup) for e in related if isinstance(e, str)]
+        srefs = scene.get("source_refs")
+        if isinstance(srefs, list):
+            scene["source_refs"] = _normalize_source_refs_list(srefs, default_chapter_id)
+
+    # core_elements → protagonists, plot, actions
+    core = screenplay.get("core_elements")
+    if isinstance(core, dict):
+        protagonists = core.get("protagonists")
+        if isinstance(protagonists, list):
+            core["protagonists"] = [_resolve_char_id(p, char_lookup) for p in protagonists if isinstance(p, str)]
+        plot = core.get("plot")
+        if isinstance(plot, list):
+            for beat in plot:
+                if isinstance(beat, dict) and "event_id" in beat:
+                    beat["event_id"] = _resolve_event_id(beat["event_id"], event_lookup)
+        actions = core.get("actions")
+        if isinstance(actions, list):
+            for action in actions:
+                if isinstance(action, dict) and "related_event_id" in action and action["related_event_id"]:
+                    action["related_event_id"] = _resolve_event_id(action["related_event_id"], event_lookup)
+
+    # story_bible → characters.source_refs, knowledge_states, relationship_edges
+    bible = screenplay.get("story_bible")
+    if isinstance(bible, dict):
+        for char in bible.get("characters", []):
+            if isinstance(char, dict):
+                srefs = char.get("source_refs")
+                if isinstance(srefs, list):
+                    char["source_refs"] = _normalize_source_refs_list(srefs, default_chapter_id)
+        for ks in bible.get("knowledge_states", []):
+            if isinstance(ks, dict) and "character_id" in ks:
+                ks["character_id"] = _resolve_char_id(ks["character_id"], char_lookup)
+        for edge in bible.get("relationship_edges", []):
+            if isinstance(edge, dict):
+                for key in ("from", "to"):
+                    if edge.get(key):
+                        edge[key] = _resolve_char_id(edge[key], char_lookup)
+                srefs = edge.get("source_refs")
+                if isinstance(srefs, list):
+                    edge["source_refs"] = _normalize_source_refs_list(srefs, default_chapter_id)
+
+    # foreshadowing → setup_event_id, payoff_event_id
+    foreshadows = screenplay.get("foreshadowing", [])
+    for item in foreshadows:
+        if isinstance(item, dict):
+            for key in ("setup_event_id", "payoff_event_id"):
+                if item.get(key):
+                    item[key] = _resolve_event_id(item[key], event_lookup)
+
+    # causal_graph edges
+    cg = screenplay.get("causal_graph")
+    if isinstance(cg, dict):
+        for edge in cg.get("edges", []):
+            if isinstance(edge, dict):
+                for key in ("from", "to"):
+                    if edge.get(key):
+                        edge[key] = _resolve_event_id(edge[key], event_lookup)
+
+    # adaptation_plan event references
+    ap = screenplay.get("adaptation_plan")
+    if isinstance(ap, dict):
+        retained = ap.get("retained_events")
+        if isinstance(retained, list):
+            ap["retained_events"] = [_resolve_event_id(e, event_lookup) for e in retained if isinstance(e, str)]
+        for item in ap.get("scene_plan", []):
+            if isinstance(item, dict):
+                src = item.get("source_events")
+                if isinstance(src, list):
+                    item["source_events"] = [_resolve_event_id(e, event_lookup) for e in src if isinstance(e, str)]
+
+    # script_structure → story_outline[].related_events
+    script = screenplay.get("script_structure")
+    if isinstance(script, dict):
+        for item in script.get("story_outline", []):
+            if isinstance(item, dict):
+                re_events = item.get("related_events")
+                if isinstance(re_events, list):
+                    item["related_events"] = [_resolve_event_id(e, event_lookup) for e in re_events if isinstance(e, str)]
+
+    return screenplay
+
+
+def _ensure_non_empty_arrays(screenplay: dict[str, Any]) -> dict[str, Any]:
+    """最终安全网：确保所有 schema 中要求 minItems >= 1 的数组至少有一个元素。"""
+    # story_outline
+    script = screenplay.get("script_structure")
+    if isinstance(script, dict):
+        outline = script.get("story_outline")
+        if not isinstance(outline, list) or not outline:
+            script["story_outline"] = [
+                {"id": "outline_001", "summary": "待补大纲", "related_events": [], "target_scenes": []}
+            ]
+        # scene_ids
+        ls_play = script.get("literary_screenplay")
+        if isinstance(ls_play, dict):
+            sids = ls_play.get("scene_ids")
+            if not isinstance(sids, list) or not sids:
+                scene_list = screenplay.get("scenes", [])
+                ls_play["scene_ids"] = [s.get("id") for s in scene_list if s.get("id")] or ["scene_001"]
+
+    # core_elements
+    core = screenplay.get("core_elements")
+    if isinstance(core, dict):
+        if not isinstance(core.get("actions"), list) or not core["actions"]:
+            core["actions"] = [{"id": "action_001", "description": "待补动作", "scene_id": "scene_001"}]
+        if not isinstance(core.get("plot"), list) or not core["plot"]:
+            core["plot"] = [{"event_id": "event_001", "function": "exposition"}]
+        if not isinstance(core.get("situations"), list) or not core["situations"]:
+            core["situations"] = [{"id": "situation_001", "scene_id": "scene_001", "description": "待补情境"}]
+        if not isinstance(core.get("protagonists"), list) or not core["protagonists"]:
+            bible = screenplay.get("story_bible", {})
+            chars = bible.get("characters", [])
+            core["protagonists"] = [c.get("id") for c in chars[:1] if c.get("id")] or ["char_001"]
+
+    return screenplay
 
 
 def _normalize_script_structure(
@@ -449,8 +852,10 @@ class GenerationOrchestrator:
             screenplay_json["story_bible"] = _normalize_story_bible(story_assets.get("story_bible", {}))
             screenplay_json["events"] = _normalize_events(story_assets.get("events", []))
             screenplay_json["causal_graph"] = _normalize_causal_graph(story_assets.get("causal_graph", {}))
-            screenplay_json["foreshadowing"] = _normalize_foreshadowing(story_assets.get("foreshadowing", []))
-            screenplay_json["adaptation_plan"] = adaptation_plan
+            screenplay_json["foreshadowing"] = _normalize_foreshadowing(
+                story_assets.get("foreshadowing", []), screenplay_json["events"]
+            )
+            screenplay_json["adaptation_plan"] = _normalize_adaptation_plan(adaptation_plan)
             # 归一化 scenes：LLM 可能输出不完全匹配 schema 的格式
             screenplay_json["scenes"] = _normalize_scenes(
                 screenplay_json.get("scenes", []), chapters, screenplay_json["source"]
@@ -469,6 +874,13 @@ class GenerationOrchestrator:
                 screenplay_json["scenes"],
                 screenplay_json["project"],
             )
+            # 构建查找表，扫描全文中所有角色+事件引用字段并替换为规范 ID
+            char_lookup = _build_character_lookup(screenplay_json["story_bible"])
+            event_lookup = _build_event_lookup(screenplay_json["events"])
+            if char_lookup or event_lookup:
+                screenplay_json = _normalize_all_references(screenplay_json, char_lookup, event_lookup)
+            # 最终安全网：确保 minItems ≥ 1 的数组不为空
+            screenplay_json = _ensure_non_empty_arrays(screenplay_json)
             findings = self.validation_service.validate_screenplay(screenplay_json)
             audit_report = self.validation_service.audit_report_for(findings).model_dump()
             screenplay_json["audit_report"] = audit_report
