@@ -5,37 +5,25 @@ characters.py
 
 import streamlit as st
 import uuid
-<<<<<<< HEAD
-=======
 from frontend import backend_types as bt
->>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
 from frontend.utils import storage
 
 # 每行卡片数量
 CARDS_PER_ROW = 4
 
 
-<<<<<<< HEAD
-def _render_character_card(char: dict, project_id: str, characters_list: list):
-=======
 def _render_character_card(char: dict, project_id: str, characters_list: list, generated: bool = False):
->>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
     """
     渲染单个人物竖向卡片。
     卡片上半部分显示头像（占高度一半），下半部分显示信息。
     """
     name = char.get("name") or "未命名"
-<<<<<<< HEAD
-    role = char.get("role") or "未设置身份"
-    description = char.get("description", "")
-=======
     role = char.get("narrative_role") or char.get("role") or "未设置身份"
     description = char.get("description", "")
     if not description:
         voice = char.get("voice_profile", {})
         if isinstance(voice, dict):
             description = "；".join(str(v) for v in voice.values() if v)
->>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
     # 兼容旧数据没有 avatar 字段的情况
     _ = char.get("avatar", "")
 
@@ -122,23 +110,6 @@ def _render_character_card(char: dict, project_id: str, characters_list: list, g
     """
     st.markdown(card_html, unsafe_allow_html=True)
 
-<<<<<<< HEAD
-    # 底部操作按钮
-    c1, c2 = st.columns(2)
-    with c1:
-        if st.button("🎨 生成形象", key=f"gen_avatar_{char['id']}", use_container_width=True):
-            st.info("该功能暂未实现。")
-    with c2:
-        if st.button("🖼️ 生成剧照", key=f"gen_still_{char['id']}", use_container_width=True):
-            st.info("该功能暂未实现。")
-
-    # 删除按钮（单独一行，较小）
-    if st.button("🗑️ 删除", key=f"del_char_{char['id']}", use_container_width=True):
-        updated_characters = [c for c in characters_list if c["id"] != char["id"]]
-        storage.update_project(project_id, {"characters": updated_characters})
-        st.success(f"人物「{name}」已删除")
-        st.rerun()
-=======
     # 底部操作按钮：生成后的角色只做前端状态编辑，等待后端提供保存接口。
     c1, c2 = st.columns(2)
     with c1:
@@ -154,7 +125,6 @@ def _render_character_card(char: dict, project_id: str, characters_list: list, g
             storage.update_project(project_id, {"characters": updated_characters})
             st.success(f"人物「{name}」已删除")
             st.rerun()
->>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
 
 
 def _render_add_card(project_id: str, characters_list: list):
@@ -245,14 +215,10 @@ def render(project: dict):
     st.markdown("---")
 
     project_id = project.get("id")
-<<<<<<< HEAD
-    characters_list = project.get("characters", [])
-=======
     screenplay = bt.screenplay_from_artifacts(project)
     generated_characters = screenplay.get("story_bible", {}).get("characters", []) if screenplay else []
     characters_list = generated_characters or project.get("characters", [])
     is_generated = bool(generated_characters)
->>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
 
     # 空状态提示
     if not characters_list:
@@ -268,11 +234,7 @@ def render(project: dict):
             with cols[col_idx]:
                 if item_idx < len(characters_list):
                     # 渲染人物卡片
-<<<<<<< HEAD
-                    _render_character_card(characters_list[item_idx], project_id, characters_list)
-=======
                     _render_character_card(characters_list[item_idx], project_id, characters_list, generated=is_generated)
->>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
                 elif item_idx == len(characters_list):
                     # 渲染添加人物卡片
                     _render_add_card(project_id, characters_list)

@@ -13,18 +13,12 @@ from app.domain.jobs import GenerationJob
 from app.services.artifact_service import ArtifactService
 from app.services.job_service import JobService
 from app.services.llm_trace_service import LlmTraceService
-<<<<<<< HEAD
-from app.services.validation_service import ValidationService
-from app.services.yaml_service import YamlService
-from app.services.screenplay_render_service import ScreenplayRenderService
-=======
 from app.services.project_service import ProjectService
 from app.services.validation_service import ValidationService
 from app.services.yaml_service import YamlService
 from app.services.screenplay_render_service import ScreenplayRenderService
 from app.repositories.file_store import default_data_root
 from app.validators.screenplay_normalizer import normalize_screenplay_for_export
->>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
 
 
 _TIME_OF_DAY_LABELS = {
@@ -859,10 +853,6 @@ class GenerationOrchestrator:
     ) -> GenerationJob:
         active_job = job or self.job_service.create_job(project_id)
         try:
-<<<<<<< HEAD
-            active_job = self.job_service.mark_step(active_job, "running", "novel_reader")
-            novel_analysis = self.novel_reader.run({"chapters": chapters})
-=======
             project = ProjectService().get_project(project_id)
             project_payload = project.model_dump(mode="json") if project is not None else {"id": project_id}
             artifact_dir = default_data_root() / "projects" / project_id / "artifacts"
@@ -876,25 +866,17 @@ class GenerationOrchestrator:
             )
             active_job = self.job_service.mark_step(active_job, "running", "novel_reader")
             novel_analysis = self.novel_reader.run({"project": project_payload, "chapters": chapters})
->>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
             self.artifact_service.save_artifact(project_id, "novel_analysis", novel_analysis, active_job.id)
             self.llm_trace_service.record_fake_run(active_job.id, "novel_reader", novel_analysis)
 
             active_job = self.job_service.mark_step(active_job, "running", "story_ontology")
-<<<<<<< HEAD
-            story_assets = self.story_ontology.run(novel_analysis)
-=======
             story_assets = self.story_ontology.run({"project": project_payload, **novel_analysis})
->>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
             self.artifact_service.save_artifact(project_id, "story_bible", story_assets, active_job.id)
 
             active_job = self.job_service.mark_step(active_job, "running", "adaptation_planner")
             adaptation_plan = self.adaptation_planner.run(
                 {
-<<<<<<< HEAD
-=======
                     "project": project_payload,
->>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
                     **story_assets,
                     "adaptation_config": adaptation_config.model_dump(),
                 }
@@ -904,10 +886,7 @@ class GenerationOrchestrator:
             active_job = self.job_service.mark_step(active_job, "running", "screenplay_writer")
             screenplay_json = self.screenplay_writer.run(
                 {
-<<<<<<< HEAD
-=======
                     "project": project_payload,
->>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
                     **story_assets,
                     "adaptation_config": adaptation_config.model_dump(),
                     "adaptation_plan": adaptation_plan,
@@ -918,12 +897,8 @@ class GenerationOrchestrator:
             screenplay_json["schema_version"] = "1.1"
             screenplay_json["project"] = {
                 "id": project_id,
-<<<<<<< HEAD
-                "title": adaptation_config.target_format.replace("_", " ").title(),
-=======
                 "title": project_payload.get("title") or adaptation_config.target_format.replace("_", " ").title(),
                 "logline": project_payload.get("logline"),
->>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
                 "target_format": adaptation_config.target_format,
             }
             screenplay_json["source"] = {
@@ -963,28 +938,18 @@ class GenerationOrchestrator:
             event_lookup = _build_event_lookup(screenplay_json["events"])
             if char_lookup or event_lookup:
                 screenplay_json = _normalize_all_references(screenplay_json, char_lookup, event_lookup)
-<<<<<<< HEAD
-            # 最终安全网：确保 minItems ≥ 1 的数组不为空
-            screenplay_json = _ensure_non_empty_arrays(screenplay_json)
-=======
             screenplay_json = normalize_screenplay_for_export(screenplay_json)
             # 最终安全网：确保 minItems ≥ 1 的数组不为空
             screenplay_json = _ensure_non_empty_arrays(screenplay_json)
-            screenplay_json = normalize_screenplay_for_export(screenplay_json)
->>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
             findings = self.validation_service.validate_screenplay(screenplay_json)
             audit_report = self.validation_service.audit_report_for(findings).model_dump()
             screenplay_json["audit_report"] = audit_report
             yaml_text = self.yaml_service.export_validated(screenplay_json)
-<<<<<<< HEAD
-            self.artifact_service.save_artifact(project_id, "screenplay_json", screenplay_json, active_job.id)
-=======
             screenplay_artifact = self.artifact_service.save_artifact(project_id, "screenplay_json", screenplay_json, active_job.id)
             print(
                 "[generate] "
                 f"screenplay_json_path={artifact_dir / f'screenplay_json_v{screenplay_artifact.version:03d}.json'}"
             )
->>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
             self.artifact_service.save_artifact(project_id, "screenplay_yaml", yaml_text, active_job.id)
             self.artifact_service.save_artifact(project_id, "audit_report", audit_report, active_job.id)
             # 渲染可读文学剧本文本

@@ -26,8 +26,6 @@ def render():
         state.go_home()
         return
 
-<<<<<<< HEAD
-=======
     # 将本地持久化的后端状态恢复到 session_state，刷新页面后仍能继续查看结果。
     for key in (
         "backend_project_id",
@@ -44,7 +42,6 @@ def render():
         if project.get(key) is not None:
             st.session_state[key] = project.get(key)
 
->>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
     # 页面标题使用项目名称
     st.title(f"🎬 {project.get('name', '未命名项目')}")
     st.markdown("---")
@@ -79,11 +76,7 @@ def render():
         if st.button(btn_acts_label, use_container_width=True):
             state.switch_section("acts")
 
-<<<<<<< HEAD
-        btn_export_label = "📋 剧本导出" if current_section != "export" else "📋 剧本导出 ✓"
-=======
         btn_export_label = "📋 生成结果" if current_section != "export" else "📋 生成结果 ✓"
->>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
         if st.button(btn_export_label, use_container_width=True):
             state.switch_section("export")
 

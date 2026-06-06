@@ -23,9 +23,5 @@ def download_yaml(project_id: str) -> Response:
     return Response(
         content=yaml_text,
         media_type="application/x-yaml",
-<<<<<<< HEAD
-        headers={"Content-Disposition": 'attachment; filename="demo_screenplay.yaml"'},
-=======
         headers={"Content-Disposition": 'attachment; filename="screenplay.yaml"'},
->>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
     )

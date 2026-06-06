@@ -29,27 +29,15 @@ class SchemaValidator:
         validator = jsonschema.Draft202012Validator(schema)
         findings: list[ValidationFinding] = []
         for error in sorted(validator.iter_errors(data), key=lambda item: list(item.path)):
-<<<<<<< HEAD
-=======
             path = ".".join(str(part) for part in error.path) or "<root>"
             schema_path = ".".join(str(part) for part in error.schema_path) or "<schema-root>"
->>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
             findings.append(
                 ValidationFinding(
                     code="schema.invalid",
                     severity="error",
-<<<<<<< HEAD
-                    message=error.message,
-                    path=".".join(str(part) for part in error.path),
-                )
-            )
-        return findings
-
-=======
                     message=f"{error.message}; path={path}; schema_path={schema_path}",
                     path=path,
                     schema_path=schema_path,
                 )
             )
         return findings
->>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)

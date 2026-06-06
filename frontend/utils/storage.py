@@ -90,8 +90,6 @@ def _migrate_project(project: dict) -> dict:
     if "original_text" not in project:
         project["original_text"] = ""
 
-<<<<<<< HEAD
-=======
     # 后端联调字段：本地项目只负责记住后端 project/job/artifact 的当前快照。
     backend_defaults = {
         "backend_project_id": None,
@@ -109,7 +107,6 @@ def _migrate_project(project: dict) -> dict:
         if key not in project:
             project[key] = value
 
->>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
     return project
 
 

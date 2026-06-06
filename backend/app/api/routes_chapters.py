@@ -14,15 +14,10 @@ def _chapter_response(chapter: Chapter) -> ChapterResponse:
         id=chapter.id,
         order=chapter.order,
         title=chapter.title,
-<<<<<<< HEAD
-        paragraphs=[
-            {"id": paragraph.id, "order": paragraph.order, "summary": paragraph.summary}
-=======
         text=chapter.text,
         word_count=len(chapter.text or ""),
         paragraphs=[
             {"id": paragraph.id, "order": paragraph.order, "text": paragraph.text, "summary": paragraph.summary}
->>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
             for paragraph in chapter.paragraphs
         ],
     )

@@ -8,10 +8,7 @@ from app.domain.artifacts import Artifact
 from app.exporters.screenplay_render_exporter import ScreenplayRenderExporter
 from app.services.artifact_service import ArtifactService
 from app.services.validation_service import ValidationService
-<<<<<<< HEAD
-=======
 from app.validators.screenplay_normalizer import normalize_screenplay_for_export
->>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
 
 
 class ScreenplayRenderService:
@@ -35,24 +32,17 @@ class ScreenplayRenderService:
         job_id: str | None = None,
     ) -> Artifact:
         """校验 → 渲染 → 持久化为 screenlay_rendered artifact。"""
-<<<<<<< HEAD
-=======
         screenplay_json = normalize_screenplay_for_export(screenplay_json)
->>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
         # 校验
         findings = self.validation_service.validate_screenplay(screenplay_json)
         errors = [f for f in findings if f.severity == "error"]
         if errors:
-<<<<<<< HEAD
-            raise ValueError(f"Cannot render invalid screenplay: {errors[0].message}")
-=======
             first = errors[0]
             raise ValueError(
                 "Cannot render invalid screenplay: "
                 f"{first.message}; path={first.path or '<root>'}; "
                 f"schema_path={first.schema_path or '<schema-root>'}"
             )
->>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
 
         # 渲染两种格式
         markdown = self.exporter.render_markdown(screenplay_json)
@@ -68,20 +58,12 @@ class ScreenplayRenderService:
             "source_artifact_id": source.id if source else "",
             "formats": {
                 "markdown": {
-<<<<<<< HEAD
-                    "filename": "demo_screenplay.md",
-=======
                     "filename": "screenplay.md",
->>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
                     "media_type": self.exporter.MARKDOWN_MEDIA_TYPE,
                     "content": markdown,
                 },
                 "text": {
-<<<<<<< HEAD
-                    "filename": "demo_screenplay.txt",
-=======
                     "filename": "screenplay.txt",
->>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
                     "media_type": self.exporter.TEXT_MEDIA_TYPE,
                     "content": text,
                 },

@@ -5,10 +5,7 @@ from typing import Any
 from app.exporters.yaml_exporter import YamlExporter
 from app.services.artifact_service import ArtifactService
 from app.services.validation_service import ValidationService
-<<<<<<< HEAD
-=======
 from app.validators.screenplay_normalizer import normalize_screenplay_for_export
->>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
 
 
 class YamlService:
@@ -23,12 +20,6 @@ class YamlService:
         self.artifact_service = artifact_service or ArtifactService()
 
     def export_validated(self, screenplay: dict[str, Any]) -> str:
-<<<<<<< HEAD
-        findings = self.validation_service.validate_screenplay(screenplay)
-        errors = [finding for finding in findings if finding.severity == "error"]
-        if errors:
-            raise ValueError(f"Cannot export invalid screenplay: {errors[0].message}")
-=======
         screenplay = normalize_screenplay_for_export(screenplay)
         findings = self.validation_service.validate_screenplay(screenplay)
         errors = [finding for finding in findings if finding.severity == "error"]
@@ -39,7 +30,6 @@ class YamlService:
                 f"{first.message}; path={first.path or '<root>'}; "
                 f"schema_path={first.schema_path or '<schema-root>'}"
             )
->>>>>>> 7be98a4 (feat: add screenplay schema design and JSON/YAML definitions)
         return self.exporter.export(screenplay)
 
     def validate_yaml(self, yaml_text: str):
