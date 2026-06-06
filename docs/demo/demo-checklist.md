@@ -34,5 +34,6 @@
 - 不足三章被拒绝进入生成流程。
 - 三章可以进入假生成流程。
 - 每一步都保存一个 artifact。
+- 生成结果包含 `script_structure`、`core_elements`、`scene_heading` 和 `content_blocks`。
 - YAML 能反向解析回 JSON。
 - 断裂的引用能产生带 target ID 的 warning 或 error。
