@@ -140,6 +140,7 @@ def create_project(name: str, description: str = "") -> dict:
     """
     创建新项目。
     自动生成 uuid、创建时间和更新时间。
+    预初始化所有前端需要的空数据结构，避免页面白屏或字段缺失。
     返回创建后的项目字典。
     """
     now = datetime.now().isoformat()
@@ -153,6 +154,18 @@ def create_project(name: str, description: str = "") -> dict:
         "characters": [],
         "scenes": [],
         "acts": [],
+        # 后端联调字段：预初始化空值，避免页面访问时报 KeyError
+        "backend_project_id": None,
+        "backend_chapters": [],
+        "backend_job_id": None,
+        "backend_job_status": "idle",
+        "backend_current_step": None,
+        "backend_error": None,
+        "backend_artifacts": [],
+        "screenplay_data": {},
+        "screenplay_yaml": "",
+        "rendered_markdown": "",
+        "audit_report": {},
     }
 
     data = _load_all()

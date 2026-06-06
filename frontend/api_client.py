@@ -187,3 +187,23 @@ def download_rendered(project_id: str, format_name: str) -> DownloadedFile:
 
 def download_schema(project_id: str) -> dict[str, Any]:
     return _request_json("GET", f"/api/projects/{project_id}/schema/download")
+
+
+# ---------------------------------------------------------------------------
+# frontend_data API
+# ---------------------------------------------------------------------------
+
+
+def init_frontend_data(project_id: str, force: bool = False) -> dict:
+    """初始化前端专用数据（从 screenplay_json 提取）。"""
+    return _request_json("POST", f"/api/projects/{project_id}/frontend-data/init", {"force": force})
+
+
+def get_frontend_data(project_id: str) -> dict:
+    """获取前端专用数据。"""
+    return _request_json("GET", f"/api/projects/{project_id}/frontend-data")
+
+
+def save_frontend_data(project_id: str, data: dict) -> dict:
+    """保存前端专用数据。"""
+    return _request_json("PUT", f"/api/projects/{project_id}/frontend-data", data)

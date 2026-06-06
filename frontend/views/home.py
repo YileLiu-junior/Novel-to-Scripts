@@ -122,7 +122,7 @@ def render():
                                         if st.session_state.get("current_project_id") == project["id"]:
                                             st.session_state.current_project_id = None
                                             st.session_state.current_section = "original"
-                                            st.session_state.selected_act_id = None
+                                            st.session_state.selected_plot_id = None
                                         st.session_state[confirm_key] = False
                                         st.success("项目已删除。")
                                         st.rerun()

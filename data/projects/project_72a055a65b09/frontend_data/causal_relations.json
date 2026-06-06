@@ -1,0 +1,18 @@
+{
+  "items": [
+    {
+      "description": "",
+      "from": "event_001",
+      "id": "cause_001",
+      "relation": "leads_to",
+      "to": "event_002"
+    },
+    {
+      "description": "",
+      "from": "event_002",
+      "id": "cause_002",
+      "relation": "leads_to",
+      "to": "event_003"
+    }
+  ]
+}

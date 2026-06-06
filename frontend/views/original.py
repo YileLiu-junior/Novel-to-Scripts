@@ -1,4 +1,6 @@
-"""原文管理与生成流程页面。
+"""
+original.py
+原文管理与生成流程页面。
 
 该页面遵循后端 V0+V1 contract：前端只上传并读取 txt 文本，再调用章节
 导入或自动拆章接口；生成流程通过 job 轮询和 artifact 拉取完成。
@@ -33,6 +35,7 @@ def decode_txt_file(uploaded_file) -> str | None:
         return raw_bytes.decode("utf-8")
     except UnicodeDecodeError:
         pass
+    # 回退 GBK
     try:
         return raw_bytes.decode("gbk")
     except UnicodeDecodeError:

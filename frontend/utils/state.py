@@ -16,13 +16,13 @@ def init_session_state():
     if "current_project_id" not in st.session_state:
         st.session_state.current_project_id = None
 
-    # 当前编辑页面：original / characters / scenes / acts / export
+    # 当前编辑页面：original / characters / scenes / plots / screenplay_preview / export / audit_report
     if "current_section" not in st.session_state:
         st.session_state.current_section = "original"
 
-    # 当前选中的场次 id，用于场次编辑
-    if "selected_act_id" not in st.session_state:
-        st.session_state.selected_act_id = None
+    # 当前选中的情节 id，用于情节编辑
+    if "selected_plot_id" not in st.session_state:
+        st.session_state.selected_plot_id = None
 
     # 控制是否显示新建项目表单
     if "show_new_project_form" not in st.session_state:
@@ -55,7 +55,7 @@ def go_home():
     """
     st.session_state.current_project_id = None
     st.session_state.current_section = "original"
-    st.session_state.selected_act_id = None
+    st.session_state.selected_plot_id = None
     st.session_state.selected_scene = None
     st.session_state.selected_character = None
     st.session_state.show_new_project_form = False
@@ -69,7 +69,7 @@ def enter_project(project_id: str):
     """
     st.session_state.current_project_id = project_id
     st.session_state.current_section = "original"
-    st.session_state.selected_act_id = None
+    st.session_state.selected_plot_id = None
     st.session_state.selected_scene = None
     st.session_state.selected_character = None
     st.session_state.show_new_project_form = False
@@ -78,22 +78,22 @@ def enter_project(project_id: str):
 
 def switch_section(section: str):
     """
-    切换当前编辑页面（original / characters / scenes / acts / export）。
+    切换当前编辑页面（original / characters / scenes / plots / screenplay_preview / export / audit_report）。
     """
-    if section in ("original", "characters", "scenes", "acts", "export"):
+    if section in ("original", "characters", "scenes", "plots", "screenplay_preview", "export", "audit_report"):
         st.session_state.current_section = section
-        # 切换到非场次页面时，清空 selected_act_id
-        if section != "acts":
-            st.session_state.selected_act_id = None
+        # 切换到非情节页面时，清空 selected_plot_id
+        if section != "plots":
+            st.session_state.selected_plot_id = None
         st.rerun()
 
 
-def select_act(act_id: str | None):
+def select_plot(plot_id: str | None):
     """
-    选中指定场次，进入场次编辑状态。
+    选中指定情节，进入情节编辑状态。
     """
-    st.session_state.selected_act_id = act_id
-    st.session_state.current_section = "acts"
+    st.session_state.selected_plot_id = plot_id
+    st.session_state.current_section = "plots"
     st.rerun()
 
 
