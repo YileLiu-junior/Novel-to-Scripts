@@ -2,7 +2,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from os import environ
+from pathlib import Path
 from typing import Mapping
+
+
+@dataclass(frozen=True)
+class AppSettings:
+    data_root: Path
 
 
 @dataclass(frozen=True)
@@ -12,6 +18,13 @@ class AiSettings:
     deepseek_api_key: str | None = None
     deepseek_base_url: str = "https://api.deepseek.com"
     llm_timeout_seconds: float = 60.0
+
+
+def load_app_settings(env: Mapping[str, str] | None = None) -> AppSettings:
+    values = env or environ
+    configured_root = values.get("XENGINEER_DATA_ROOT")
+    data_root = Path(configured_root) if configured_root else Path(__file__).resolve().parents[3] / "data"
+    return AppSettings(data_root=data_root)
 
 
 def load_ai_settings(env: Mapping[str, str] | None = None) -> AiSettings:

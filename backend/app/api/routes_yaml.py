@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response
 
 from app.api.dto.yaml import ValidateYamlRequest, ValidateYamlResponse
+from app.services.project_service import ProjectService
 from app.services.yaml_service import YamlService
 
 router = APIRouter()
@@ -13,6 +14,14 @@ def validate_yaml(project_id: str, request: ValidateYamlRequest) -> ValidateYaml
 
 
 @router.get("/{project_id}/yaml/download")
-def download_yaml(project_id: str) -> str:
-    raise HTTPException(status_code=404, detail="No screenplay_yaml artifact exists for this project yet.")
-
+def download_yaml(project_id: str) -> Response:
+    if ProjectService().get_project(project_id) is None:
+        raise HTTPException(status_code=404, detail="Project not found.")
+    yaml_text = YamlService().download_latest_for_project(project_id)
+    if yaml_text is None:
+        raise HTTPException(status_code=404, detail="No screenplay_yaml artifact exists for this project yet.")
+    return Response(
+        content=yaml_text,
+        media_type="application/x-yaml",
+        headers={"Content-Disposition": 'attachment; filename="demo_screenplay.yaml"'},
+    )

@@ -13,8 +13,8 @@ class SourceRef(BaseModel):
 
 class Location(BaseModel):
     name: str
-    time: str | None = None
-    interior_exterior: Literal["INT", "EXT", "INT/EXT"] | None = None
+    time: Literal["day", "night", "morning", "dusk"] = "day"
+    interior_exterior: Literal["INT", "EXT", "INT/EXT"] = "INT"
 
 
 class VoiceProfile(BaseModel):
@@ -33,4 +33,3 @@ class ValidationFinding(BaseModel):
 
 class IdList(BaseModel):
     values: list[str] = Field(default_factory=list)
-

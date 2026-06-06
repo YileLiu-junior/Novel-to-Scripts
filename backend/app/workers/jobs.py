@@ -3,6 +3,7 @@ from __future__ import annotations
 from fastapi import BackgroundTasks
 
 from app.domain.adaptation import AdaptationConfig
+from app.domain.jobs import GenerationJob
 from app.services.generation_orchestrator import GenerationOrchestrator
 
 # 一行代码把整个改编流水线丢进 FastAPI 的后台任务队列
@@ -33,6 +34,6 @@ def enqueue_generation(
     project_id: str,
     chapters: list[dict],
     adaptation_config: AdaptationConfig,
+    job: GenerationJob,
 ) -> None:
-    background_tasks.add_task(orchestrator.run_v1, project_id, chapters, adaptation_config)
-
+    background_tasks.add_task(orchestrator.run_v1, project_id, chapters, adaptation_config, job)

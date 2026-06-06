@@ -6,10 +6,12 @@ from typing import Any
 
 from app.domain.common import ValidationFinding
 
+_APP_ROOT = Path(__file__).resolve().parents[3]  # backend/app/validators -> project root
 
+# 这个类负责验证输入数据是否符合预定义的JSON Schema规范。它使用jsonschema库来进行验证，如果输入数据不符合规范，就会返回一个包含所有验证错误的列表，前端可以根据这些错误信息向用户展示相应的提示，帮助他们修正输入数据。
 class SchemaValidator:
     def __init__(self, schema_path: Path | None = None) -> None:
-        self.schema_path = schema_path or Path("schemas/screenplay.schema.json")
+        self.schema_path = schema_path or (_APP_ROOT / "schemas" / "screenplay.schema.json")
 
     def validate(self, data: dict[str, Any]) -> list[ValidationFinding]:
         try:

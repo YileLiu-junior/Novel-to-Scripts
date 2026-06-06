@@ -7,7 +7,7 @@ from app.domain.source import Chapter
 class ChapterValidator:
     def validate_generation_ready(self, chapters: list[Chapter]) -> list[ValidationFinding]:
         findings: list[ValidationFinding] = []
-        if len(chapters) < 3:
+        if len(chapters) < 3:             # 如果章节数太少，则会直接因为太少而驳回生成请求
             findings.append(
                 ValidationFinding(
                     code="chapters.too_few",
@@ -18,7 +18,7 @@ class ChapterValidator:
             )
         for chapter in chapters:
             if not chapter.text.strip():
-                findings.append(
+                findings.append(               # 如果章节文本为空，则会直接驳回生成请求
                     ValidationFinding(
                         code="chapter.empty_text",
                         severity="error",
