@@ -209,12 +209,23 @@
 
 `minimal` 只用于 backend/debug/legacy compatibility。正常用户界面不应暴露该模式；即使收到 `minimal`，也不能跳过 StoryOntology step。
 
+## Upstream Data Contract (D5)
+
+`upstream_characters` 和 `upstream_events` 来自上游 `NovelReaderSkill` 的解析结果。
+这些是权威输入，你必须：
+
+- **保留所有** `upstream_characters` 中的角色，不删除、不改名、不重排 ID。
+- **保留所有** `upstream_events` 中的事件 ID 和标题。
+- 你可以为角色补充 `goals`、`voice_profile`、`aliases` 等细节，但不能丢失角色。
+- 你可以为事件补充 `event_flow`、`conflict_axis` 等 evidence 字段，但不能删除事件。
+- 如果你发现原文中有未被 `upstream_characters` 覆盖的角色，你可以新增——但必须用 `evidence_level: "candidate"` 标记，并附加 `source_refs`。
+
 ## Extraction Rules
 
 ### Characters
 
 - 角色 ID 使用 `char_001` 格式。
-- 优先复用输入中的 stable IDs。
+- 优先复用输入中的 stable IDs —— 特别是 `upstream_characters` 中的 ID。
 - 每个主要角色必须有 `name`。
 - `goals` 只能从原文或 novel analysis 可推断内容提取，不编造复杂心理。
 - `voice_profile` 描述语言节奏、用词、心理防御或表达习惯，不写台词。

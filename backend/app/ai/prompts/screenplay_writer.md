@@ -96,10 +96,21 @@ Each scene object MUST follow this shape:
 | `emotional_state` | string | no       | `"Curious"`                      |
 | `action_hint`     | string | no       | `"Glances around"`               |
 
+## Upstream Data Contract (D5)
+
+`canonical_characters` 和 `canonical_events` 来自上游 `StoryOntologySkill`，是**权威角色表和事件表**。
+
+你必须严格遵守：
+
+- **只用** `canonical_characters` 中列出的角色 ID —— **不新增、不编造、不删除**任何角色。
+- **只用** `canonical_events` 中列出的事件 ID —— 不引用不存在的事件。
+- 每个场景的 `characters` 和 `related_events` 必须引用这些 canonical ID。
+- 如果你判断某个 canonical character 在当前场景中没有戏份，可以不写它——但不能编造不存在的角色来填补空缺。
+
 ## Constraints
 
-- Use only character IDs from `story_bible.characters` (the `id` field from each character entry).
-- Use only event IDs from `events` (the `id` field from each event entry).
+- Use only character IDs from `canonical_characters` (the `id` field from each character entry).
+- Use only event IDs from `canonical_events` (the `id` field from each event entry).
 - Use chapter IDs from the `source.chapters` array in the input.
 - Every scene needs at least one `source_refs` entry.
 - Every scene needs at least one entry in `action` and `dramatic_purpose`.

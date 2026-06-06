@@ -79,6 +79,36 @@ class AiProviderTest(unittest.TestCase):
                 GenerationOrchestrator.from_provider_settings()
         self.assertIn("deepseek", str(ctx.exception).lower())
 
+    def test_story_ontology_prompt_references_upstream_characters(self) -> None:
+        """D5: story_ontology prompt must instruct LLM to preserve upstream characters."""
+        from pathlib import Path
+        prompt = (Path(__file__).resolve().parents[2] / "app" / "ai" / "prompts" / "story_ontology.md").read_text(encoding="utf-8")
+        self.assertIn("upstream_characters", prompt,
+                       "story_ontology.md must reference upstream_characters for D5 contract")
+
+    def test_screenplay_writer_prompt_references_canonical_characters(self) -> None:
+        """D5: screenplay_writer prompt must instruct LLM to use canonical characters only."""
+        from pathlib import Path
+        prompt = (Path(__file__).resolve().parents[2] / "app" / "ai" / "prompts" / "screenplay_writer.md").read_text(encoding="utf-8")
+        self.assertIn("canonical_characters", prompt,
+                       "screenplay_writer.md must reference canonical_characters for D5 contract")
+
+    def test_placeholder_scene_function_removed(self) -> None:
+        """D6: _make_placeholder_scene must not exist — placeholder injection is removed."""
+        from app.services import generation_orchestrator as go
+        self.assertFalse(
+            hasattr(go, "_make_placeholder_scene"),
+            "_make_placeholder_scene should be deleted per D6"
+        )
+
+    def test_ensure_non_empty_arrays_does_not_inject_placeholders(self) -> None:
+        """D6: _ensure_non_empty_arrays must not exist — silent patching is removed."""
+        from app.services import generation_orchestrator as go
+        self.assertFalse(
+            hasattr(go, "_ensure_non_empty_arrays"),
+            "_ensure_non_empty_arrays should be deleted per D6"
+        )
+
     def test_run_v1_save_intermediates_defaults_to_false(self) -> None:
         import inspect
         sig = inspect.signature(GenerationOrchestrator.run_v1)

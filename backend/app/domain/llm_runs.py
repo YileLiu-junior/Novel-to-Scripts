@@ -17,4 +17,6 @@ class LlmRun(BaseModel):
     raw_output: str | None = None
     parsed_output: dict[str, Any] | None = None
     validation_errors: list[str] = Field(default_factory=list)
+    duration_ms: float | None = None
+    tokens_used: int | None = None
 

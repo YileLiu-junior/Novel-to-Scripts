@@ -1,18 +1,28 @@
 from __future__ import annotations
 
-from typing import Any
-
 from app.domain.llm_runs import LlmRun
 
 
 class LlmTraceService:
-    def record_fake_run(self, job_id: str, step: str, parsed_output: dict[str, Any]) -> LlmRun:
+    def record_run(
+        self,
+        job_id: str,
+        step: str,
+        provider_name: str,
+        model_name: str,
+        *,
+        raw_output: str | None = None,
+        duration_ms: float | None = None,
+        tokens_used: int | None = None,
+    ) -> LlmRun:
         return LlmRun(
             id=f"llm_{job_id}_{step}",
             job_id=job_id,
             step=step,
-            provider="fake",
-            model_name="fake-provider",
-            parsed_output=parsed_output,
+            provider=provider_name,
+            model_name=model_name,
+            raw_output=raw_output,
+            duration_ms=duration_ms,
+            tokens_used=tokens_used,
         )
 

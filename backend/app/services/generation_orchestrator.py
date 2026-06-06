@@ -685,81 +685,32 @@ def _normalize_all_references(
 
     return screenplay
 
+def _strip_chapter_text(data: dict[str, Any]) -> dict[str, Any]:
+    """移除 chapter 对象的 text 和 paragraphs 字段，替换为 paragraph_count 引用。
 
-def _make_placeholder_scene() -> dict[str, Any]:
-    """生成一个 schema-有效的占位场景，用于 LLM 未产出场景时保底。"""
-    return {
-        "id": "scene_001",
-        "title": "待补场景",
-        "scene_heading": {
-            "sequence": 1,
-            "location": "未指定",
-            "interior_exterior": "INT",
-            "time_of_day": "day",
-            "text": "1. 未指定 内景 日",
-        },
-        "source_refs": [{"chapter_id": "chapter_001"}],
-        "dramatic_purpose": ["待补戏剧目的"],
-        "location": {"name": "未指定", "time": "day", "interior_exterior": "INT"},
-        "characters": [],
-        "related_events": [],
-        "action": ["待补动作描述。"],
-        "content_blocks": [{
-            "id": "block_001",
-            "block_type": "action",
-            "text": "待补动作描述。",
-        }],
-        "dialogue": [],
-    }
+    D10: 中间 artifact 不应完整复制章节原文。此函数保留章节元数据
+    （id、title、order）和段落计数，但删除冗余的原文副本。
+    """
+    import copy
+    result = copy.deepcopy(data)
 
+    for key in ("chapters", "chapters_used"):
+        chapters = result.get(key)
+        if not isinstance(chapters, list):
+            continue
+        for chapter in chapters:
+            if not isinstance(chapter, dict):
+                continue
+            paragraphs = chapter.pop("paragraphs", None)
+            chapter.pop("text", None)
+            chapter.pop("source_anchor", None)
+            chapter.pop("source_file", None)
+            if isinstance(paragraphs, list):
+                chapter["paragraph_count"] = len(paragraphs)
+            elif "paragraph_count" not in chapter:
+                chapter["paragraph_count"] = 0
 
-def _ensure_non_empty_arrays(screenplay: dict[str, Any]) -> dict[str, Any]:
-    """最终安全网：确保所有 schema 中要求 minItems >= 1 的数组至少有一个元素。"""
-    # story_outline
-    script = screenplay.get("script_structure")
-    if isinstance(script, dict):
-        outline = script.get("story_outline")
-        if not isinstance(outline, list) or not outline:
-            script["story_outline"] = [
-                {"id": "outline_001", "summary": "待补大纲", "related_events": [], "target_scenes": []}
-            ]
-        # scene_ids
-        ls_play = script.get("literary_screenplay")
-        if isinstance(ls_play, dict):
-            sids = ls_play.get("scene_ids")
-            if not isinstance(sids, list) or not sids:
-                scene_list = screenplay.get("scenes", [])
-                ls_play["scene_ids"] = [s.get("id") for s in scene_list if s.get("id")] or ["scene_001"]
-
-    # core_elements
-    core = screenplay.get("core_elements")
-    if isinstance(core, dict):
-        if not isinstance(core.get("actions"), list) or not core["actions"]:
-            core["actions"] = [{"id": "action_001", "description": "待补动作", "scene_id": "scene_001"}]
-        if not isinstance(core.get("plot"), list) or not core["plot"]:
-            core["plot"] = [{"event_id": "event_001", "function": "exposition"}]
-        if not isinstance(core.get("situations"), list) or not core["situations"]:
-            core["situations"] = [{"id": "situation_001", "scene_id": "scene_001", "description": "待补情境"}]
-        if not isinstance(core.get("protagonists"), list) or not core["protagonists"]:
-            bible = screenplay.get("story_bible", {})
-            chars = bible.get("characters", [])
-            if chars:
-                core["protagonists"] = [c.get("id") for c in chars[:1] if c.get("id")]
-            if not core["protagonists"]:
-                # 确保 story_bible 中有一个对应角色，避免引用校验报错
-                placeholder_char = {"id": "char_001", "name": "主角"}
-                if not isinstance(bible.get("characters"), list):
-                    bible["characters"] = []
-                if not any(c.get("id") == "char_001" for c in bible["characters"] if isinstance(c, dict)):
-                    bible["characters"].append(placeholder_char)
-                core["protagonists"] = ["char_001"]
-
-    # scenes: minItems 1 — 如果 LLM 没有输出任何场景，生成一个最小占位场景
-    scene_list = screenplay.get("scenes")
-    if not isinstance(scene_list, list) or not scene_list:
-        screenplay["scenes"] = [_make_placeholder_scene()]
-
-    return screenplay
+    return result
 
 
 def _normalize_script_structure(
@@ -943,23 +894,47 @@ class GenerationOrchestrator:
                 f"provider={getattr(self.novel_reader.provider, 'name', 'unknown')} "
                 f"artifact_dir={artifact_dir}"
             )
+            import time as _time
+
             active_job = self.job_service.mark_step(active_job, "running", "novel_reader")
+            _t0 = _time.monotonic()
             novel_analysis = self.novel_reader.run({"project": project_payload, "chapters": chapters})
+            self.llm_trace_service.record_run(
+                active_job.id, "novel_reader",
+                provider_name=getattr(self.novel_reader.provider, "name", "unknown"),
+                model_name=getattr(self.novel_reader.provider, "model", "unknown"),
+                duration_ms=(_time.monotonic() - _t0) * 1000,
+            )
             if save_intermediates:
-                self.artifact_service.save_artifact(project_id, "novel_analysis", novel_analysis, active_job.id)
-            self.llm_trace_service.record_fake_run(active_job.id, "novel_reader", novel_analysis)
+                self.artifact_service.save_artifact(
+                    project_id, "novel_analysis",
+                    _strip_chapter_text(novel_analysis), active_job.id,
+                )
 
             active_job = self.job_service.mark_step(active_job, "running", "story_ontology")
+            _t0 = _time.monotonic()
             story_assets = self.story_ontology.run(
                 {
                     "project": project_payload,
                     "adaptation_config": adaptation_config.model_dump(),
                     **novel_analysis,
+                    "upstream_characters": novel_analysis.get("character_candidates", []),
+                    "upstream_events": novel_analysis.get("events", []),
                 }
             )
-            self.artifact_service.save_artifact(project_id, "story_bible", story_assets, active_job.id)
+            self.llm_trace_service.record_run(
+                active_job.id, "story_ontology",
+                provider_name=getattr(self.story_ontology.provider, "name", "unknown"),
+                model_name=getattr(self.story_ontology.provider, "model", "unknown"),
+                duration_ms=(_time.monotonic() - _t0) * 1000,
+            )
+            self.artifact_service.save_artifact(
+                project_id, "story_bible",
+                _strip_chapter_text(story_assets), active_job.id,
+            )
 
             active_job = self.job_service.mark_step(active_job, "running", "adaptation_planner")
+            _t0 = _time.monotonic()
             adaptation_plan = self.adaptation_planner.run(
                 {
                     "project": project_payload,
@@ -967,17 +942,32 @@ class GenerationOrchestrator:
                     "adaptation_config": adaptation_config.model_dump(),
                 }
             )
+            self.llm_trace_service.record_run(
+                active_job.id, "adaptation_planner",
+                provider_name=getattr(self.adaptation_planner.provider, "name", "unknown"),
+                model_name=getattr(self.adaptation_planner.provider, "model", "unknown"),
+                duration_ms=(_time.monotonic() - _t0) * 1000,
+            )
             if save_intermediates:
                 self.artifact_service.save_artifact(project_id, "adaptation_plan", adaptation_plan, active_job.id)
 
             active_job = self.job_service.mark_step(active_job, "running", "screenplay_writer")
+            _t0 = _time.monotonic()
             screenplay_json = self.screenplay_writer.run(
                 {
                     "project": project_payload,
                     **story_assets,
                     "adaptation_config": adaptation_config.model_dump(),
                     "adaptation_plan": adaptation_plan,
+                    "canonical_characters": story_assets.get("story_bible", {}).get("characters", []),
+                    "canonical_events": story_assets.get("events", []),
                 }
+            )
+            self.llm_trace_service.record_run(
+                active_job.id, "screenplay_writer",
+                provider_name=getattr(self.screenplay_writer.provider, "name", "unknown"),
+                model_name=getattr(self.screenplay_writer.provider, "model", "unknown"),
+                duration_ms=(_time.monotonic() - _t0) * 1000,
             )
             # 注入 schema 要求的固定字段：LLM 只负责生成 scenes，
             # 其余字段由编排器保证，避免 LLM 回显残缺数据导致校验失败
@@ -1026,8 +1016,6 @@ class GenerationOrchestrator:
             if char_lookup or event_lookup:
                 screenplay_json = _normalize_all_references(screenplay_json, char_lookup, event_lookup)
             screenplay_json = normalize_screenplay_for_export(screenplay_json)
-            # 最终安全网：确保 minItems ≥ 1 的数组不为空
-            screenplay_json = _ensure_non_empty_arrays(screenplay_json)
             findings = self.validation_service.validate_screenplay(screenplay_json)
             audit_report = self.validation_service.audit_report_for(findings).model_dump()
             screenplay_json["audit_report"] = audit_report
