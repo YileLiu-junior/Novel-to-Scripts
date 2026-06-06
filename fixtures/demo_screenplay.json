@@ -32,7 +32,8 @@
     "target_format": "web_series",
     "fidelity_level": "high",
     "preserve_priorities": ["relationship_arc", "deduction_showcase", "case_inciting_event"],
-    "dialogue_style": "restrained_with_subtext"
+    "dialogue_style": "restrained_with_subtext",
+    "adaptation_evidence_mode": "enabled"
   },
   "script_structure": {
     "story_synopsis": "退役军医华生在伦敦寻找新的生活落点，经斯坦福德介绍遇见福尔摩斯。两人因合租开始互相试探，随后一封来自警方的案件邀请把这段关系推入共同侦查。",
@@ -111,7 +112,89 @@
         "knows": ["event_001", "event_002"],
         "does_not_know": ["event_003"]
       }
-    ]
+    ],
+    "continuity_anchors": [
+      {
+        "id": "anchor_001",
+        "anchor_type": "relationship_state",
+        "summary": "华生和福尔摩斯在合租前仍是彼此试探的陌生人，不能提前表现为亲密搭档。",
+        "applies_to": ["char_001", "char_002"],
+        "source_refs": [
+          {
+            "chapter_id": "chapter_002",
+            "paragraph_range": "p_001"
+          }
+        ]
+      },
+      {
+        "id": "anchor_002",
+        "anchor_type": "character_trait",
+        "summary": "福尔摩斯的兴奋来自复杂案件和推理机会，而不是一般社交热情。",
+        "applies_to": ["char_002"],
+        "source_refs": [
+          {
+            "chapter_id": "chapter_003",
+            "paragraph_range": "p_001-p_003"
+          }
+        ]
+      }
+    ],
+    "dramatic_assets": {
+      "conflict_pool": [
+        {
+          "id": "conflict_001",
+          "conflict_axis": "安顿需求 vs 合租风险",
+          "participants": ["char_001", "char_002", "char_003"],
+          "related_events": ["event_001", "event_002"],
+          "source_refs": [
+            {
+              "chapter_id": "chapter_001",
+              "paragraph_range": "p_001-p_003"
+            }
+          ]
+        },
+        {
+          "id": "conflict_002",
+          "conflict_axis": "日常倦怠 vs 复杂案件刺激",
+          "participants": ["char_001", "char_002"],
+          "related_events": ["event_003"],
+          "source_refs": [
+            {
+              "chapter_id": "chapter_003",
+              "paragraph_range": "p_001-p_003"
+            }
+          ]
+        }
+      ],
+      "filmic_constraints": [
+        {
+          "id": "filmic_001",
+          "constraint_type": "internal_state_to_action",
+          "summary": "华生的经济压力和不安需要通过试探、停顿、观察房间等可演动作表现，不能只靠旁白解释。",
+          "related_characters": ["char_001"],
+          "related_events": ["event_001", "event_002"],
+          "source_refs": [
+            {
+              "chapter_id": "chapter_001",
+              "paragraph_range": "p_001-p_003"
+            }
+          ]
+        },
+        {
+          "id": "filmic_002",
+          "constraint_type": "voiceover_to_visible_behavior",
+          "summary": "福尔摩斯从倦怠到兴奋的变化必须转化为语速、动作或注意力变化。",
+          "related_characters": ["char_002"],
+          "related_events": ["event_003"],
+          "source_refs": [
+            {
+              "chapter_id": "chapter_003",
+              "paragraph_range": "p_001-p_003"
+            }
+          ]
+        }
+      ]
+    }
   },
   "core_elements": {
     "actions": [
@@ -166,21 +249,51 @@
       "title": "华生寻找住处",
       "event_type": "setup",
       "participants": ["char_001", "char_003"],
-      "summary": "华生因经济压力寻找住处，斯坦福德提到福尔摩斯。"
+      "summary": "华生因经济压力寻找住处，斯坦福德提到福尔摩斯。",
+      "complete_event": true,
+      "event_flow": ["华生寻找住处", "斯坦福德提出合租对象", "斯坦福德提醒对方古怪", "华生决定见面"],
+      "must_keep_together": true,
+      "conflict_axis": "安顿需求 vs 合租风险",
+      "source_refs": [
+        {
+          "chapter_id": "chapter_001",
+          "paragraph_range": "p_001-p_002"
+        }
+      ]
     },
     {
       "id": "event_002",
       "title": "福尔摩斯与华生开始合租",
       "event_type": "relationship_turn",
       "participants": ["char_001", "char_002"],
-      "summary": "两人决定合住贝克街。"
+      "summary": "两人决定合住贝克街。",
+      "complete_event": true,
+      "event_flow": ["两人见面", "交换合住条件", "福尔摩斯展示观察能力", "达成合租安排"],
+      "must_keep_together": true,
+      "conflict_axis": "互相好奇 vs 互相防备",
+      "source_refs": [
+        {
+          "chapter_id": "chapter_002",
+          "paragraph_range": "p_001"
+        }
+      ]
     },
     {
       "id": "event_003",
       "title": "劳里斯顿花园疑案到来",
       "event_type": "inciting_case",
       "participants": ["char_001", "char_002"],
-      "summary": "格雷格森来信请求福尔摩斯协助调查空屋凶案。"
+      "summary": "格雷格森来信请求福尔摩斯协助调查空屋凶案。",
+      "complete_event": true,
+      "event_flow": ["来信送达", "福尔摩斯读出案件信息", "倦怠转为兴奋", "两人准备前往现场"],
+      "must_keep_together": true,
+      "conflict_axis": "日常倦怠 vs 复杂案件刺激",
+      "source_refs": [
+        {
+          "chapter_id": "chapter_003",
+          "paragraph_range": "p_001-p_003"
+        }
+      ]
     }
   ],
   "causal_graph": {

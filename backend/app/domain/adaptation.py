@@ -12,6 +12,7 @@ class AdaptationConfig(BaseModel):
     fidelity_level: Literal["low", "medium", "high"] = "high"
     preserve_priorities: list[str] = Field(default_factory=list)
     dialogue_style: str = "restrained_with_subtext"
+    adaptation_evidence_mode: Literal["enabled", "minimal"] = "enabled"
 
 
 class MergedEvent(BaseModel):
@@ -37,4 +38,3 @@ class AdaptationPlan(BaseModel):
     deleted_or_deferred_events: list[DeferredEvent] = Field(default_factory=list)
     protected_elements: list[str] = Field(default_factory=list)
     scene_plan: list[ScenePlanItem] = Field(default_factory=list)
-

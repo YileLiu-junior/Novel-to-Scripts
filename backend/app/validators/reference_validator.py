@@ -235,7 +235,120 @@ class ReferenceValidator:
                         situation.get("id"),
                     )
                 )
+        story_bible = screenplay.get("story_bible", {})
+        dramatic_assets = story_bible.get("dramatic_assets", {}) if isinstance(story_bible, dict) else {}
+        for anchor in story_bible.get("continuity_anchors", []) if isinstance(story_bible, dict) else []:
+            anchor_id = anchor.get("id")
+            for character_id in anchor.get("applies_to", []):
+                if character_id not in characters:
+                    findings.append(
+                        self._finding(
+                            "reference.evidence_anchor_character_missing",
+                            "warning",
+                            f"Continuity anchor {anchor_id} references missing character {character_id}.",
+                            "character",
+                            character_id,
+                        )
+                    )
+            for ref in anchor.get("source_refs", []):
+                chapter_id = ref.get("chapter_id")
+                if chapter_id not in chapters:
+                    findings.append(
+                        self._finding(
+                            "reference.evidence_anchor_chapter_missing",
+                            "warning",
+                            f"Continuity anchor {anchor_id} references missing chapter {chapter_id}.",
+                            "chapter",
+                            chapter_id,
+                        )
+                    )
+        for conflict in dramatic_assets.get("conflict_pool", []) if isinstance(dramatic_assets, dict) else []:
+            conflict_id = conflict.get("id")
+            for character_id in conflict.get("participants", []):
+                if character_id not in characters:
+                    findings.append(
+                        self._finding(
+                            "reference.evidence_conflict_character_missing",
+                            "warning",
+                            f"Conflict asset {conflict_id} references missing character {character_id}.",
+                            "character",
+                            character_id,
+                        )
+                    )
+            for event_id in conflict.get("related_events", []):
+                if event_id not in events:
+                    findings.append(
+                        self._finding(
+                            "reference.evidence_conflict_event_missing",
+                            "warning",
+                            f"Conflict asset {conflict_id} references missing event {event_id}.",
+                            "event",
+                            event_id,
+                        )
+                    )
+        for constraint in dramatic_assets.get("filmic_constraints", []) if isinstance(dramatic_assets, dict) else []:
+            constraint_id = constraint.get("id")
+            for character_id in constraint.get("related_characters", []):
+                if character_id not in characters:
+                    findings.append(
+                        self._finding(
+                            "reference.evidence_filmic_character_missing",
+                            "warning",
+                            f"Filmic constraint {constraint_id} references missing character {character_id}.",
+                            "character",
+                            character_id,
+                        )
+                    )
+            for event_id in constraint.get("related_events", []):
+                if event_id not in events:
+                    findings.append(
+                        self._finding(
+                            "reference.evidence_filmic_event_missing",
+                            "warning",
+                            f"Filmic constraint {constraint_id} references missing event {event_id}.",
+                            "event",
+                            event_id,
+                        )
+                    )
+        self._append_must_keep_findings(screenplay, findings)
         return findings
+
+    def _append_must_keep_findings(self, screenplay: dict[str, Any], findings: list[ValidationFinding]) -> None:
+        """检查 planner 是否至少把不可拆分完整事件关联进 scene_plan。"""
+        scene_plan = screenplay.get("adaptation_plan", {}).get("scene_plan", [])
+        usage: dict[str, int] = {}
+        if isinstance(scene_plan, list):
+            for item in scene_plan:
+                if not isinstance(item, dict):
+                    continue
+                for event_id in item.get("source_events", []):
+                    if isinstance(event_id, str):
+                        usage[event_id] = usage.get(event_id, 0) + 1
+        for event in screenplay.get("events", []):
+            if not isinstance(event, dict) or not event.get("complete_event") or not event.get("must_keep_together"):
+                continue
+            event_id = event.get("id")
+            count = usage.get(event_id, 0)
+            if count == 0:
+                findings.append(
+                    self._finding(
+                        "reference.must_keep_event_unlinked",
+                        "warning",
+                        f"Complete event {event_id} is marked must_keep_together but is not linked to scene_plan.",
+                        "event",
+                        event_id,
+                    )
+                )
+            elif count > 1:
+                findings.append(
+                    self._finding(
+                        "reference.must_keep_event_split",
+                        "warning",
+                        f"Complete event {event_id} is marked must_keep_together but appears in multiple scene_plan items.",
+                        "event",
+                        event_id,
+                    )
+                )
 
     def _finding(
         self,
