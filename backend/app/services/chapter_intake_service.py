@@ -23,7 +23,9 @@ class ChapterIntakeService:
         self.artifact_service = artifact_service or ArtifactService()
         self.provider = provider
 
-    def auto_split_and_save(self, project_id: str, text: str, mode: str = "auto") -> tuple[list[Chapter], dict[str, Any]]:
+    def auto_split_and_save(
+        self, project_id: str, text: str, mode: str = "auto", *, save_intermediates: bool = False
+    ) -> tuple[list[Chapter], dict[str, Any]]:
         """执行自动拆章并持久化章节，trace 作为 artifact 保存供调试。"""
         boundary_reader = _LazyChapterBoundaryReader(self.provider)
         split_result = ChapterSplitter(boundary_reader=boundary_reader).split_with_trace(text, mode=mode)
@@ -32,7 +34,7 @@ class ChapterIntakeService:
             [chapter.to_dict() for chapter in split_result.chapters],
         )
         trace = split_result.trace()
-        if split_result.mode_used == "ai" or trace["ignored_spans"] or trace["warnings"]:
+        if save_intermediates and (split_result.mode_used == "ai" or trace["ignored_spans"] or trace["warnings"]):
             self.artifact_service.save_artifact(project_id, "chapter_split_plan", trace)
         return chapters, trace
 

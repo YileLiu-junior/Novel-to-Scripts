@@ -79,6 +79,13 @@ class AiProviderTest(unittest.TestCase):
                 GenerationOrchestrator.from_provider_settings()
         self.assertIn("deepseek", str(ctx.exception).lower())
 
+    def test_run_v1_save_intermediates_defaults_to_false(self) -> None:
+        import inspect
+        sig = inspect.signature(GenerationOrchestrator.run_v1)
+        param = sig.parameters.get("save_intermediates")
+        self.assertIsNotNone(param, "run_v1 should accept save_intermediates")
+        self.assertFalse(param.default, "save_intermediates should default to False")
+
     def test_deepseek_provider_parses_structured_response(self) -> None:
         client = _DeepSeekClient('{"characters": [], "events": []}')
         provider = DeepSeekProvider(model="deepseek-test", client=client)

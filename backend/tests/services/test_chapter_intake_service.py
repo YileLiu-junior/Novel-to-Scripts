@@ -54,6 +54,7 @@ def test_auto_split_persists_three_chapters_and_split_artifact(tmp_path, monkeyp
         "project_abc",
         "声明:仅供预览交流。\n\n雨夜里，林晚回家。\n\n电话响起。\n\n旧信出现。",
         mode="auto",
+        save_intermediates=True,
     )
 
     assert len(chapters) == 3
@@ -62,6 +63,23 @@ def test_auto_split_persists_three_chapters_and_split_artifact(tmp_path, monkeyp
     artifact = ArtifactService().latest_for_project("project_abc", "chapter_split_plan")
     assert artifact is not None
     assert artifact.data["mode_used"] == "ai"
+
+
+def test_split_plan_not_saved_by_default(tmp_path, monkeypatch) -> None:
+    monkeypatch.setenv("XENGINEER_DATA_ROOT", str(tmp_path))
+    service = ChapterIntakeService(provider=_ChapterBoundaryFake())
+
+    chapters, trace = service.auto_split_and_save(
+        "project_abc",
+        "声明:仅供预览交流。\n\n雨夜里，林晚回家。\n\n电话响起。\n\n旧信出现。",
+        mode="auto",
+    )
+
+    assert len(chapters) == 3
+    assert trace["mode_used"] == "ai"
+
+    artifact = ArtifactService().latest_for_project("project_abc", "chapter_split_plan")
+    assert artifact is None
 
 
 def test_rule_success_does_not_call_provider(tmp_path, monkeypatch) -> None:

@@ -927,6 +927,8 @@ class GenerationOrchestrator:
         chapters: list[dict[str, Any]],
         adaptation_config: AdaptationConfig,
         job: GenerationJob | None = None,
+        *,
+        save_intermediates: bool = False,
     ) -> GenerationJob:
         active_job = job or self.job_service.create_job(project_id)
         try:
@@ -943,7 +945,8 @@ class GenerationOrchestrator:
             )
             active_job = self.job_service.mark_step(active_job, "running", "novel_reader")
             novel_analysis = self.novel_reader.run({"project": project_payload, "chapters": chapters})
-            self.artifact_service.save_artifact(project_id, "novel_analysis", novel_analysis, active_job.id)
+            if save_intermediates:
+                self.artifact_service.save_artifact(project_id, "novel_analysis", novel_analysis, active_job.id)
             self.llm_trace_service.record_fake_run(active_job.id, "novel_reader", novel_analysis)
 
             active_job = self.job_service.mark_step(active_job, "running", "story_ontology")
@@ -964,7 +967,8 @@ class GenerationOrchestrator:
                     "adaptation_config": adaptation_config.model_dump(),
                 }
             )
-            self.artifact_service.save_artifact(project_id, "adaptation_plan", adaptation_plan, active_job.id)
+            if save_intermediates:
+                self.artifact_service.save_artifact(project_id, "adaptation_plan", adaptation_plan, active_job.id)
 
             active_job = self.job_service.mark_step(active_job, "running", "screenplay_writer")
             screenplay_json = self.screenplay_writer.run(
@@ -1028,19 +1032,20 @@ class GenerationOrchestrator:
             audit_report = self.validation_service.audit_report_for(findings).model_dump()
             screenplay_json["audit_report"] = audit_report
             yaml_text = self.yaml_service.export_validated(screenplay_json)
-            screenplay_artifact = self.artifact_service.save_artifact(project_id, "screenplay_json", screenplay_json, active_job.id)
-            print(
-                "[generate] "
-                f"screenplay_json_path={artifact_dir / f'screenplay_json_v{screenplay_artifact.version:03d}.json'}"
-            )
+            if save_intermediates:
+                screenplay_artifact = self.artifact_service.save_artifact(project_id, "screenplay_json", screenplay_json, active_job.id)
+                print(
+                    "[generate] "
+                    f"screenplay_json_path={artifact_dir / f'screenplay_json_v{screenplay_artifact.version:03d}.json'}"
+                )
             self.artifact_service.save_artifact(project_id, "screenplay_yaml", yaml_text, active_job.id)
             self.artifact_service.save_artifact(project_id, "audit_report", audit_report, active_job.id)
-            # 渲染可读文学剧本文本
-            render_service = ScreenplayRenderService(
-                validation_service=self.validation_service,
-                artifact_service=self.artifact_service,
-            )
-            render_service.render_and_save(project_id, screenplay_json, active_job.id)
+            if save_intermediates:
+                render_service = ScreenplayRenderService(
+                    validation_service=self.validation_service,
+                    artifact_service=self.artifact_service,
+                )
+                render_service.render_and_save(project_id, screenplay_json, active_job.id)
             return self.job_service.mark_step(active_job, "succeeded", "complete")
         except Exception as exc:
             return self.job_service.mark_step(active_job, "failed", active_job.current_step, str(exc))
