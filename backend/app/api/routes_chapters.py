@@ -2,8 +2,8 @@ from fastapi import APIRouter, HTTPException
 
 from app.api.dto.chapters import AutoSplitRequest, AutoSplitResponse, ChapterResponse, ReplaceChaptersRequest
 from app.domain.source import Chapter
+from app.services.chapter_intake_service import ChapterIntakeService
 from app.services.chapter_service import ChapterService
-from app.services.chapter_splitter import ChapterSplitter
 from app.services.project_service import ProjectService
 
 router = APIRouter()
@@ -44,17 +44,10 @@ def auto_split_chapters(project_id: str, request: AutoSplitRequest) -> AutoSplit
     if ProjectService().get_project(project_id) is None:
         raise HTTPException(status_code=404, detail="Project not found.")
 
-    splitter = ChapterSplitter()
-    split_chapters = splitter.split(request.text, mode=request.mode)
-
-    # 持久化到项目
-    chapters = ChapterService().replace_for_project(
-        project_id,
-        [ch.to_dict() for ch in split_chapters],
-    )
+    chapters, trace = ChapterIntakeService().auto_split_and_save(project_id, request.text, request.mode)
 
     return AutoSplitResponse(
         chapters=[{"title": ch.title, "text": ch.text} for ch in chapters],
         chapter_count=len(chapters),
-        mode_used="rule" if len(split_chapters) >= 2 else "ai",
+        mode_used=trace["mode_used"],
     )

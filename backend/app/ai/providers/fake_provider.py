@@ -38,6 +38,8 @@ class FakeProvider(AiProvider):
             return project_fixture
 
         chapters = self._chapters_from_request(request)
+        if request.skill_name == "chapter_boundary_reader":
+            return self._build_chapter_boundary_plan(request.input_data)
         if request.skill_name == "novel_reader":
             return self._build_novel_analysis(chapters)
         if request.skill_name == "story_ontology":
@@ -107,6 +109,73 @@ class FakeProvider(AiProvider):
     def _excerpt(self, text: str, limit: int = 120) -> str:
         compact = re.sub(r"\s+", " ", text).strip()
         return compact[:limit] if compact else "当前章节暂无正文。"
+
+    def _build_chapter_boundary_plan(self, input_data: dict[str, Any]) -> dict[str, Any]:
+        """为 raw txt 自动拆章提供确定性边界计划，供前后端离线联调。"""
+        lines = [item for item in input_data.get("line_index", []) if isinstance(item, dict)]
+        target = input_data.get("target_main_chapters", 3)
+        target_count = target if isinstance(target, int) and target > 0 else 3
+        ignored = []
+        story_lines = []
+        heading_lines = []
+        ignored_hints = ("声明", "txt02.com", "仅供预览", "版权", "下载", "本站")
+        heading_pattern = re.compile(r"^第[零一二三四五六七八九十百千万\d]+[章节回卷部集]")
+        for item in lines:
+            text = str(item.get("text", ""))
+            line_no = int(item.get("line", 0) or 0)
+            stripped = text.strip()
+            if not stripped:
+                continue
+            if any(hint in stripped for hint in ignored_hints):
+                ignored.append(
+                    {
+                        "kind": "copyright_notice",
+                        "start_line": line_no,
+                        "end_line": line_no,
+                        "reason": "fake provider detected non-story notice",
+                    }
+                )
+            else:
+                story_lines.append((line_no, stripped))
+                if heading_pattern.match(stripped):
+                    heading_lines.append((line_no, stripped))
+
+        candidates = []
+        if heading_lines:
+            all_line_numbers = [line_no for line_no, _text in story_lines]
+            max_line = max(all_line_numbers, default=0)
+            for idx, (line_no, title) in enumerate(heading_lines[:target_count]):
+                next_heading_line = heading_lines[idx + 1][0] if idx + 1 < len(heading_lines) else max_line + 1
+                end_line = next_heading_line - 1
+                candidates.append(
+                    {
+                        "chapter_kind": "main_chapter",
+                        "title": title,
+                        "start_line": line_no,
+                        "end_line": end_line,
+                        "confidence": 0.9,
+                    }
+                )
+        else:
+            for line_no, _text in story_lines[:target_count]:
+                candidates.append(
+                    {
+                        "chapter_kind": "main_chapter",
+                        "title": "",
+                        "start_line": line_no,
+                        "end_line": line_no,
+                        "confidence": 0.8,
+                    }
+                )
+        warnings = []
+        if len(candidates) < target_count:
+            warnings.append(
+                {
+                    "code": "chapters.too_few_after_ai_split",
+                    "message": "fake provider found fewer than target main chapters",
+                }
+            )
+        return {"ignored_spans": ignored, "candidate_chapters": candidates, "warnings": warnings}
 
     def _build_novel_analysis(self, chapters: list[dict[str, Any]]) -> dict[str, Any]:
         events = []

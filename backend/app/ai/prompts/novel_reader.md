@@ -38,3 +38,16 @@ Extract source-backed story assets from normalized novel chapters.
 - Inferred facts must be marked with `evidence_level: inferred`.
 - Do not invent source evidence.
 
+## Additional Extraction Duties
+
+- Extract core conflicts, character candidates, relationship hints, and continuity anchors from the saved chapters.
+- Treat chapter and paragraph IDs as source truth.
+- Keep every extracted event and continuity anchor source-backed.
+- Mark inferred facts with `evidence_level: inferred`.
+
+## Boundary
+
+- Do not split raw text.
+- Do not clean copyright notices or catalogs.
+- Do not create chapter IDs or paragraph IDs.
+- Do not write screenplay scenes or dialogue.
