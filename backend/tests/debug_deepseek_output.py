@@ -9,16 +9,19 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
 
 os.environ["XENGINEER_AI_PROVIDER"] = "deepseek"
-os.environ["DEEPSEEK_API_KEY"] = "sk-ed4fb7302f234b25b2868529d7883b10"
 os.environ["XENGINEER_DEEPSEEK_MODEL"] = "deepseek-v4-flash"
 os.environ["DEEPSEEK_BASE_URL"] = "https://api.deepseek.com"
+
+deepseek_api_key = os.environ.get("DEEPSEEK_API_KEY")
+if not deepseek_api_key:
+    raise RuntimeError("DEEPSEEK_API_KEY must be set before running this debug script.")
 
 from app.ai.providers.deepseek_provider import DeepSeekProvider
 from app.ai.skills.screenplay_writer import ScreenplayYamlWriterSkill
 
 provider = DeepSeekProvider(
     model="deepseek-v4-flash",
-    api_key="sk-ed4fb7302f234b25b2868529d7883b10",
+    api_key=deepseek_api_key,
     base_url="https://api.deepseek.com",
     timeout_seconds=120,
 )

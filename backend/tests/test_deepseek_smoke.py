@@ -202,9 +202,10 @@ if __name__ == "__main__":
 
     # Set env vars from the configure script values
     os.environ.setdefault("XENGINEER_AI_PROVIDER", "deepseek")
-    os.environ.setdefault("DEEPSEEK_API_KEY", "sk-ed4fb7302f234b25b2868529d7883b10")
     os.environ.setdefault("XENGINEER_DEEPSEEK_MODEL", "deepseek-v4-flash")
     os.environ.setdefault("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
+    if not os.environ.get("DEEPSEEK_API_KEY"):
+        raise RuntimeError("DEEPSEEK_API_KEY must be set before running DeepSeek smoke tests.")
 
     # Use a temp data root
     import tempfile
