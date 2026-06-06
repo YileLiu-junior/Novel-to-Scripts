@@ -90,19 +90,17 @@ XEngineer/
         jobs.py
         llm_runs.py
 
-      db/
-        __init__.py
-        session.py
-        tables.py
-        migrations/
-
       repositories/
         __init__.py
-        project_repository.py
-        chapter_repository.py
-        artifact_repository.py
-        job_repository.py
-        llm_run_repository.py
+        base.py
+        local/
+          __init__.py
+          store.py
+          project_repository.py
+          chapter_repository.py
+          job_repository.py
+          artifact_repository.py
+          llm_run_repository.py
 
       services/
         __init__.py
@@ -307,16 +305,41 @@ XEngineer/
 - `routes_schema.py`：Schema 下载。
 - `routes_health.py`：健康检查。
 
-API 层只做参数解析、权限/输入边界和响应 DTO，不直接调用模型，不直接读写数据库。
+API 层只做参数解析、权限/输入边界和响应 DTO，不直接调用模型，不直接读写持久化文件。
 
-### `backend/app/db/` 与 `backend/app/repositories/`
+### `backend/app/repositories/`
 
-`db/` 放数据库连接、表定义和迁移入口；`repositories/` 放持久化读写。
+`repositories/` 放持久化读写。V0+V1 使用 local file storage，不引入 SQLite、PostgreSQL、Redis 或外部对象存储。
 
-MVP 用 SQLite，也仍然建议保留 repository 层，原因是：
+推荐目录：
+
+```text
+backend/app/repositories/
+  base.py
+  local/
+    store.py
+    project_repository.py
+    chapter_repository.py
+    job_repository.py
+    artifact_repository.py
+    llm_run_repository.py
+```
+
+local storage 默认写入 `data/`，由 repository 负责隐藏路径细节：
+
+```text
+data/projects.json
+data/projects/{project_id}/chapters.json
+data/projects/{project_id}/jobs.json
+data/projects/{project_id}/artifacts/{artifact_type}_v###.json
+data/projects/{project_id}/artifacts/screenplay_yaml_v###.yaml
+data/llm_runs.jsonl
+```
+
+仍然保留 repository 层，原因是：
 
 - 生成流程会频繁保存 `artifact`、`job`、`llm_run`，直接散落在 service 中后期很难重试。
-- 未来从 SQLite 切到 PostgreSQL JSONB 时，service 和 API 不应该重写。
+- Service 和 API 只依赖 repository contract，不应该知道文件路径、版本文件名或 atomic write 细节。
 - `FakeProvider` 与真实模型都要能写入同一套 artifact，方便 demo 和调试复用。
 
 ### `backend/app/ai/`
@@ -339,7 +362,7 @@ MVP 用 SQLite，也仍然建议保留 repository 层，原因是：
 
 真实模型后面再接，不要一开始卡在 API key 和输出不稳定上。
 
-AI 层不要保存数据库，也不要生成最终 YAML。它只返回候选结构；持久化、校验、导出交给 service / validator / exporter。
+AI 层不要保存持久化文件，也不要生成最终 YAML。它只返回候选结构；持久化、校验、导出交给 service / validator / exporter。
 
 ### `backend/app/services/`
 
@@ -377,7 +400,7 @@ load artifacts -> call skill -> validate -> save artifact -> update job
 
 V1 可以先用 FastAPI `BackgroundTasks`，但仍然保留 `workers/jobs.py`：
 
-- 当前实现：把生成任务包装成后台函数，写入 `generation_jobs`。
+- 当前实现：把生成任务包装成后台函数，写入 `jobs.json`。
 - 后续升级：迁移到 RQ/Celery + Redis 时，API 和 service 调用口径不变。
 
 不要在 V1 引入 Redis 队列；只把目录和边界留出来。
@@ -481,8 +504,8 @@ XEngineer/
       main.py
       api/
       domain/
-      db/
       repositories/
+        local/
       services/
       ai/
         providers/
@@ -574,8 +597,8 @@ docs/demo/
 ```text
 backend/app/domain/
 backend/app/api/
-backend/app/db/
 backend/app/repositories/
+backend/app/repositories/local/
 backend/app/ai/providers/
 backend/app/ai/skills/
 backend/app/services/
@@ -603,9 +626,9 @@ frontend/src/features/audit/
 
 1. `domain/` 只定义 Pydantic 类型和枚举，不 import FastAPI、SQLAlchemy、OpenAI SDK。
 2. `api/` 只处理 HTTP 输入输出，不直接拼 prompt，不直接写 YAML。
-3. `ai/skills/` 只做 skill wrapper，不保存数据库，不决定 job 状态。
+3. `ai/skills/` 只做 skill wrapper，不保存持久化文件，不决定 job 状态。
 4. `services/` 负责业务流程和阶段编排，可以依赖 repository、validator、skill。
-5. `validators/` 必须可在无模型、无数据库的情况下单独测试。
+5. `validators/` 必须可在无模型、无存储依赖的情况下单独测试。
 6. `exporters/` 只导出，不补字段，不悄悄修复内容。
 7. `fixtures/` 是前后端和测试的共同契约，不能只为前端展示服务。
 8. `workers/` V1 只做后台任务包装，Redis/Celery 是未来替换点，不是当前依赖。

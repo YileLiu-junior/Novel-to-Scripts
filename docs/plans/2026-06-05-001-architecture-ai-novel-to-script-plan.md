@@ -34,8 +34,8 @@ created: 2026-06-05
 
 ```text
 Frontend: React + TypeScript + Vite
-Backend: FastAPI + Pydantic v2 + SQLModel/SQLAlchemy
-Storage: SQLite for MVP, PostgreSQL for production
+Backend: FastAPI + Pydantic v2
+Storage: backend-owned local file storage for V0+V1
 AI layer: Python service layer + provider adapter
 Async jobs: FastAPI BackgroundTasks for 72h MVP, RQ/Celery + Redis for production
 Validation: Pydantic models + JSON Schema + custom reference checks
@@ -67,7 +67,7 @@ flowchart LR
   D --> I["DialogueDoctorSkill"]
   D --> J["ContinuityAuditorSkill"]
   D --> K["Schema Validator"]
-  C --> L["SQLite/PostgreSQL"]
+  C --> L["Local File Storage"]
   K --> L
   D --> M["LLM Provider Adapter"]
 ```
@@ -209,7 +209,10 @@ backend/
         continuity_auditor.py
     repositories/
       project_repository.py
+      chapter_repository.py
       job_repository.py
+      artifact_repository.py
+      llm_run_repository.py
     workers/
       jobs.py
     tests/
@@ -217,7 +220,7 @@ backend/
 
 ### 5.2 核心领域模型
 
-后端以 Pydantic 为主定义领域结构，数据库可以先用 JSON 字段承载复杂内容。
+后端以 Pydantic 为主定义领域结构，local storage 以 JSON/YAML 文件承载复杂内容。
 
 核心对象：
 
@@ -232,18 +235,19 @@ backend/
 - `Scene`：场景、source refs、角色、动作、对白、因果、伏笔。
 - `AuditReport`：连续性、伏笔、台词、Schema warning。
 
-### 5.3 数据库存储
+### 5.3 本地文件存储
 
 MVP 推荐：
 
 ```text
-projects
-chapters
-generation_jobs
-artifacts
+data/projects.json
+data/projects/{project_id}/chapters.json
+data/projects/{project_id}/jobs.json
+data/projects/{project_id}/artifacts/
+data/llm_runs.jsonl
 ```
 
-`artifacts` 用于保存每一步结构化结果：
+`artifacts/` 用于保存每一步结构化结果：
 
 - `novel_analysis`
 - `story_bible`
@@ -252,7 +256,7 @@ artifacts
 - `screenplay_yaml`
 - `audit_report`
 
-MVP 先用 SQLite 即可，生产升级 PostgreSQL，把复杂结构放 JSONB。
+V0+V1 先用 backend-owned local file storage，不引入 SQLite、PostgreSQL 或迁移系统。artifact 文件按 `{artifact_type}_v###.json` 或 `{artifact_type}_v###.yaml` 命名，LLM trace 追加到 `llm_runs.jsonl`。
 
 ### 5.4 AI Pipeline
 
@@ -559,7 +563,7 @@ fixtures/demo_screenplay.yaml
 
 应对：
 
-- 72h 用 BackgroundTasks + job 状态表。
+- 72h 用 BackgroundTasks + local job state。
 - 超出 MVP 后切到 RQ/Celery + Redis。
 - 每个 pipeline step 可单独重试。
 
