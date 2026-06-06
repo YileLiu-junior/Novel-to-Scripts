@@ -17,9 +17,9 @@ from typing import Any
 
 _CHAPTER_PATTERNS: list[tuple[str, int]] = [
     # 中文章回体：第X章 / 第X节 / 第X回 / 第X卷
-    (r"^第[零一二三四五六七八九十百千万\d]+[章节回卷部集]", 1),
+    (r"^\s*第[零一二三四五六七八九十百千万\d]+[章节回卷部集]", 1),
     # 中文简写：第一章 / 一、
-    (r"^[零一二三四五六七八九十百千万]+[、，。．\s]", 1),
+    (r"^\s*[零一二三四五六七八九十百千万]+[、，。．\s]", 1),
     # 英文：Chapter X / CHAPTER X
     (r"^\s*Chapter\s+[\dIVXivx]+", 1),
     (r"^\s*CHAPTER\s+[\dIVXivx]+", 1),
@@ -32,6 +32,9 @@ _CHAPTER_PATTERNS: list[tuple[str, int]] = [
 
 # 编译正则
 _COMPILED_PATTERNS = [(re.compile(pattern, re.MULTILINE), priority) for pattern, priority in _CHAPTER_PATTERNS]
+_MAIN_CHAPTER_HEADING_RE = re.compile(r"^\s*第(?P<number>[零一二三四五六七八九十百千万\d]+)章(?P<tail>.*)$")
+_SECTION_TAIL_RE = re.compile(r"^\s*(?:[（(]\d+[）)]|第?\d+节|[零一二三四五六七八九十百千万\d]+)?\s*$")
+_MIN_CHAPTER_BODY_CHARS = 80
 
 _NON_STORY_HINTS = (
     "声明",
@@ -196,8 +199,7 @@ class ChapterSplitter:
         chapters: list[SplitChapter] = []
         ignored: list[IgnoredSpan] = []
         warnings: list[SplitWarning] = []
-        for i, start in enumerate(boundaries):
-            end = boundaries[i + 1] if i + 1 < len(boundaries) else len(text)
+        for start, end in self._merge_same_chapter_boundaries(text, boundaries):
             chunk = text[start:end].strip()
             if not chunk:
                 continue
@@ -206,7 +208,17 @@ class ChapterSplitter:
                 start_line, end_line = self._line_range_for_offsets(text, start, end)
                 ignored.append(IgnoredSpan(kind, start_line, end_line, "不计入正文前三章"))
                 continue
-            chapters.append(SplitChapter(title=self._extract_title(chunk), text=chunk, order=len(chapters) + 1))
+            title = self._display_title(chunk)
+            chapters.append(SplitChapter(title=title, text=chunk, order=len(chapters) + 1))
+            warnings.extend(self._chapter_quality_warnings(title, chunk))
+            if self._same_main_chapter_heading_count(chunk) > 1:
+                warnings.append(
+                    SplitWarning(
+                        "chapter.boundary_suspicious",
+                        "检测到同一章号下的多个内部小节标题，已合并为一个正文大章。",
+                        title,
+                    )
+                )
             if len(chapters) == 3:
                 break
 
@@ -231,6 +243,33 @@ class ChapterSplitter:
         positions.add(0)
         return sorted(positions)
 
+    def _merge_same_chapter_boundaries(self, text: str, boundaries: list[int]) -> list[tuple[int, int]]:
+        """把同一“第X章”下的分节边界合并，避免把（1）/第1节保存成空壳章节。"""
+        merged: list[tuple[int, int]] = []
+        current_start: int | None = None
+        current_end: int | None = None
+        current_key: str | None = None
+
+        for i, start in enumerate(boundaries):
+            end = boundaries[i + 1] if i + 1 < len(boundaries) else len(text)
+            chunk = text[start:end].strip()
+            title = self._extract_title(chunk) if chunk else ""
+            key = self._main_chapter_number_key(title)
+
+            if current_start is not None and key and current_key == key:
+                current_end = end
+                continue
+
+            if current_start is not None and current_end is not None:
+                merged.append((current_start, current_end))
+            current_start = start
+            current_end = end
+            current_key = key
+
+        if current_start is not None and current_end is not None:
+            merged.append((current_start, current_end))
+        return merged
+
     def _slice_by_boundaries(self, text: str, boundaries: list[int]) -> list[SplitChapter]:
         """按边界位置切出章节。"""
         chapters: list[SplitChapter] = []
@@ -248,7 +287,7 @@ class ChapterSplitter:
         title = self._extract_title(chunk)
         first_line = title.lower()
         compact = re.sub(r"\s+", "", chunk.lower())
-        if any(hint.lower() in compact for hint in _NON_STORY_HINTS):
+        if self._has_notice_hint_near_start(chunk, compact):
             return "ignored_notice"
         if any(first_line == item.lower() for item in _CATALOG_TITLES):
             return "catalog"
@@ -269,6 +308,14 @@ class ChapterSplitter:
         lines = [line.strip() for line in chunk.splitlines() if line.strip()]
         return len(lines) == 1 and self._looks_like_main_chapter_title(lines[0])
 
+    def _has_notice_hint_near_start(self, chunk: str, compact: str) -> bool:
+        """只把开头声明识别为 notice，避免正文中偶发“下载”等词误杀整章。"""
+        lines = [line.strip().lower() for line in chunk.splitlines() if line.strip()]
+        head = "".join(lines[:3])
+        return any(hint.lower() in head for hint in _NON_STORY_HINTS) or (
+            len(compact) <= 240 and any(hint.lower() in compact for hint in _NON_STORY_HINTS)
+        )
+
     @staticmethod
     def _line_range_for_offsets(text: str, start: int, end: int) -> tuple[int, int]:
         start_line = text[:start].count("\n") + 1
@@ -285,6 +332,59 @@ class ChapterSplitter:
         if len(first_line) > 80:
             first_line = first_line[:77] + "..."
         return first_line or "未命名章节"
+
+    @classmethod
+    def _display_title(cls, chunk: str) -> str:
+        title = cls._extract_title(chunk)
+        return cls._normalized_main_chapter_title(title)
+
+    @staticmethod
+    def _main_chapter_number_key(title: str) -> str | None:
+        match = _MAIN_CHAPTER_HEADING_RE.match(title.strip())
+        if not match:
+            return None
+        return match.group("number")
+
+    @classmethod
+    def _normalized_main_chapter_title(cls, title: str) -> str:
+        match = _MAIN_CHAPTER_HEADING_RE.match(title.strip())
+        if not match:
+            return title
+        number = match.group("number")
+        tail = match.group("tail") or ""
+        if _SECTION_TAIL_RE.match(tail):
+            return f"第{number}章"
+        return title.strip()
+
+    @classmethod
+    def _chapter_body_text(cls, text: str) -> str:
+        lines = [line.strip() for line in text.splitlines() if line.strip()]
+        if not lines:
+            return ""
+        first_key = cls._main_chapter_number_key(lines[0])
+        if first_key:
+            body_lines = [line for line in lines if cls._main_chapter_number_key(line) != first_key]
+            return "\n".join(body_lines).strip()
+        return "\n".join(lines).strip()
+
+    @classmethod
+    def _chapter_quality_warnings(cls, title: str, text: str) -> list[SplitWarning]:
+        body = cls._chapter_body_text(text)
+        if not body:
+            return [SplitWarning("chapter.title_only", "章节只有标题，没有可用正文。", title)]
+        if len(body) < _MIN_CHAPTER_BODY_CHARS:
+            return [SplitWarning("chapter.too_short", "章节正文过短，需要人工复核边界。", title)]
+        return []
+
+    @classmethod
+    def _same_main_chapter_heading_count(cls, text: str) -> int:
+        lines = [line.strip() for line in text.splitlines() if line.strip()]
+        if not lines:
+            return 0
+        first_key = cls._main_chapter_number_key(lines[0])
+        if not first_key:
+            return 0
+        return sum(1 for line in lines if cls._main_chapter_number_key(line) == first_key)
 
     @staticmethod
     def _single_chapter(text: str) -> list[SplitChapter]:
@@ -363,7 +463,9 @@ class ChapterSplitter:
                 continue
             raw_title = candidate.get("title")
             title = raw_title.strip() if isinstance(raw_title, str) and raw_title.strip() else self._extract_title(chunk)
+            title = self._normalized_main_chapter_title(title)
             chapters.append(SplitChapter(title=title, text=chunk, order=len(chapters) + 1))
+            warnings.extend(self._chapter_quality_warnings(title, chunk))
 
         if len(chapters) < 3:
             warnings.append(SplitWarning("chapters.too_few_after_ai_split", "AI 拆分后可信正文少于 3 章"))

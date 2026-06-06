@@ -13,6 +13,10 @@ from app.ai.providers.base import AiProvider, StructuredGenerationRequest, Struc
 # 但没有匹配 fixture 时必须根据当前章节构造项目相关内容，避免把全局 demo
 # 误展示成用户原文生成结果。
 
+_MAIN_CHAPTER_HEADING_RE = re.compile(r"^\s*第(?P<number>[零一二三四五六七八九十百千万\d]+)章(?P<tail>.*)$")
+_SECTION_TAIL_RE = re.compile(r"^\s*(?:[（(]\d+[）)]|第?\d+节|[零一二三四五六七八九十百千万\d]+)?\s*$")
+_PROLOGUE_TITLES = ("序章", "序", "楔子", "前言", "引子")
+
 
 class FakeProvider(AiProvider):
     name = "fake"
@@ -117,9 +121,9 @@ class FakeProvider(AiProvider):
         target_count = target if isinstance(target, int) and target > 0 else 3
         ignored = []
         story_lines = []
-        heading_lines = []
+        heading_groups = []
+        last_heading_number = None
         ignored_hints = ("声明", "txt02.com", "仅供预览", "版权", "下载", "本站")
-        heading_pattern = re.compile(r"^第[零一二三四五六七八九十百千万\d]+[章节回卷部集]")
         for item in lines:
             text = str(item.get("text", ""))
             line_no = int(item.get("line", 0) or 0)
@@ -135,17 +139,30 @@ class FakeProvider(AiProvider):
                         "reason": "fake provider detected non-story notice",
                     }
                 )
+            elif any(stripped.startswith(title) for title in _PROLOGUE_TITLES):
+                ignored.append(
+                    {
+                        "kind": "prologue",
+                        "start_line": line_no,
+                        "end_line": line_no,
+                        "reason": "fake provider keeps prologue outside target main chapters",
+                    }
+                )
             else:
                 story_lines.append((line_no, stripped))
-                if heading_pattern.match(stripped):
-                    heading_lines.append((line_no, stripped))
+                match = _MAIN_CHAPTER_HEADING_RE.match(stripped)
+                if match:
+                    chapter_number = match.group("number")
+                    if chapter_number != last_heading_number:
+                        heading_groups.append((line_no, self._boundary_title(stripped), chapter_number))
+                        last_heading_number = chapter_number
 
         candidates = []
-        if heading_lines:
+        if heading_groups:
             all_line_numbers = [line_no for line_no, _text in story_lines]
             max_line = max(all_line_numbers, default=0)
-            for idx, (line_no, title) in enumerate(heading_lines[:target_count]):
-                next_heading_line = heading_lines[idx + 1][0] if idx + 1 < len(heading_lines) else max_line + 1
+            for idx, (line_no, title, _chapter_number) in enumerate(heading_groups[:target_count]):
+                next_heading_line = heading_groups[idx + 1][0] if idx + 1 < len(heading_groups) else max_line + 1
                 end_line = next_heading_line - 1
                 candidates.append(
                     {
@@ -176,6 +193,17 @@ class FakeProvider(AiProvider):
                 }
             )
         return {"ignored_spans": ignored, "candidate_chapters": candidates, "warnings": warnings}
+
+    def _boundary_title(self, title: str) -> str:
+        """将“第一章（1）/第一章第1节”折叠成“第一章”，保留真正的大章标题。"""
+        match = _MAIN_CHAPTER_HEADING_RE.match(title.strip())
+        if not match:
+            return title
+        number = match.group("number")
+        tail = match.group("tail") or ""
+        if _SECTION_TAIL_RE.match(tail):
+            return f"第{number}章"
+        return title.strip()
 
     def _build_novel_analysis(self, chapters: list[dict[str, Any]]) -> dict[str, Any]:
         events = []
