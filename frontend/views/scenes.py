@@ -15,6 +15,7 @@ from __future__ import annotations
 import streamlit as st
 
 from frontend import api_client, backend_types as bt
+from frontend.utils import data_loader
 
 
 # ---------------------------------------------------------------------------
@@ -121,7 +122,7 @@ def _load_fd(project: dict) -> dict | None:
 # 场景卡片（非编辑状态）
 # ---------------------------------------------------------------------------
 
-def _render_scene_card(scene: dict, project: dict, scenes_list: list, scene_relations: list) -> None:
+def _render_scene_card(scene: dict, project: dict, scenes_list: list, scene_relations: list, screenplay: dict) -> None:
     """渲染单个场景卡片（查看模式），包含编辑和删除按钮。"""
     # frontend_data 扁平结构
     sequence = scene.get("sequence", "")
@@ -199,8 +200,27 @@ def _render_scene_card(scene: dict, project: dict, scenes_list: list, scene_rela
                 st.write(action)
             st.markdown("**Dialogue**")
             st.json(scene.get("dialogue", []))
-            st.markdown("**Source Refs**")
-            st.json(scene.get("source_refs", []))
+            st.markdown("**原文依据**")
+            st.write(bt.ref_text(scene.get("source_refs", [])))
+            if screenplay:
+                trace = bt.scene_evidence_trace(scene, screenplay)
+                st.markdown("**改编证据溯源**")
+                if trace["events"]:
+                    st.caption("关联事件")
+                    for event in trace["events"]:
+                        st.write(f"{event.get('id')}｜{event.get('title')}｜{event.get('event_type')}")
+                        if event.get("conflict_axis"):
+                            st.caption(f"冲突轴：{event.get('conflict_axis')}")
+                        flow = bt.as_list(event.get("event_flow"))
+                        if flow:
+                            st.markdown(" / ".join(str(item) for item in flow))
+                if trace["conflicts"]:
+                    st.caption("冲突轴标签")
+                    st.write("；".join(item.get("conflict_axis", item.get("id", "")) for item in trace["conflicts"]))
+                if trace["continuity_anchors"]:
+                    st.caption("一致性锚点")
+                    for anchor in trace["continuity_anchors"]:
+                        st.write(f"[{anchor.get('anchor_type')}] {anchor.get('summary')}")
 
 
 # ---------------------------------------------------------------------------
@@ -437,6 +457,7 @@ def render(project: dict) -> None:
 
     scenes = st.session_state.get("_fd_scenes", fd.get("scenes", []))
     scene_relations = st.session_state.get("_fd_scene_relations", fd.get("scene_relations", []))
+    screenplay = data_loader.load_screenplay_data(project)
 
     # 空状态
     if not scenes:
@@ -450,7 +471,7 @@ def render(project: dict) -> None:
         if scene.get("id") == editing_id:
             _render_scene_editor(scene, project, scenes, scene_relations)
         else:
-            _render_scene_card(scene, project, scenes, scene_relations)
+            _render_scene_card(scene, project, scenes, scene_relations, screenplay)
 
     # 添加场景按钮 + 表单
     _render_add_scene(project, scenes, scene_relations)

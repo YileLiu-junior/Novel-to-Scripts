@@ -86,6 +86,14 @@ def test_api_rejects_two_chapters_then_generates_smoke_artifacts(monkeypatch, da
         "audit_report",
     }
 
+    story_bible = client.get(f"/api/projects/{project_id}/artifacts/story_bible")
+    assert story_bible.status_code == 200
+    story_bible_data = story_bible.json()["data"]
+    assert story_bible_data["schema_version"] == "story_ontology_evidence_1.5"
+    assert story_bible_data["adaptation_evidence_mode"] == "enabled"
+    assert story_bible_data["story_bible"]["continuity_anchors"]
+    assert story_bible_data["story_bible"]["dramatic_assets"]["conflict_pool"]
+
     latest_yaml = client.get(f"/api/projects/{project_id}/artifacts/screenplay_yaml")
     assert latest_yaml.status_code == 200
     assert latest_yaml.json()["version"] == 1
@@ -94,6 +102,7 @@ def test_api_rejects_two_chapters_then_generates_smoke_artifacts(monkeypatch, da
     assert download.status_code == 200
     parsed = yaml.safe_load(download.text)
     assert parsed["adaptation_config"]["target_format"] == "web_series"
+    assert parsed["adaptation_config"]["adaptation_evidence_mode"] == "enabled"
     assert "adaptation_plan" in parsed
 
     restarted_client = _client(monkeypatch, data_root)

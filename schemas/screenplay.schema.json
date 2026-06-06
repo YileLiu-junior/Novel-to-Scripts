@@ -56,7 +56,12 @@
         "target_format": { "type": "string" },
         "fidelity_level": { "type": "string", "enum": ["low", "medium", "high"] },
         "preserve_priorities": { "type": "array", "items": { "type": "string" } },
-        "dialogue_style": { "type": "string" }
+        "dialogue_style": { "type": "string" },
+        "adaptation_evidence_mode": {
+          "type": "string",
+          "enum": ["enabled", "minimal"],
+          "description": "StoryOntology evidence mode. enabled is the default user-facing V1.5 mode; minimal is backend/debug compatibility only."
+        }
       },
       "additionalProperties": true
     },
@@ -103,6 +108,13 @@
         "knowledge_states": {
           "type": "array",
           "items": { "$ref": "#/$defs/knowledgeState" }
+        },
+        "continuity_anchors": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/continuityAnchor" }
+        },
+        "dramatic_assets": {
+          "$ref": "#/$defs/dramaticAssets"
         }
       },
       "additionalProperties": true
@@ -259,6 +271,68 @@
         "event_type": { "type": "string" },
         "participants": { "type": "array", "items": { "type": "string", "pattern": "^char_[0-9]{3}$" } },
         "summary": { "type": "string" },
+        "complete_event": { "type": "boolean" },
+        "event_flow": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "must_keep_together": { "type": "boolean" },
+        "conflict_axis": { "type": "string" },
+        "source_refs": { "type": "array", "items": { "$ref": "#/$defs/sourceRef" } }
+      },
+      "additionalProperties": true
+    },
+    "continuityAnchor": {
+      "type": "object",
+      "required": ["id", "anchor_type", "summary", "applies_to", "source_refs"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^anchor_[0-9]{3}$" },
+        "anchor_type": {
+          "type": "string",
+          "enum": ["addressing_rule", "character_trait", "relationship_state", "object", "timeline", "world_rule"]
+        },
+        "summary": { "type": "string", "minLength": 1 },
+        "applies_to": { "type": "array", "items": { "type": "string" } },
+        "source_refs": { "type": "array", "items": { "$ref": "#/$defs/sourceRef" } }
+      },
+      "additionalProperties": true
+    },
+    "dramaticAssets": {
+      "type": "object",
+      "properties": {
+        "conflict_pool": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/conflictAsset" }
+        },
+        "filmic_constraints": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/filmicConstraint" }
+        }
+      },
+      "additionalProperties": true
+    },
+    "conflictAsset": {
+      "type": "object",
+      "required": ["id", "conflict_axis", "participants", "related_events", "source_refs"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^conflict_[0-9]{3}$" },
+        "conflict_axis": { "type": "string", "minLength": 1 },
+        "participants": { "type": "array", "items": { "type": "string", "pattern": "^char_[0-9]{3}$" } },
+        "related_events": { "type": "array", "items": { "type": "string", "pattern": "^event_[0-9]{3}$" } },
+        "source_refs": { "type": "array", "items": { "$ref": "#/$defs/sourceRef" } }
+      },
+      "additionalProperties": true
+    },
+    "filmicConstraint": {
+      "type": "object",
+      "required": ["id", "constraint_type", "summary", "related_characters", "related_events", "source_refs"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^filmic_[0-9]{3}$" },
+        "constraint_type": { "type": "string" },
+        "summary": { "type": "string", "minLength": 1 },
+        "related_characters": { "type": "array", "items": { "type": "string", "pattern": "^char_[0-9]{3}$" } },
+        "related_events": { "type": "array", "items": { "type": "string", "pattern": "^event_[0-9]{3}$" } },
         "source_refs": { "type": "array", "items": { "$ref": "#/$defs/sourceRef" } }
       },
       "additionalProperties": true
