@@ -16,8 +16,30 @@ thin until the implementation plan starts.
 - Background task wrapper in `app/workers/`
 - YAML/schema export in `app/exporters/`
 
+## LLM Provider
+
+The backend defaults to `FakeProvider` so the demo path runs without a real API
+key. To switch the AI layer to DeepSeek, set these environment variables before
+starting FastAPI and install the optional DeepSeek transport:
+
+```powershell
+pip install -e "backend[deepseek]"
+$env:XENGINEER_AI_PROVIDER = "deepseek"
+$env:DEEPSEEK_API_KEY = "<your-deepseek-api-key>"
+$env:XENGINEER_DEEPSEEK_MODEL = "deepseek-v4-flash"
+$env:DEEPSEEK_BASE_URL = "https://api.deepseek.com"
+$env:XENGINEER_LLM_TIMEOUT_SECONDS = "60"
+```
+
+Check the provider boundary directly:
+
+```powershell
+# from the repository root
+python scripts\check_llm_provider.py --provider fake
+python scripts\check_llm_provider.py --provider deepseek --model deepseek-v4-flash
+```
+
 ## Source Of Truth
 
 Internal truth is JSON/Pydantic. YAML is an export and editable interchange
 format.
-

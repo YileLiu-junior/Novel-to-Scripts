@@ -11,6 +11,10 @@ dependencies = [
   "uvicorn>=0.30"
 ]
 
+[project.optional-dependencies]
+deepseek = [
+  "openai>=2"
+]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-

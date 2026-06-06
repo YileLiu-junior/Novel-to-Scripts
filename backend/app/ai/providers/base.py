@@ -6,6 +6,14 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 
+class AiProviderConfigurationError(RuntimeError):
+    """Raised when an AI provider is missing required local configuration."""
+
+
+class AiProviderResponseError(RuntimeError):
+    """Raised when an AI provider returns an unusable response."""
+
+
 class StructuredGenerationRequest(BaseModel):
     skill_name: str
     prompt_name: str
@@ -31,4 +39,3 @@ class AiProvider(ABC):
     @abstractmethod
     def generate_text(self, prompt: str, temperature: float = 0.0, max_tokens: int | None = None) -> str:
         raise NotImplementedError
-

@@ -2,10 +2,12 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.ai.providers.factory import build_ai_provider
 from app.ai.skills.adaptation_planner import AdaptationPlannerSkill
 from app.ai.skills.novel_reader import NovelReaderSkill
 from app.ai.skills.screenplay_writer import ScreenplayYamlWriterSkill
 from app.ai.skills.story_ontology import StoryOntologySkill
+from app.core.settings import AiSettings
 from app.domain.adaptation import AdaptationConfig
 from app.domain.jobs import GenerationJob
 from app.services.artifact_service import ArtifactService
@@ -37,6 +39,22 @@ class GenerationOrchestrator:
         self.llm_trace_service = llm_trace_service or LlmTraceService()
         self.validation_service = validation_service or ValidationService()
         self.yaml_service = yaml_service or YamlService(validation_service=self.validation_service)
+
+    @classmethod
+    def from_provider_settings(
+        cls,
+        settings: AiSettings | None = None,
+        *,
+        fixtures: dict[str, dict[str, Any]] | None = None,
+        client: Any | None = None,
+    ) -> "GenerationOrchestrator":
+        provider = build_ai_provider(settings, fixtures=fixtures, client=client)
+        return cls(
+            novel_reader=NovelReaderSkill(provider),
+            story_ontology=StoryOntologySkill(provider),
+            adaptation_planner=AdaptationPlannerSkill(provider),
+            screenplay_writer=ScreenplayYamlWriterSkill(provider),
+        )
 
     def run_v1(
         self,
@@ -83,4 +101,3 @@ class GenerationOrchestrator:
             return self.job_service.mark_step(active_job, "succeeded", "complete")
         except Exception as exc:
             return self.job_service.mark_step(active_job, "failed", active_job.current_step, str(exc))
-
