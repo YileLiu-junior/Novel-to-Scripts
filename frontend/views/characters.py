@@ -101,8 +101,10 @@ def _load_fd(project: dict) -> dict | None:
 def _render_single_character_card(char: dict, project: dict, characters_list: list, char_relations: list):
     """在单个 column 中渲染一张人物卡片。"""
     name = char.get("name") or "未命名"
-    narrative_role = char.get("narrative_role") or ""
     char_id = char.get("id", "")
+    role_like_values = {"protagonist", "antagonist", "supporting", "narrative_role", "role"}
+    if str(name).strip().lower() in role_like_values:
+        name = "未命名人物"
 
     # 简介截断 40 字（卡片正文显示）
     description = char.get("description", "")
@@ -138,7 +140,7 @@ def _render_single_character_card(char: dict, project: dict, characters_list: li
         st.markdown(
             f"""
             <div style="
-                margin-top: 4px;
+                margin-top: 8px;
                 font-size: 15px;
                 font-weight: 600;
                 text-align: center;
@@ -146,49 +148,14 @@ def _render_single_character_card(char: dict, project: dict, characters_list: li
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
-                color: #fff;
+                color: #111;
             ">{name}</div>
             """,
             unsafe_allow_html=True,
         )
 
         # 叙事角色（可选，简短）
-        if narrative_role:
-            st.markdown(
-                f"""
-                <div style="
-                    font-size: 11px;
-                    color: #888;
-                    text-align: center;
-                    margin-top: 2px;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                ">{narrative_role}</div>
-                """,
-                unsafe_allow_html=True,
-            )
-
         # 描述摘要（可选，最多两行）
-        if description:
-            st.markdown(
-                f"""
-                <div style="
-                    font-size: 11px;
-                    color: #aaa;
-                    text-align: center;
-                    margin-top: 4px;
-                    line-height: 1.4;
-                    max-height: 2.8em;
-                    overflow: hidden;
-                    display: -webkit-box;
-                    -webkit-line-clamp: 2;
-                    -webkit-box-orient: vertical;
-                ">{description}</div>
-                """,
-                unsafe_allow_html=True,
-            )
-
         # 底部操作按钮
         st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 

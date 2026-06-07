@@ -122,7 +122,14 @@ def _load_fd(project: dict) -> dict | None:
 # 场景卡片（非编辑状态）
 # ---------------------------------------------------------------------------
 
-def _render_scene_card(scene: dict, project: dict, scenes_list: list, scene_relations: list, screenplay: dict) -> None:
+def _render_scene_card(
+    scene: dict,
+    project: dict,
+    scenes_list: list,
+    scene_relations: list,
+    screenplay: dict,
+    character_name_map: dict[str, str],
+) -> None:
     """渲染单个场景卡片（查看模式），包含编辑和删除按钮。"""
     # frontend_data 扁平结构
     sequence = scene.get("sequence", "")
@@ -153,6 +160,11 @@ def _render_scene_card(scene: dict, project: dict, scenes_list: list, scene_rela
         st.write(f"戏剧目的：{purposes_str}")
 
         # 操作按钮：编辑 + 删除
+        character_ids = bt.as_list(scene.get("characters"))
+        if character_ids:
+            character_names = [character_name_map.get(str(char_id), str(char_id)) for char_id in character_ids]
+            st.caption("出场角色：" + "、".join(character_names))
+
         c1, c2 = st.columns(2)
         scene_id = scene.get("id", "")
 
@@ -263,9 +275,7 @@ def _render_scene_editor(scene: dict, project: dict, scenes_list: list, scene_re
             purposes_str = _list_to_multiline(scene.get("dramatic_purpose", []))
             dramatic_purpose = st.text_area("戏剧目的（逗号或换行分隔）", value=purposes_str)
 
-            # Action（多行文本，保存转列表）
-            action_str = _list_to_multiline(scene.get("action", []))
-            action = st.text_area("Action（逗号或换行分隔）", value=action_str, height=120)
+            # action 属于事件管理内容；场景编辑不展示该字段，保存时保留原值。
 
             # 提交按钮
             c1, c2 = st.columns(2)
@@ -296,8 +306,7 @@ def _render_scene_editor(scene: dict, project: dict, scenes_list: list, scene_re
                     # 更新 dramatic_purpose（文本 -> 列表）
                     updated_scene["dramatic_purpose"] = _parse_multiline_to_list(dramatic_purpose)
 
-                    # 更新 action（文本 -> 列表）
-                    updated_scene["action"] = _parse_multiline_to_list(action)
+                    # 保留原 scene.action，避免场景编辑清空事件动作内容。
 
                     # 替换 scenes_list 中对应的场景
                     updated_scenes = []
@@ -344,7 +353,7 @@ def _render_add_scene(project: dict, scenes_list: list, scene_relations: list) -
                 time = st.text_input("时间", placeholder="例如：白天")
                 interior_exterior = st.selectbox("内景/外景", ["未设置", "内景", "外景", "内外景"])
                 dramatic_purpose = st.text_area("戏剧目的（逗号或换行分隔）", placeholder="请输入该场景的戏剧目的...")
-                action = st.text_area("动作描述（逗号或换行分隔）", placeholder="请输入场景内容描述...", height=150)
+                # action 属于事件管理内容；新增场景时保留空 action 字段。
 
                 c1, c2 = st.columns(2)
                 with c1:
@@ -371,7 +380,7 @@ def _render_add_scene(project: dict, scenes_list: list, scene_relations: list) -
                             "time": time.strip(),
                             "interior_exterior": interior_exterior,
                             "dramatic_purpose": _parse_multiline_to_list(dramatic_purpose),
-                            "action": _parse_multiline_to_list(action),
+                            "action": [],
                             "dialogue": [],
                             "characters": [],
                             "related_events": [],
@@ -457,6 +466,12 @@ def render(project: dict) -> None:
 
     scenes = st.session_state.get("_fd_scenes", fd.get("scenes", []))
     scene_relations = st.session_state.get("_fd_scene_relations", fd.get("scene_relations", []))
+    characters = st.session_state.get("_fd_characters", fd.get("characters", []))
+    character_name_map = {
+        str(character.get("id", "")): str(character.get("name") or character.get("id", ""))
+        for character in characters
+        if character.get("id")
+    }
     screenplay = data_loader.load_screenplay_data(project)
 
     # 空状态
@@ -471,10 +486,10 @@ def render(project: dict) -> None:
         if scene.get("id") == editing_id:
             _render_scene_editor(scene, project, scenes, scene_relations)
         else:
-            _render_scene_card(scene, project, scenes, scene_relations, screenplay)
+            _render_scene_card(scene, project, scenes, scene_relations, screenplay, character_name_map)
 
     # 添加场景按钮 + 表单
     _render_add_scene(project, scenes, scene_relations)
 
     # 底部场景关系
-    _render_scene_relations(scenes, scene_relations)
+    # 场景关系数据继续保留在 frontend_data 中，本页不渲染底部关系/规划区域。
