@@ -1,0 +1,39 @@
+{
+  "case_id": "01-preamble-three-chapters",
+  "mode": "ai",
+  "status": "success",
+  "mode_used": "ai",
+  "ignored_spans": [
+    {
+      "kind": "copyright_notice",
+      "start_line": 1,
+      "end_line": 1,
+      "reason": "版权和下载站声明，不计入正文"
+    }
+  ],
+  "candidate_chapters": [
+    {
+      "chapter_kind": "main_chapter",
+      "title": "第一章 雨夜归来",
+      "start_line": 3,
+      "end_line": 5,
+      "confidence": 0.98
+    },
+    {
+      "chapter_kind": "main_chapter",
+      "title": "第二章 旧案重启",
+      "start_line": 7,
+      "end_line": 9,
+      "confidence": 0.98
+    },
+    {
+      "chapter_kind": "main_chapter",
+      "title": "第三章 钟声之后",
+      "start_line": 11,
+      "end_line": 13,
+      "confidence": 0.98
+    }
+  ],
+  "warnings": []
+}
+
