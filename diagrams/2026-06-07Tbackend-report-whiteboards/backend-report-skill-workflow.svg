@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2200" height="1650" viewBox="0 0 2200 1650">
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="4" orient="auto" markerUnits="strokeWidth">
+      <path d="M0 0 L10 4 L0 8 z"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="2200" height="1650" fill="#FFFFFF"/>
+  <rect x="42" y="38" width="2128" height="170" rx="0" fill="#0A0A0A" stroke="#0A0A0A" stroke-width="3"/>
+<rect x="36" y="32" width="2128" height="170" rx="0" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="3"/>
+<text x="68" y="92" font-size="54" font-weight="900" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="68" dy="0">结构化小说改编后端</tspan></text>
+<text x="70" y="145" font-size="30" font-weight="700" fill="#333333" text-anchor="start" letter-spacing="0"><tspan x="70" dy="0">汇报方案 · 架构设计 · 产品卖点 · Skill Workflow</tspan></text>
+<text x="780" y="94" font-size="28" font-weight="750" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="780" dy="0">不是一次 prompt 写剧本，而是把 AI 输出变成可检查、可追踪、可导出的 adaptation assets。</tspan></text>
+<text x="780" y="138" font-size="24" font-weight="500" fill="#333333" text-anchor="start" letter-spacing="0"><tspan x="780" dy="0">代码负责结构、引用、状态、导出可靠性；AI 负责内容生成与改编判断。</tspan></text>
+<text x="1988" y="128" font-size="42" font-weight="900" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="1988" dy="0">V0+V1</tspan></text>
+<rect x="41" y="255" width="514" height="230" rx="0" fill="#0A0A0A" stroke="#0A0A0A" stroke-width="3"/>
+<rect x="36" y="250" width="514" height="230" rx="0" fill="#E5EDD6" stroke="#0A0A0A" stroke-width="3"/>
+<text x="58" y="330" font-size="78" font-weight="900" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="58" dy="0">01</tspan></text>
+<text x="171" y="292" font-size="28" font-weight="850" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="171" dy="0">产品主张</tspan></text>
+<text x="171" y="334" font-size="22" font-weight="500" fill="#333333" text-anchor="start" letter-spacing="0"><tspan x="171" dy="0">把小说章节转成结构化剧本资产</tspan><tspan x="171" dy="32">每一步有 artifact 和可审计证据</tspan><tspan x="171" dy="32">demo 讲的是 reliability，不是玄学文采</tspan></text>
+<rect x="577" y="255" width="514" height="230" rx="0" fill="#0A0A0A" stroke="#0A0A0A" stroke-width="3"/>
+<rect x="572" y="250" width="514" height="230" rx="0" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="3"/>
+<text x="594" y="330" font-size="78" font-weight="900" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="594" dy="0">02</tspan></text>
+<text x="707" y="292" font-size="28" font-weight="850" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="707" dy="0">架构设计</tspan></text>
+<text x="707" y="334" font-size="22" font-weight="500" fill="#333333" text-anchor="start" letter-spacing="0"><tspan x="707" dy="0">schema-first：schema.json</tspan><tspan x="707" dy="32">Pydantic domain 聚合根承载资产</tspan><tspan x="707" dy="32">API / service / skill / repository 分层</tspan></text>
+<rect x="1113" y="255" width="514" height="230" rx="0" fill="#0A0A0A" stroke="#0A0A0A" stroke-width="3"/>
+<rect x="1108" y="250" width="514" height="230" rx="0" fill="#F2D4CF" stroke="#0A0A0A" stroke-width="3"/>
+<text x="1130" y="330" font-size="78" font-weight="900" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="1130" dy="0">03</tspan></text>
+<text x="1243" y="292" font-size="28" font-weight="850" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="1243" dy="0">实现卖点</tspan></text>
+<text x="1243" y="334" font-size="22" font-weight="500" fill="#333333" text-anchor="start" letter-spacing="0"><tspan x="1243" dy="0">chapter_### / p_### 稳定 ID</tspan><tspan x="1243" dy="32">job 可查：status / step / error</tspan><tspan x="1243" dy="32">YAML 与 Markdown 可导出、可下载</tspan></text>
+<rect x="1649" y="255" width="514" height="230" rx="0" fill="#0A0A0A" stroke="#0A0A0A" stroke-width="3"/>
+<rect x="1644" y="250" width="514" height="230" rx="0" fill="#F5F5F5" stroke="#0A0A0A" stroke-width="3"/>
+<text x="1666" y="330" font-size="78" font-weight="900" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="1666" dy="0">04</tspan></text>
+<text x="1779" y="292" font-size="28" font-weight="850" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="1779" dy="0">工程护栏</tspan></text>
+<text x="1779" y="334" font-size="22" font-weight="500" fill="#333333" text-anchor="start" letter-spacing="0"><tspan x="1779" dy="0">Normalizer 清洗结构，不改业务内容</tspan><tspan x="1779" dy="32">Schema + Reference 定位问题</tspan><tspan x="1779" dy="32">Exporter 只转换格式，不修复内容</tspan></text>
+<rect x="42" y="531" width="2128" height="260" rx="0" fill="#0A0A0A" stroke="#0A0A0A" stroke-width="3"/>
+<rect x="36" y="525" width="2128" height="260" rx="0" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="3"/>
+<text x="66" y="568" font-size="20" font-weight="900" fill="#333333" letter-spacing="0">END-TO-END WORKFLOW</text>
+<rect x="66" y="595" width="324" height="150" rx="0" fill="#E5EDD6" stroke="#0A0A0A" stroke-width="3"/>
+<text x="84" y="665" font-size="64" font-weight="900" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="84" dy="0">1</tspan></text>
+<text x="170" y="635" font-size="24" font-weight="850" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="170" dy="0">Project</tspan></text>
+<text x="170" y="673" font-size="19" font-weight="500" fill="#333333" text-anchor="start" letter-spacing="0"><tspan x="170" dy="0">创建 project.json</tspan><tspan x="170" dy="28">保存 title / logline</tspan><tspan x="170" dy="28">本地 project index</tspan></text>
+<line x1="394" y1="670" x2="408" y2="670" stroke="#0A0A0A" stroke-width="3" marker-end="url(#arrow)"/>
+<rect x="408" y="595" width="324" height="150" rx="0" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="3"/>
+<text x="426" y="665" font-size="64" font-weight="900" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="426" dy="0">2</tspan></text>
+<text x="512" y="635" font-size="24" font-weight="850" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="512" dy="0">Chapters</tspan></text>
+<text x="512" y="673" font-size="19" font-weight="500" fill="#333333" text-anchor="start" letter-spacing="0"><tspan x="512" dy="0">至少三章</tspan><tspan x="512" dy="28">生成 chapter_###</tspan><tspan x="512" dy="28">段落 p_###</tspan></text>
+<line x1="736" y1="670" x2="750" y2="670" stroke="#0A0A0A" stroke-width="3" marker-end="url(#arrow)"/>
+<rect x="750" y="595" width="324" height="150" rx="0" fill="#F2D4CF" stroke="#0A0A0A" stroke-width="3"/>
+<text x="768" y="665" font-size="64" font-weight="900" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="768" dy="0">3</tspan></text>
+<text x="854" y="635" font-size="24" font-weight="850" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="854" dy="0">Skills</tspan></text>
+<text x="854" y="673" font-size="19" font-weight="500" fill="#333333" text-anchor="start" letter-spacing="0"><tspan x="854" dy="0">Reader / Ontology</tspan><tspan x="854" dy="28">Planner / Writer</tspan><tspan x="854" dy="28">统一 structured wrapper</tspan></text>
+<line x1="1078" y1="670" x2="1092" y2="670" stroke="#0A0A0A" stroke-width="3" marker-end="url(#arrow)"/>
+<rect x="1092" y="595" width="324" height="150" rx="0" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="3"/>
+<text x="1110" y="665" font-size="64" font-weight="900" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="1110" dy="0">4</tspan></text>
+<text x="1196" y="635" font-size="24" font-weight="850" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="1196" dy="0">Screenplay JSON</tspan></text>
+<text x="1196" y="673" font-size="19" font-weight="500" fill="#333333" text-anchor="start" letter-spacing="0"><tspan x="1196" dy="0">注入 config / source</tspan><tspan x="1196" dy="28">归一化 scenes</tspan><tspan x="1196" dy="28">聚合 story assets</tspan></text>
+<line x1="1420" y1="670" x2="1434" y2="670" stroke="#0A0A0A" stroke-width="3" marker-end="url(#arrow)"/>
+<rect x="1434" y="595" width="324" height="150" rx="0" fill="#F5F5F5" stroke="#0A0A0A" stroke-width="3"/>
+<text x="1452" y="665" font-size="64" font-weight="900" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="1452" dy="0">5</tspan></text>
+<text x="1538" y="635" font-size="24" font-weight="850" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="1538" dy="0">Validation</tspan></text>
+<text x="1538" y="673" font-size="19" font-weight="500" fill="#333333" text-anchor="start" letter-spacing="0"><tspan x="1538" dy="0">schema findings</tspan><tspan x="1538" dy="28">reference findings</tspan><tspan x="1538" dy="28">audit_report</tspan></text>
+<line x1="1762" y1="670" x2="1776" y2="670" stroke="#0A0A0A" stroke-width="3" marker-end="url(#arrow)"/>
+<rect x="1776" y="595" width="324" height="150" rx="0" fill="#E5EDD6" stroke="#0A0A0A" stroke-width="3"/>
+<text x="1794" y="665" font-size="64" font-weight="900" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="1794" dy="0">6</tspan></text>
+<text x="1880" y="635" font-size="24" font-weight="850" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="1880" dy="0">Export</tspan></text>
+<text x="1880" y="673" font-size="19" font-weight="500" fill="#333333" text-anchor="start" letter-spacing="0"><tspan x="1880" dy="0">screenplay_yaml</tspan><tspan x="1880" dy="28">screenplay.md / txt</tspan><tspan x="1880" dy="28">schema download</tspan></text>
+<rect x="42" y="836" width="1018" height="470" rx="0" fill="#0A0A0A" stroke="#0A0A0A" stroke-width="3"/>
+<rect x="36" y="830" width="1018" height="470" rx="0" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="3"/>
+<text x="66" y="875" font-size="20" font-weight="900" fill="#333333" letter-spacing="0">SKILL 辅助作用</text>
+<rect x="66" y="905" width="470" height="160" rx="0" fill="#E5EDD6" stroke="#0A0A0A" stroke-width="3"/>
+<text x="88" y="945" font-size="24" font-weight="850" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="88" dy="0">NovelReaderSkill</tspan></text>
+<text x="88" y="983" font-size="19" font-weight="500" fill="#333333" text-anchor="start" letter-spacing="0"><tspan x="88" dy="0">读章节与段落 ID</tspan><tspan x="88" dy="27">抽取 characters / events / foreshadowing</tspan><tspan x="88" dy="27">输出 source refs，给后续追踪</tspan></text>
+<rect x="556" y="905" width="470" height="160" rx="0" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="3"/>
+<text x="578" y="945" font-size="24" font-weight="850" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="578" dy="0">StoryOntologySkill</tspan></text>
+<text x="578" y="983" font-size="19" font-weight="500" fill="#333333" text-anchor="start" letter-spacing="0"><tspan x="578" dy="0">把 novel analysis 变成 story bible</tspan><tspan x="578" dy="27">角色关系、knowledge states、voice profiles</tspan><tspan x="578" dy="27">形成可复用的故事资产层</tspan></text>
+<rect x="66" y="1085" width="470" height="160" rx="0" fill="#F2D4CF" stroke="#0A0A0A" stroke-width="3"/>
+<text x="88" y="1125" font-size="24" font-weight="850" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="88" dy="0">AdaptationPlannerSkill</tspan></text>
+<text x="88" y="1163" font-size="19" font-weight="500" fill="#333333" text-anchor="start" letter-spacing="0"><tspan x="88" dy="0">消费 story bible + adaptation config</tspan><tspan x="88" dy="27">决定 retained / merged / deferred events</tspan><tspan x="88" dy="27">产出 protected elements 与 scene_plan</tspan></text>
+<rect x="556" y="1085" width="470" height="160" rx="0" fill="#F5F5F5" stroke="#0A0A0A" stroke-width="3"/>
+<text x="578" y="1125" font-size="24" font-weight="850" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="578" dy="0">ScreenplayWriterSkill</tspan></text>
+<text x="578" y="1163" font-size="19" font-weight="500" fill="#333333" text-anchor="start" letter-spacing="0"><tspan x="578" dy="0">消费 scene_plan 与 canonical assets</tspan><tspan x="578" dy="27">输出 schema-shaped screenplay JSON</tspan><tspan x="578" dy="27">历史名含 YAML，但真实 YAML 属 exporter</tspan></text>
+<rect x="66" y="1246" width="960" height="48" rx="0" fill="#0A0A0A" stroke="#0A0A0A" stroke-width="0"/>
+<text x="86" y="1277" font-size="22" font-weight="800" fill="#FFFFFF" text-anchor="start" letter-spacing="0"><tspan x="86" dy="0">Skill 不写数据库、不决定 job、不导出 YAML；orchestrator 负责串联、保存、校验。</tspan></text>
+<rect x="1116" y="836" width="1054" height="470" rx="0" fill="#0A0A0A" stroke="#0A0A0A" stroke-width="3"/>
+<rect x="1110" y="830" width="1054" height="470" rx="0" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="3"/>
+<text x="1140" y="875" font-size="20" font-weight="900" fill="#333333" letter-spacing="0">设计角度分析</text>
+<rect x="1140" y="905" width="490" height="160" rx="0" fill="#F5F5F5" stroke="#0A0A0A" stroke-width="3"/>
+<text x="1162" y="945" font-size="24" font-weight="850" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="1162" dy="0">LLM 输出不可靠</tspan></text>
+<text x="1162" y="983" font-size="19" font-weight="500" fill="#333333" text-anchor="start" letter-spacing="0"><tspan x="1162" dy="0">用 normalizer 删除非法 null、补最小合法字段</tspan><tspan x="1162" dy="27">再交给 schema validator 报真实结构问题</tspan></text>
+<rect x="1650" y="905" width="490" height="160" rx="0" fill="#E5EDD6" stroke="#0A0A0A" stroke-width="3"/>
+<text x="1672" y="945" font-size="24" font-weight="850" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="1672" dy="0">内容必须可追溯</tspan></text>
+<text x="1672" y="983" font-size="19" font-weight="500" fill="#333333" text-anchor="start" letter-spacing="0"><tspan x="1672" dy="0">source.chapters、events、scenes、dialogue 都有 ID</tspan><tspan x="1672" dy="27">reference validator 指向具体 entity IDs</tspan></text>
+<rect x="1140" y="1085" width="490" height="160" rx="0" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="3"/>
+<text x="1162" y="1125" font-size="24" font-weight="850" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="1162" dy="0">前后端要并行</tspan></text>
+<text x="1162" y="1163" font-size="19" font-weight="500" fill="#333333" text-anchor="start" letter-spacing="0"><tspan x="1162" dy="0">HTTP API + DTO 是唯一入口</tspan><tspan x="1162" dy="27">frontend 只按 schema 和 api_client 解析</tspan></text>
+<rect x="1650" y="1085" width="490" height="160" rx="0" fill="#F2D4CF" stroke="#0A0A0A" stroke-width="3"/>
+<text x="1672" y="1125" font-size="24" font-weight="850" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="1672" dy="0">Demo 要稳定</tspan></text>
+<text x="1672" y="1163" font-size="19" font-weight="500" fill="#333333" text-anchor="start" letter-spacing="0"><tspan x="1672" dy="0">job_id 立即返回，后台跑 pipeline</tspan><tspan x="1672" dy="27">artifact index 允许复查每一步产物</tspan></text>
+<rect x="42" y="1356" width="2128" height="230" rx="0" fill="#0A0A0A" stroke="#0A0A0A" stroke-width="3"/>
+<rect x="36" y="1350" width="2128" height="230" rx="0" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="3"/>
+<text x="66" y="1395" font-size="20" font-weight="900" fill="#333333" letter-spacing="0">汇报讲法：建议 6 段式</text>
+<rect x="66" y="1425" width="325" height="115" rx="0" fill="#F5F5F5" stroke="#0A0A0A" stroke-width="3"/>
+<text x="86" y="1462" font-size="24" font-weight="900" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="86" dy="0">1 破题</tspan></text>
+<text x="86" y="1498" font-size="18" font-weight="500" fill="#333333" text-anchor="start" letter-spacing="0"><tspan x="86" dy="0">AI 生成不是重点</tspan><tspan x="86" dy="26">重点是可审计 workflow</tspan></text>
+<rect x="411" y="1425" width="325" height="115" rx="0" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="3"/>
+<text x="431" y="1462" font-size="24" font-weight="900" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="431" dy="0">2 架构</tspan></text>
+<text x="431" y="1498" font-size="18" font-weight="500" fill="#333333" text-anchor="start" letter-spacing="0"><tspan x="431" dy="0">schema-first</tspan><tspan x="431" dy="26">domain 聚合 + service 编排</tspan></text>
+<rect x="756" y="1425" width="325" height="115" rx="0" fill="#F5F5F5" stroke="#0A0A0A" stroke-width="3"/>
+<text x="776" y="1462" font-size="24" font-weight="900" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="776" dy="0">3 流程</tspan></text>
+<text x="776" y="1498" font-size="18" font-weight="500" fill="#333333" text-anchor="start" letter-spacing="0"><tspan x="776" dy="0">chapters → skills</tspan><tspan x="776" dy="26">artifacts → validation</tspan></text>
+<rect x="1101" y="1425" width="325" height="115" rx="0" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="3"/>
+<text x="1121" y="1462" font-size="24" font-weight="900" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="1121" dy="0">4 Demo</tspan></text>
+<text x="1121" y="1498" font-size="18" font-weight="500" fill="#333333" text-anchor="start" letter-spacing="0"><tspan x="1121" dy="0">三章输入 + job 轮询</tspan><tspan x="1121" dy="26">artifact 列表 + 导出</tspan></text>
+<rect x="1446" y="1425" width="325" height="115" rx="0" fill="#F5F5F5" stroke="#0A0A0A" stroke-width="3"/>
+<text x="1466" y="1462" font-size="24" font-weight="900" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="1466" dy="0">5 卖点</tspan></text>
+<text x="1466" y="1498" font-size="18" font-weight="500" fill="#333333" text-anchor="start" letter-spacing="0"><tspan x="1466" dy="0">可追踪、可校验</tspan><tspan x="1466" dy="26">可复跑、前后端解耦</tspan></text>
+<rect x="1791" y="1425" width="325" height="115" rx="0" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="3"/>
+<text x="1811" y="1462" font-size="24" font-weight="900" fill="#0A0A0A" text-anchor="start" letter-spacing="0"><tspan x="1811" dy="0">6 边界</tspan></text>
+<text x="1811" y="1498" font-size="18" font-weight="500" fill="#333333" text-anchor="start" letter-spacing="0"><tspan x="1811" dy="0">不做外部队列/多用户</tspan><tspan x="1811" dy="26">不做视频图像生成</tspan></text>
+</svg>

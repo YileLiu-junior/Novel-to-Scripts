@@ -1166,17 +1166,20 @@ class GenerationOrchestrator:
                 ]
             }
             screenplay_json["adaptation_config"] = adaptation_config.model_dump()
-            screenplay_json["story_bible"] = _normalize_story_bible(story_assets.get("story_bible", {}))
-            screenplay_json["events"] = _normalize_events(story_assets.get("events", []))
-            screenplay_json["causal_graph"] = _normalize_causal_graph(story_assets.get("causal_graph", {}))
-            screenplay_json["foreshadowing"] = _normalize_foreshadowing(
-                story_assets.get("foreshadowing", []), screenplay_json["events"]
-            )
+            # None-safety: LLM 可能输出 null 值，.get() 对存在但值为 None 的 key 不返回默认值
+            _events_raw = story_assets.get("events") or []
+            _foreshadowing_raw = story_assets.get("foreshadowing") or []
+            _scenes_raw = screenplay_json.get("scenes") or []
+            _story_bible_raw = story_assets.get("story_bible") or {}
+            _causal_graph_raw = story_assets.get("causal_graph") or {}
+
+            screenplay_json["story_bible"] = _normalize_story_bible(_story_bible_raw)
+            screenplay_json["events"] = _normalize_events(_events_raw)
+            screenplay_json["causal_graph"] = _normalize_causal_graph(_causal_graph_raw)
+            screenplay_json["foreshadowing"] = _normalize_foreshadowing(_foreshadowing_raw, screenplay_json["events"])
             screenplay_json["adaptation_plan"] = _normalize_adaptation_plan(adaptation_plan)
             # 归一化 scenes：LLM 可能输出不完全匹配 schema 的格式
-            screenplay_json["scenes"] = _normalize_scenes(
-                screenplay_json.get("scenes", []), chapters, screenplay_json["source"]
-            )
+            screenplay_json["scenes"] = _normalize_scenes(_scenes_raw, chapters, screenplay_json["source"])
             screenplay_json["script_structure"] = _normalize_script_structure(
                 screenplay_json.get("script_structure"),
                 screenplay_json["events"],
@@ -1200,14 +1203,24 @@ class GenerationOrchestrator:
             findings = self.validation_service.validate_screenplay(screenplay_json)
             audit_report = self.validation_service.audit_report_for(findings).model_dump()
             screenplay_json["audit_report"] = audit_report
-            # 先保存 screenplay_json（验证前），方便在 export_validated 失败时调试
-            if save_intermediates:
-                screenplay_artifact = self.artifact_service.save_artifact(project_id, "screenplay_json", screenplay_json, active_job.id)
-                logger.info(
-                    "generate screenplay_json_path=%s",
-                    artifact_dir / f"screenplay_json_v{screenplay_artifact.version:03d}.json",
-                )
-            yaml_text = self.yaml_service.export_validated(screenplay_json)
+            # 无条件保存 screenplay_json，即使后续校验/导出失败也能用于调试
+            screenplay_artifact = self.artifact_service.save_artifact(project_id, "screenplay_json", screenplay_json, active_job.id)
+            logger.info(
+                "generate screenplay_json_path=%s",
+                artifact_dir / f"screenplay_json_v{screenplay_artifact.version:03d}.json",
+            )
+            # YAML 导出：校验有 error 时降级为 warn，不阻断 pipeline
+            yaml_export_errors: list[str] = []
+            try:
+                yaml_text = self.yaml_service.export_validated(screenplay_json)
+            except ValueError as ve:
+                yaml_export_errors.append(str(ve))
+                logger.warning("YAML export blocked by validation, falling back to best-effort export: %s", ve)
+                try:
+                    yaml_text = self.yaml_service.exporter.export(screenplay_json)
+                except Exception as fe:
+                    yaml_text = f"# YAML export failed: {fe}\n# Validation: {ve}\n"
+                    logger.error("Best-effort YAML export also failed: %s", fe)
             self.artifact_service.save_artifact(project_id, "screenplay_yaml", yaml_text, active_job.id)
             self.artifact_service.save_artifact(project_id, "audit_report", audit_report, active_job.id)
             if save_intermediates:
