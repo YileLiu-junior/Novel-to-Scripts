@@ -177,8 +177,8 @@ XEngineer/
 │   │   │   └── screenplay_normalizer.py  # LLM 输出归一化（校验前清洗）
 │   │   ├── exporters/           #   YAML / JSON Schema / 文学剧本导出
 │   │   ├── domain/              #   纯 Pydantic 领域模型（10 个模块）
-│   │   ├── repositories/        #   数据访问层（文件存储 + SQLite）
-│   │   ├── db/                  #   SQLite DDL
+│   │   ├── repositories/        #   数据访问层（JSON 文件读写）
+│   │   ├── db/                  #   数据库 DDL（预留，当前未使用）
 │   │   └── workers/             #   后台异步任务封装
 │   ├── tests/                   #   测试（E2E / pipeline / API smoke / validator）
 │   └── pyproject.toml
@@ -291,7 +291,7 @@ python scripts/validate_fixtures.py
 
 ## 架构总览
 
-### 后端分层架构（6 层）
+### 后端分层架构（5 层）
 
 ```
 HTTP Request
@@ -327,18 +327,15 @@ HTTP Request
    └──────────────┴──────────────┘
                      │
                      ▼
-┌─ Repository 层 ─────────────────────────────────┐
+┌─ Repository / 持久化层 ──────────────────────────┐
 │  Project · Chapter · Artifact · Job · LlmRun     │
-│  实现：本地文件存储（JSON 原子写入）                │
-└────────────────────┬─────────────────────────────┘
-                     │
-                     ▼
-┌─ 持久化层 ──────────────────────────────────────┐
-│  文件存储 (data/projects/{id}/)                 │
-│  ├── project.json       项目元数据               │
-│  ├── chapters/index.json 章节索引               │
-│  ├── artifacts/index.json 产物索引 + JSON/YAML   │
-│  └── jobs/index.json     Job 状态               │
+│  全部通过 file_store 做 JSON 原子写入              │
+│                                                   │
+│  data/projects/{id}/                              │
+│  ├── project.json         项目元数据               │
+│  ├── chapters/index.json  章节索引                │
+│  ├── artifacts/index.json 产物索引 + JSON/YAML    │
+│  └── jobs/index.json      任务排队号状态          │
 └─────────────────────────────────────────────────┘
 
          ← 贯穿全部层 ───────────────────── →
@@ -441,7 +438,7 @@ ChapterService + ChapterSplitter
 
 ### ✅ 已完成（V0 + V1 + V2.1）
 
-- **完整的后端分层架构**：API → Service → AI/Validator/Exporter → Repository → DB
+- **完整的后端分层架构**：API → Service → AI/Validator/Exporter → Repository（JSON 文件存储）
 - **10 个领域模型模块**：纯 Pydantic，Screenplay 聚合根
 - **10 组 REST API 端点**：项目 CRUD、章节管理（含 AI 拆章）、生成（3 个入口）、产物、前端数据、文学剧本渲染、YAML、Schema、Job 查询
 - **6 个 AI Skill 封装**：NovelReader、StoryOntology、ScreenplayWriter、ChapterBoundaryReader、ContinuityAuditor、DialogueDoctor
@@ -468,7 +465,7 @@ ChapterService + ChapterSplitter
 |------|------|------|
 | **V0** | 3 章输入 → FakeProvider 生成 → YAML 导出 → Schema 验证 | ✅ Done |
 | **V1** | adaptation_config + adaptation_plan + 每步 artifact + Job 状态查询 | ✅ Done |
-| **V2.1** | DeepSeek 真实集成 + 文件持久化 + SQLite + 前端后端联通 | ✅ Done |
+| **V2.1** | DeepSeek 真实集成 + 文件持久化 + 前端后端联通 | ✅ Done |
 | **V3** | 因果图增强 + 伏笔追踪闭环 + DialogueDoctor 集成 | 📋 Planned |
 | **V4** | 审查闭环 + 人工反馈修正 + 迭代优化 | 📋 Planned |
 
