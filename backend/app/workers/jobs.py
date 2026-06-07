@@ -28,6 +28,8 @@ from app.services.generation_orchestrator import GenerationOrchestrator
 #               → 后台执行 4 阶段流水线（novel_reader → story_ontology → adaptation_planner → screenplay_writer）
 
 #   这是一个**（fire-and-forget）**的模式——路由拿到 job_id 立刻响应给前端，后台慢慢跑，前端通过 /jobs/{id} 轮询状态。
+#   V2.1: adaptation_planner 已合并到 story_ontology（3 阶段流水线）。
+#   V2.1: adaptation_planner 已合并到 story_ontology（3 阶段流水线）。
 def enqueue_story_bible(
     background_tasks: BackgroundTasks,
     orchestrator: GenerationOrchestrator,

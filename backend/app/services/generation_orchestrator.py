@@ -5,7 +5,6 @@ from typing import Any
 
 from app.ai.providers.base import AiProviderConfigurationError
 from app.ai.providers.factory import build_ai_provider
-from app.ai.skills.adaptation_planner import AdaptationPlannerSkill
 from app.ai.skills.novel_reader import NovelReaderSkill
 from app.ai.skills.screenplay_writer import ScreenplayYamlWriterSkill
 from app.ai.skills.story_ontology import StoryOntologySkill
@@ -450,8 +449,136 @@ def _resolve_char_id(raw: str, lookup: dict[str, str]) -> str:
     return raw
 
 
+def _auto_register_missing_characters(
+    screenplay_json: dict[str, Any],
+    char_lookup: dict[str, str],
+) -> dict[str, str]:
+    """扫描角色引用字段，为无法通过 lookup 解析的中文名自动注册角色。
+
+    当 LLM（通常是 StoryOntology）在 events/scenes/story_bible 中引用了
+    story_bible.characters 里不存在的角色名时（如背景角色仅作为 event participant 出现），
+    此函数自动创建 char_NNN 条目，避免后续 schema 校验因非规范 ID 格式而失败。
+    """
+    import re
+    char_pattern = re.compile(r"^char_[0-9]{3}$")
+
+    def _has_chinese(s: str) -> bool:
+        return any("一" <= c <= "鿿" for c in s)
+
+    def _is_unresolved(raw: str) -> bool:
+        """raw 包含中文且无法通过 _resolve_char_id 解析为合法 char_NNN。"""
+        if not raw or char_pattern.match(raw):
+            return False
+        if not _has_chinese(raw):
+            return False
+        resolved = _resolve_char_id(raw, char_lookup)
+        return not char_pattern.match(resolved)
+
+    # 收集所有未解析的中文角色名（去重，保持首次出现的写法）
+    unresolved_names: dict[str, str] = {}
+
+    # events.participants
+    for evt in screenplay_json.get("events", []):
+        if isinstance(evt, dict):
+            for p in evt.get("participants") or []:
+                if isinstance(p, str) and _is_unresolved(p):
+                    unresolved_names[p] = p
+
+    # scenes.characters
+    for scene in screenplay_json.get("scenes", []):
+        if isinstance(scene, dict):
+            for c in scene.get("characters") or []:
+                if isinstance(c, str) and _is_unresolved(c):
+                    unresolved_names[c] = c
+
+    # core_elements.protagonists
+    core = screenplay_json.get("core_elements")
+    if isinstance(core, dict):
+        for p in core.get("protagonists") or []:
+            if isinstance(p, str) and _is_unresolved(p):
+                unresolved_names[p] = p
+
+    # story_bible → knowledge_states.character_id
+    bible = screenplay_json.get("story_bible")
+    if isinstance(bible, dict):
+        for ks in bible.get("knowledge_states", []):
+            if isinstance(ks, dict) and isinstance(ks.get("character_id"), str):
+                cid = ks["character_id"]
+                if _is_unresolved(cid):
+                    unresolved_names[cid] = cid
+
+        # story_bible → relationship_edges.from / .to
+        for edge in bible.get("relationship_edges", []):
+            if isinstance(edge, dict):
+                for key in ("from", "to"):
+                    val = edge.get(key)
+                    if isinstance(val, str) and _is_unresolved(val):
+                        unresolved_names[val] = val
+
+        # story_bible → continuity_anchors.applies_to
+        for anchor in bible.get("continuity_anchors", []):
+            if isinstance(anchor, dict):
+                for item in anchor.get("applies_to") or []:
+                    if isinstance(item, str) and _is_unresolved(item):
+                        unresolved_names[item] = item
+
+        # dramatic_assets → conflict_pool.participants
+        da = bible.get("dramatic_assets")
+        if isinstance(da, dict):
+            for conflict in da.get("conflict_pool", []):
+                if isinstance(conflict, dict):
+                    for p in conflict.get("participants") or []:
+                        if isinstance(p, str) and _is_unresolved(p):
+                            unresolved_names[p] = p
+            # dramatic_assets → filmic_constraints.related_characters
+            for fc in da.get("filmic_constraints", []):
+                if isinstance(fc, dict):
+                    for c in fc.get("related_characters") or []:
+                        if isinstance(c, str) and _is_unresolved(c):
+                            unresolved_names[c] = c
+
+    if not unresolved_names:
+        return char_lookup
+
+    # 在 story_bible.characters 中自动注册
+    bible = screenplay_json.setdefault("story_bible", {})
+    characters: list[dict[str, Any]] = bible.setdefault("characters", [])
+
+    # 找到下一个可用的 char ID
+    max_id = 0
+    for c in characters:
+        if isinstance(c, dict):
+            m = re.match(r"^char_(\d+)$", c.get("id", ""))
+            if m:
+                max_id = max(max_id, int(m.group(1)))
+
+    new_lookup = dict(char_lookup)
+    for name in unresolved_names.values():
+        max_id += 1
+        new_id = f"char_{max_id:03d}"
+        characters.append({
+            "id": new_id,
+            "name": name,
+            "aliases": [],
+            "narrative_role": "minor",
+            "goals": {"explicit": "", "hidden": ""},
+            "voice_profile": {"rhythm": "", "diction": "", "defense_mechanism": ""},
+            "source_refs": [],
+            "_auto_registered": True,
+        })
+        new_lookup[name] = new_id
+        new_lookup[name.lower()] = new_id
+        logger.info("Auto-registered missing character: %s → %s", name, new_id)
+
+    return new_lookup
+
+
 def _normalize_events(events: list[dict[str, Any]], char_lookup: dict[str, str] | None = None) -> list[dict[str, Any]]:
-    """确保事件列表含 schema 要求的必填字段，并统一 ID 格式。"""
+    """确保事件列表含 schema 要求的必填字段，并统一 ID 格式。
+
+    如果提供了 char_lookup，会尝试将中文角色名解析为 char_NNN 格式；
+    否则仅做基本的零填充规范化。
+    """
     for evt in events:
         if isinstance(evt, dict):
             evt["id"] = _normalize_event_id(evt.get("id", ""))
@@ -462,7 +589,14 @@ def _normalize_events(events: list[dict[str, Any]], char_lookup: dict[str, str] 
             # 确保 participants 中的角色 ID 也规范化
             participants = evt.get("participants")
             if isinstance(participants, list):
-                evt["participants"] = [_normalize_char_id(p) for p in participants if isinstance(p, str)]
+                if char_lookup:
+                    evt["participants"] = [_resolve_char_id(p, char_lookup) for p in participants if isinstance(p, str)]
+                else:
+                    evt["participants"] = [_normalize_char_id(p) for p in participants if isinstance(p, str)]
+            # 确保 event_flow 非空（schema 要求 minItems=1）
+            flow = evt.get("event_flow")
+            if isinstance(flow, list) and len(flow) == 0:
+                evt["event_flow"] = [evt.get("title", evt.get("id", "未命名事件"))]
     return events
 
 
@@ -541,19 +675,37 @@ def _normalize_adaptation_plan(plan: dict[str, Any]) -> dict[str, Any]:
     return plan
 
 
-def _normalize_source_refs_list(refs: list[Any], default_chapter_id: str = "chapter_001") -> list[dict[str, Any]]:
-    """将 source_refs 中的字符串条目转为合法的 sourceRef 对象。"""
+def _normalize_source_refs_list(
+    refs: list[Any],
+    default_chapter_id: str = "chapter_001",
+    valid_chapter_ids: set[str] | None = None,
+) -> list[dict[str, Any]]:
+    """将 source_refs 中的字符串条目转为合法的 sourceRef 对象。
+
+    当提供了 valid_chapter_ids 时，会将不在集合内的章节 ID（如 LLM 幻影引用的
+    chapter_000）自动重映射到 default_chapter_id，避免后续校验因"引用不存在的章节"而阻断。
+    """
+    def _ensure_valid(cid: str) -> str:
+        if valid_chapter_ids is not None and cid and cid not in valid_chapter_ids:
+            logger.debug(
+                "Remapping hallucinated chapter ref %s → %s", cid, default_chapter_id,
+            )
+            return default_chapter_id
+        return cid
+
     result: list[dict[str, Any]] = []
     for ref in refs:
         if isinstance(ref, dict):
-            ref.setdefault("chapter_id", ref.get("chapter_id") or default_chapter_id)
+            cid = ref.get("chapter_id") or default_chapter_id
+            ref["chapter_id"] = _ensure_valid(cid)
             ref.pop("event_ids", None)  # 移除旧格式字段
             result.append(ref)
         elif isinstance(ref, str):
             # "chapter_001:p_001" → {"chapter_id": "chapter_001", "paragraph_range": "p_001"}
             if ":" in ref:
                 parts = ref.split(":", 1)
-                obj: dict[str, Any] = {"chapter_id": parts[0].strip() or default_chapter_id}
+                cid = parts[0].strip() or default_chapter_id
+                obj: dict[str, Any] = {"chapter_id": _ensure_valid(cid)}
                 if len(parts) > 1 and parts[1].strip():
                     obj["paragraph_range"] = parts[1].strip()
                 result.append(obj)
@@ -568,8 +720,17 @@ def _normalize_all_references(
     char_lookup: dict[str, str],
     event_lookup: dict[str, str],
     default_chapter_id: str = "chapter_001",
+    valid_chapter_ids: set[str] | None = None,
 ) -> dict[str, Any]:
-    """扫描 screenplay 中所有角色/事件引用/source_refs 字段，替换为规范格式。"""
+    """扫描 screenplay 中所有角色/事件引用/source_refs 字段，替换为规范格式。
+
+    当提供 valid_chapter_ids 时，source_refs 中引用的幻影章节 ID（如 chapter_000）
+    会被自动重映射到 default_chapter_id。"""
+    # 自动推导 valid_chapter_ids（如果调用方未提供）
+    if valid_chapter_ids is None:
+        chapters = screenplay.get("source", {}).get("chapters", [])
+        if chapters:
+            valid_chapter_ids = {c["id"] for c in chapters if isinstance(c, dict) and c.get("id")}
     # events → participants, source_refs
     for evt in screenplay.get("events", []):
         if isinstance(evt, dict):
@@ -578,7 +739,7 @@ def _normalize_all_references(
                 evt["participants"] = [_resolve_char_id(p, char_lookup) for p in participants if isinstance(p, str)]
             srefs = evt.get("source_refs")
             if isinstance(srefs, list):
-                evt["source_refs"] = _normalize_source_refs_list(srefs, default_chapter_id)
+                evt["source_refs"] = _normalize_source_refs_list(srefs, default_chapter_id, valid_chapter_ids)
 
     # scenes → characters, dialogue, content_blocks, related_events, source_refs
     for scene in screenplay.get("scenes", []):
@@ -598,7 +759,24 @@ def _normalize_all_references(
             scene["related_events"] = [_resolve_event_id(e, event_lookup) for e in related if isinstance(e, str)]
         srefs = scene.get("source_refs")
         if isinstance(srefs, list):
-            scene["source_refs"] = _normalize_source_refs_list(srefs, default_chapter_id)
+            scene["source_refs"] = _normalize_source_refs_list(srefs, default_chapter_id, valid_chapter_ids)
+
+        # 自动将 dialogue / content_blocks 中引用但 scene.characters 未声明的角色补全。
+        # 否则 ReferenceValidator 会以 error 阻断导出。
+        scene_chars = scene.setdefault("characters", [])
+        scene_char_set: set[str] = set(scene_chars)
+        for line in scene.get("dialogue", []):
+            if isinstance(line, dict):
+                cid = line.get("character_id", "")
+                if cid and cid not in scene_char_set:
+                    scene_chars.append(cid)
+                    scene_char_set.add(cid)
+        for block in scene.get("content_blocks", []):
+            if isinstance(block, dict):
+                cid = block.get("character_id", "")
+                if cid and cid not in scene_char_set:
+                    scene_chars.append(cid)
+                    scene_char_set.add(cid)
 
     # core_elements → protagonists, plot, actions
     core = screenplay.get("core_elements")
@@ -624,7 +802,7 @@ def _normalize_all_references(
             if isinstance(char, dict):
                 srefs = char.get("source_refs")
                 if isinstance(srefs, list):
-                    char["source_refs"] = _normalize_source_refs_list(srefs, default_chapter_id)
+                    char["source_refs"] = _normalize_source_refs_list(srefs, default_chapter_id, valid_chapter_ids)
         for ks in bible.get("knowledge_states", []):
             if isinstance(ks, dict) and "character_id" in ks:
                 ks["character_id"] = _resolve_char_id(ks["character_id"], char_lookup)
@@ -635,7 +813,7 @@ def _normalize_all_references(
                         edge[key] = _resolve_char_id(edge[key], char_lookup)
                 srefs = edge.get("source_refs")
                 if isinstance(srefs, list):
-                    edge["source_refs"] = _normalize_source_refs_list(srefs, default_chapter_id)
+                    edge["source_refs"] = _normalize_source_refs_list(srefs, default_chapter_id, valid_chapter_ids)
         for anchor in bible.get("continuity_anchors", []):
             if isinstance(anchor, dict):
                 applies_to = anchor.get("applies_to")
@@ -643,7 +821,7 @@ def _normalize_all_references(
                     anchor["applies_to"] = [_resolve_char_id(c, char_lookup) for c in applies_to if isinstance(c, str)]
                 srefs = anchor.get("source_refs")
                 if isinstance(srefs, list):
-                    anchor["source_refs"] = _normalize_source_refs_list(srefs, default_chapter_id)
+                    anchor["source_refs"] = _normalize_source_refs_list(srefs, default_chapter_id, valid_chapter_ids)
         dramatic_assets = bible.get("dramatic_assets")
         if isinstance(dramatic_assets, dict):
             for conflict in dramatic_assets.get("conflict_pool", []):
@@ -660,7 +838,7 @@ def _normalize_all_references(
                         ]
                     srefs = conflict.get("source_refs")
                     if isinstance(srefs, list):
-                        conflict["source_refs"] = _normalize_source_refs_list(srefs, default_chapter_id)
+                        conflict["source_refs"] = _normalize_source_refs_list(srefs, default_chapter_id, valid_chapter_ids)
             for constraint in dramatic_assets.get("filmic_constraints", []):
                 if isinstance(constraint, dict):
                     related_characters = constraint.get("related_characters")
@@ -675,7 +853,7 @@ def _normalize_all_references(
                         ]
                     srefs = constraint.get("source_refs")
                     if isinstance(srefs, list):
-                        constraint["source_refs"] = _normalize_source_refs_list(srefs, default_chapter_id)
+                        constraint["source_refs"] = _normalize_source_refs_list(srefs, default_chapter_id, valid_chapter_ids)
 
     # foreshadowing → setup_event_id, payoff_event_id
     foreshadows = screenplay.get("foreshadowing", [])
@@ -958,8 +1136,9 @@ class GenerationOrchestrator:
         self,
         novel_reader: NovelReaderSkill,
         story_ontology: StoryOntologySkill,
-        adaptation_planner: AdaptationPlannerSkill,
         screenplay_writer: ScreenplayYamlWriterSkill,
+        *,
+        adaptation_planner: Any | None = None,  # V2.1: 已废弃，adaptation_plan 由 StoryOntology 一并产出
         artifact_service: ArtifactService | None = None,
         job_service: JobService | None = None,
         llm_trace_service: LlmTraceService | None = None,
@@ -968,7 +1147,6 @@ class GenerationOrchestrator:
     ) -> None:
         self.novel_reader = novel_reader
         self.story_ontology = story_ontology
-        self.adaptation_planner = adaptation_planner
         self.screenplay_writer = screenplay_writer
         self.artifact_service = artifact_service or ArtifactService()
         self.job_service = job_service or JobService()
@@ -993,7 +1171,6 @@ class GenerationOrchestrator:
         return cls(
             novel_reader=NovelReaderSkill(provider),
             story_ontology=StoryOntologySkill(provider),
-            adaptation_planner=AdaptationPlannerSkill(provider),
             screenplay_writer=ScreenplayYamlWriterSkill(provider),
         )
 
@@ -1074,7 +1251,8 @@ class GenerationOrchestrator:
         adaptation_config: AdaptationConfig,
         job: GenerationJob | None = None,
     ) -> GenerationJob:
-        """运行 novel_reader → story_ontology → adaptation_planner，生成并保存 adaptation_plan artifact。
+        """运行 novel_reader → story_ontology，生成并保存 adaptation_plan artifact。
+        adaptation_plan 由 StoryOntology 一并产出，不再有独立的 adaptation_planner 步骤。
 
         用于分步调试、单步重跑、前端展示 pipeline progress。
         """
@@ -1132,22 +1310,8 @@ class GenerationOrchestrator:
                 _strip_chapter_text(story_assets), active_job.id,
             )
 
-            # Phase 3: adaptation_planner
-            active_job = self.job_service.mark_step(active_job, "running", "adaptation_planner")
-            _t0 = _time.monotonic()
-            adaptation_plan = self.adaptation_planner.run(
-                {
-                    "project": project_payload,
-                    **story_assets,
-                    "adaptation_config": adaptation_config.model_dump(),
-                }
-            )
-            self.llm_trace_service.record_run(
-                active_job.id, "adaptation_planner",
-                provider_name=getattr(self.adaptation_planner.provider, "name", "unknown"),
-                model_name=getattr(self.adaptation_planner.provider, "model", "unknown"),
-                duration_ms=(_time.monotonic() - _t0) * 1000,
-            )
+            # adaptation_plan 由 StoryOntology 在 adaptation_plan 字段中一并产出
+            adaptation_plan = story_assets.get("adaptation_plan") or {}
             self.artifact_service.save_artifact(
                 project_id, "adaptation_plan", adaptation_plan, active_job.id,
             )
@@ -1219,21 +1383,9 @@ class GenerationOrchestrator:
                 _strip_chapter_text(story_assets), active_job.id,
             )
 
-            active_job = self.job_service.mark_step(active_job, "running", "adaptation_planner")
-            _t0 = _time.monotonic()
-            adaptation_plan = self.adaptation_planner.run(
-                {
-                    "project": project_payload,
-                    **story_assets,
-                    "adaptation_config": adaptation_config.model_dump(),
-                }
-            )
-            self.llm_trace_service.record_run(
-                active_job.id, "adaptation_planner",
-                provider_name=getattr(self.adaptation_planner.provider, "name", "unknown"),
-                model_name=getattr(self.adaptation_planner.provider, "model", "unknown"),
-                duration_ms=(_time.monotonic() - _t0) * 1000,
-            )
+            # adaptation_plan 由 StoryOntology 在 adaptation_plan 字段中一并产出，
+            # 不再作为独立的 LLM 调用步骤。归一化层负责补全缺失字段。
+            adaptation_plan = story_assets.get("adaptation_plan") or {}
             if save_intermediates:
                 self.artifact_service.save_artifact(project_id, "adaptation_plan", adaptation_plan, active_job.id)
 
@@ -1306,6 +1458,8 @@ class GenerationOrchestrator:
             # 构建查找表，扫描全文中所有角色+事件引用字段并替换为规范 ID
             char_lookup = _build_character_lookup(screenplay_json["story_bible"])
             event_lookup = _build_event_lookup(screenplay_json["events"])
+            # 自动注册 LLM 引用但 story_bible 中缺失的角色（如背景角色仅出现在 event participants）
+            char_lookup = _auto_register_missing_characters(screenplay_json, char_lookup)
             if char_lookup or event_lookup:
                 screenplay_json = _normalize_all_references(screenplay_json, char_lookup, event_lookup)
             # 自动修复：对白/content_blocks 中出现的角色必须被加入 scene.characters
