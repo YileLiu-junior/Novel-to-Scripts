@@ -40,7 +40,7 @@ from app.repositories.file_store import default_data_root
 from app.services.yaml_service import YamlService
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
-_NOVEL_PATH = _REPO_ROOT / "docs" / "三生三世十里桃花.txt"
+_NOVEL_PATH = _REPO_ROOT / "docs" / "Scripts" / "潜伏" / "潜伏_小说.txt"
 
 
 def _has_valid_api_key() -> bool:
@@ -53,11 +53,13 @@ def _has_valid_api_key() -> bool:
 # _CHAPTER_BOUNDARY_RE is tighter than ChapterSplitter's patterns — it only
 # matches unambiguous chapter/section headers to avoid false positives on
 # short numerals and standalone punctuation.
+# Supports optional markdown heading prefix (###) for novels formatted with
+# headings like "###楔子", "###第一部分 身世成谜", etc.
 _CHAPTER_BOUNDARY_RE = re.compile(
-    r"^\s*(?:"
-    r"第[零一二三四五六七八九十百千万\d]+[章节回卷部集]"  # 第X章/第X节/第X回
+    r"^\s*(?:#{1,3}\s*)?(?:"
+    r"第[零一二三四五六七八九十百千万\d]+[章节回卷部集部分]"  # 第X章/第X部分
     r"|前[传序言][\s（(]*[零一二三四五六七八九十百千万\d]*"  # 前传（一）/ 序章
-    r"|序[章言]"                                              # 序章/序言
+    r"|序\s*[章言幕]"                                       # 序章/序言/序幕/序 幕
     r"|楔[子文]"                                              # 楔子/楔文
     r"|引[子言文]"                                            # 引子/引言/引文
     r")",

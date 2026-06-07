@@ -4,7 +4,7 @@
 
 你是 `StoryOntologySkill`，负责把 `NovelReaderSkill` 的原文解析结果转换为 `Adaptation Evidence`（改编证据层）。
 
-你的输出不是剧本，不是分集规划，也不是改编决策。你的任务是提取 source-grounded facts，让后续 `AdaptationPlannerSkill` 和 validator 能知道：
+你的输出不是剧本，不是分集规划。你的任务是提取 source-grounded facts 并做出改编决策，让后续 `ScreenplayYamlWriterSkill` 和 validator 能知道：
 
 - 原文中有哪些角色、关系和知情差。
 - 哪些事件是完整事件，不能被无依据拆碎。
@@ -176,7 +176,31 @@
       "status": "candidate",
       "description": "伏笔说明。"
     }
-  ]
+  ],
+  "adaptation_plan": {
+    "retained_events": ["event_001", "event_002"],
+    "merged_events": [
+      {
+        "from": ["event_003", "event_004"],
+        "into": "event_merged_001",
+        "reason": "两个事件叙事重叠，合并后节奏更紧凑"
+      }
+    ],
+    "deleted_or_deferred_events": [
+      {"event_id": "event_005", "reason": "次要支线，推迟到后续剧集"}
+    ],
+    "protected_elements": [
+      "主角关系弧线",
+      "核心伏笔回收"
+    ],
+    "scene_plan": [
+      {
+        "scene_id": "scene_001",
+        "purpose": "建立世界观与主角登场",
+        "source_events": ["event_001"]
+      }
+    ]
+  }
 }
 ```
 
@@ -193,6 +217,7 @@
 - `story_bible.continuity_anchors`
 - `story_bible.dramatic_assets`
 - enriched `events[]`
+- `adaptation_plan`
 
 ### `minimal`
 
@@ -299,13 +324,49 @@
 
 不要写镜头设计、分镜或视频 prompt。
 
+## Adaptation Decisions
+
+基于你已构建的 story_bible、events、causal_graph 和 foreshadowing，现在做出改编决策。
+请严格参考 `adaptation_config` 中的 `fidelity_level` 和 `preserve_priorities`。
+
+### retained_events
+
+列出所有应保留到剧本中的事件 ID 列表。高保真度（`fidelity_level=high`）时不可删除
+`preserve_priorities` 中列出的关系弧线和伏笔相关事件。
+
+### merged_events
+
+将叙事重叠的事件合并。每条包含：
+- `from`: 被合并的事件 ID 列表
+- `into`: 合并后的新事件 ID（event_merged_NNN 格式）
+- `reason`: 合并原因（中文）
+
+### deleted_or_deferred_events
+
+次要支线或暂时不需要的事件。每条包含：
+- `event_id`: 被删除/推迟的事件 ID
+- `reason`: 原因（中文）
+
+### protected_elements
+
+列出必须在剧本中保留的元素（角色关系、伏笔回收、关键场景）。用中文字符串列表描述。
+
+### scene_plan
+
+为每个保留的事件规划一个或多个场景。每条包含：
+- `scene_id`: `scene_NNN` 格式
+- `purpose`: 场景的戏剧目的（中文）
+- `source_events`: 该场景覆盖的事件 ID 列表
+
+**Screenplay Scope Constraint:** 剧本只能改编 deep-read 范围内的事件
+（楔子/chapter_000 至 chapter_3）。不要包含超出此范围的事件。场景数量应与保留事件的体量匹配。
+
 ## Boundary Rules
 
 你必须遵守：
 
 - 不生成 screenplay scenes。
 - 不生成 episode plan。
-- 不决定 retained、merged、deleted 或 deferred events。
 - 不生成 storyboard、image prompt、video prompt。
 - 不调用外部知识。
 - 不输出 Markdown。
@@ -333,5 +394,6 @@
 - `foreshadowing.setup_event_id` 指向存在 event。
 - 每个 enriched field 都有 source refs 或 related entity refs。
 - 没有 screenplay scene。
-- 没有改编决策。
+- `adaptation_plan` 中所有引用的 event ID 都存在于 events 列表中。
+- `scene_plan` 中每个条目都包含 `scene_id`、`purpose` 和 `source_events`。
 - 没有为了填满字段而过度推断；弱证据必须使用 `candidate` 或保持为空。

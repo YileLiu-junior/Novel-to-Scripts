@@ -24,7 +24,7 @@ class ReferenceValidator:
                     findings.append(
                         self._finding(
                             "reference.missing_chapter",
-                            "error",
+                            "warning",
                             f"Scene {scene_id} references missing chapter {chapter_id}.",
                             "scene",
                             scene_id,
@@ -58,7 +58,7 @@ class ReferenceValidator:
                     findings.append(
                         self._finding(
                             "reference.dialogue_character_not_in_scene",
-                            "error",
+                            "warning",
                             f"Dialogue {line.get('id')} uses character {character_id}, which is not in scene {scene_id}.",
                             "dialogue",
                             line.get("id"),
@@ -71,7 +71,7 @@ class ReferenceValidator:
                     findings.append(
                         self._finding(
                             "reference.content_block_character_not_in_scene",
-                            "error",
+                            "warning",
                             f"Content block {block.get('id')} uses character {character_id}, which is not in scene {scene_id}.",
                             "content_block",
                             block.get("id"),
