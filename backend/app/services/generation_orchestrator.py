@@ -319,6 +319,44 @@ def _normalize_event_id(raw: str) -> str:
     return raw
 
 
+def _normalize_foreshadowing_id(raw: str) -> str:
+    """将模型可能输出的伏笔 ID 统一为零填充的 foreshadow_NNN 格式。
+
+    例: fsh_001 → foreshadow_001, fsh_1 → foreshadow_001,
+         foreshadow_1 → foreshadow_001, foreshadowing_01 → foreshadow_001
+    """
+    if not raw:
+        return raw
+    # 已合法：foreshadow_NNN
+    if raw.startswith("foreshadow_"):
+        suffix = raw[11:]
+        if suffix.isdigit():
+            return f"foreshadow_{int(suffix):03d}"
+    # fsh_001 / fsh_1 → foreshadow_001
+    if raw.startswith("fsh_"):
+        suffix = raw[4:]
+        if suffix.isdigit():
+            return f"foreshadow_{int(suffix):03d}"
+    # foreshadowing_01 → foreshadow_001
+    if raw.startswith("foreshadowing_"):
+        suffix = raw[14:]
+        if suffix.isdigit():
+            return f"foreshadow_{int(suffix):03d}"
+    # fs_001 → foreshadow_001
+    if raw.startswith("fs_"):
+        suffix = raw[3:]
+        if suffix.isdigit():
+            return f"foreshadow_{int(suffix):03d}"
+    # 纯数字 → foreshadow_NNN
+    if raw.isdigit():
+        return f"foreshadow_{int(raw):03d}"
+    # 其他带下划线的情况：取最后一节数字
+    parts = raw.rsplit("_", 1)
+    if len(parts) == 2 and parts[1].isdigit():
+        return f"foreshadow_{int(parts[1]):03d}"
+    return raw
+
+
 def _normalize_char_id(raw: str) -> str:
     """将模型可能输出的各种角色 ID 统一为零填充的 char_NNN 格式。
 
@@ -615,7 +653,12 @@ def _normalize_foreshadowing(foreshadowing: list[dict[str, Any]], events: list[d
     event_ids = [e.get("id") for e in (events or []) if e.get("id")]
     for idx, item in enumerate(foreshadowing):
         if isinstance(item, dict):
-            item.setdefault("id", f"foreshadow_{(idx + 1):03d}")
+            # 规范化已有 ID（修复 fsh_001 → foreshadow_001 等）或补默认值
+            raw_id = item.get("id", "")
+            if raw_id:
+                item["id"] = _normalize_foreshadowing_id(raw_id)
+            else:
+                item.setdefault("id", f"foreshadow_{(idx + 1):03d}")
             # 规范化 setup_event_id
             setup = item.get("setup_event_id", "")
             if setup:
