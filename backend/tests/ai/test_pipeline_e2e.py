@@ -313,6 +313,159 @@ class PipelineE2ETest(unittest.TestCase):
                     self.assertIn("paragraph_count", ch,
                                   f"{atype}/{key}: must have paragraph_count reference")
 
+    def _assert_story_bible_valid(self, job: Any, story_bible: dict[str, Any]) -> None:
+        """Structural assertions for story_bible artifact."""
+        self.assertEqual(job.status, "succeeded",
+                         f"Job failed with error: {getattr(job, 'error', 'unknown')}")
+
+        # Top-level keys from story_ontology output
+        self.assertIn("story_bible", story_bible, "story_bible must have story_bible key")
+        self.assertIn("events", story_bible, "story_bible must have events")
+        self.assertIn("causal_graph", story_bible, "story_bible must have causal_graph")
+        self.assertIn("foreshadowing", story_bible, "story_bible must have foreshadowing")
+
+        # story_bible sub-object
+        sb = story_bible.get("story_bible", {})
+        self.assertIsInstance(sb, dict)
+        characters = sb.get("characters", [])
+        self.assertIsInstance(characters, list)
+        self.assertGreater(len(characters), 0, "story_bible.characters must not be empty")
+
+        # events
+        events = story_bible.get("events", [])
+        self.assertIsInstance(events, list)
+        self.assertGreater(len(events), 0, "events must not be empty")
+
+        # causal_graph edges
+        cg = story_bible.get("causal_graph", {})
+        self.assertIsInstance(cg, dict)
+        self.assertIsInstance(cg.get("edges", []), list)
+
+        # Not placeholder
+        sb_str = str(story_bible)
+        self.assertNotIn("Fake Provider", sb_str)
+        self.assertNotIn("TODO", sb_str)
+
+    def _assert_adaptation_plan_valid(self, job: Any, plan: dict[str, Any]) -> None:
+        """Structural assertions for adaptation_plan artifact."""
+        self.assertEqual(job.status, "succeeded",
+                         f"Job failed with error: {getattr(job, 'error', 'unknown')}")
+
+        # Top-level keys from adaptation_planner output
+        self.assertIn("scene_plan", plan, "adaptation_plan must have scene_plan")
+        self.assertIn("retained_events", plan, "adaptation_plan must have retained_events")
+
+        scene_plan = plan.get("scene_plan", [])
+        self.assertIsInstance(scene_plan, list)
+        self.assertGreater(len(scene_plan), 0, "scene_plan must not be empty")
+
+        # Not placeholder
+        plan_str = str(plan)
+        self.assertNotIn("Fake Provider", plan_str)
+        self.assertNotIn("TODO", plan_str)
+
+    def _assert_story_bible_artifacts(self) -> None:
+        """Verify run_story_bible artifacts were saved."""
+        artifact_dir = default_data_root() / "projects" / self.project_id / "artifacts"
+        self.assertTrue(artifact_dir.exists(), f"Artifact dir must exist: {artifact_dir}")
+
+        for atype in ("story_bible", "novel_analysis"):
+            files = list(artifact_dir.glob(f"{atype}_v*.json"))
+            self.assertGreater(len(files), 0,
+                               f"Must have at least one artifact of type '{atype}' in {artifact_dir}")
+
+    def _assert_adaptation_plan_artifacts(self) -> None:
+        """Verify run_adaptation_plan artifacts were saved."""
+        artifact_dir = default_data_root() / "projects" / self.project_id / "artifacts"
+        self.assertTrue(artifact_dir.exists(), f"Artifact dir must exist: {artifact_dir}")
+
+        for atype in ("story_bible", "novel_analysis", "adaptation_plan"):
+            files = list(artifact_dir.glob(f"{atype}_v*.json"))
+            self.assertGreater(len(files), 0,
+                               f"Must have at least one artifact of type '{atype}' in {artifact_dir}")
+
+    # ── step-by-step E2E tests ─────────────────────────────────────────
+
+    def test_run_story_bible_with_real_ai(self) -> None:
+        """E2E: run_story_bible() runs novel_reader→story_ontology, saves story_bible."""
+        raw_text = _read_novel_text()
+        chunks = _split_novel_for_e2e(raw_text, max_chapters=8)
+        self.assertGreaterEqual(len(chunks), 3,
+                                f"Expected >= 3 chapters from novel, got {len(chunks)}")
+        print(f"\n[E2E-SB] Split {len(chunks)} chapters from novel")
+
+        chapters = _prepare_chapters(chunks)
+        orchestrator = self._build_orchestrator()
+        adapt_config = AdaptationConfig(
+            target_format="web_series",
+            fidelity_level="high",
+        )
+
+        print("[E2E-SB] Running story_bible pipeline (phases 1-2)...")
+        job = orchestrator.run_story_bible(
+            project_id=self.project_id,
+            chapters=chapters,
+            adaptation_config=adapt_config,
+        )
+
+        print(f"[E2E-SB] Job status: {job.status}")
+
+        # Read the produced story_bible
+        latest_sb = self.artifact_service.latest_for_project(
+            self.project_id, "story_bible"
+        )
+        self.assertIsNotNone(latest_sb, "story_bible artifact must exist")
+        story_bible = latest_sb.data if isinstance(latest_sb.data, dict) else {}
+
+        self._assert_story_bible_valid(job, story_bible)
+        self._assert_story_bible_artifacts()
+        self._assert_chapter_text_stripped()
+
+        print("[E2E-SB] All assertions passed - OK")
+
+    def test_run_adaptation_plan_with_real_ai(self) -> None:
+        """E2E: run_adaptation_plan() runs phases 1-3, saves story_bible + adaptation_plan."""
+        raw_text = _read_novel_text()
+        chunks = _split_novel_for_e2e(raw_text, max_chapters=8)
+        self.assertGreaterEqual(len(chunks), 3,
+                                f"Expected >= 3 chapters from novel, got {len(chunks)}")
+        print(f"\n[E2E-AP] Split {len(chunks)} chapters from novel")
+
+        chapters = _prepare_chapters(chunks)
+        orchestrator = self._build_orchestrator()
+        adapt_config = AdaptationConfig(
+            target_format="web_series",
+            fidelity_level="high",
+        )
+
+        print("[E2E-AP] Running adaptation_plan pipeline (phases 1-3)...")
+        job = orchestrator.run_adaptation_plan(
+            project_id=self.project_id,
+            chapters=chapters,
+            adaptation_config=adapt_config,
+        )
+
+        print(f"[E2E-AP] Job status: {job.status}")
+
+        # Read the produced adaptation_plan
+        latest_ap = self.artifact_service.latest_for_project(
+            self.project_id, "adaptation_plan"
+        )
+        self.assertIsNotNone(latest_ap, "adaptation_plan artifact must exist")
+        adapt_plan = latest_ap.data if isinstance(latest_ap.data, dict) else {}
+
+        # Also verify story_bible was saved
+        latest_sb = self.artifact_service.latest_for_project(
+            self.project_id, "story_bible"
+        )
+        self.assertIsNotNone(latest_sb, "story_bible artifact must also exist after adaptation_plan run")
+
+        self._assert_adaptation_plan_valid(job, adapt_plan)
+        self._assert_adaptation_plan_artifacts()
+        self._assert_chapter_text_stripped()
+
+        print("[E2E-AP] All assertions passed - OK")
+
     # ── the test ──────────────────────────────────────────────────────
 
     def test_run_v1_pipeline_with_real_ai(self) -> None:

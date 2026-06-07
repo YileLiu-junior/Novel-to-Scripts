@@ -892,6 +892,165 @@ class GenerationOrchestrator:
             screenplay_writer=ScreenplayYamlWriterSkill(provider),
         )
 
+    def run_story_bible(
+        self,
+        project_id: str,
+        chapters: list[dict[str, Any]],
+        adaptation_config: AdaptationConfig,
+        job: GenerationJob | None = None,
+    ) -> GenerationJob:
+        """仅运行 novel_reader → story_ontology，生成并保存 story_bible artifact。
+
+        用于分步调试、单步重跑、前端展示 pipeline progress。
+        """
+        active_job = job or self.job_service.create_job(project_id)
+        chapters = chapters[:4]
+        try:
+            project = ProjectService().get_project(project_id)
+            project_payload = project.model_dump(mode="json") if project is not None else {"id": project_id}
+            artifact_dir = default_data_root() / "projects" / project_id / "artifacts"
+            logger.info(
+                "run_story_bible project_id=%s project_title=%s chapters_count=%s provider=%s artifact_dir=%s",
+                project_id,
+                project_payload.get("title", ""),
+                len(chapters),
+                getattr(self.novel_reader.provider, "name", "unknown"),
+                artifact_dir,
+            )
+            import time as _time
+
+            # Phase 1: novel_reader
+            active_job = self.job_service.mark_step(active_job, "running", "novel_reader")
+            _t0 = _time.monotonic()
+            novel_analysis = self.novel_reader.run({"project": project_payload, "chapters": chapters})
+            self.llm_trace_service.record_run(
+                active_job.id, "novel_reader",
+                provider_name=getattr(self.novel_reader.provider, "name", "unknown"),
+                model_name=getattr(self.novel_reader.provider, "model", "unknown"),
+                duration_ms=(_time.monotonic() - _t0) * 1000,
+            )
+            # 分步模式下始终保存中间产物以便调试
+            self.artifact_service.save_artifact(
+                project_id, "novel_analysis",
+                _strip_chapter_text(novel_analysis), active_job.id,
+            )
+
+            # Phase 2: story_ontology
+            active_job = self.job_service.mark_step(active_job, "running", "story_ontology")
+            _t0 = _time.monotonic()
+            story_assets = self.story_ontology.run(
+                {
+                    "project": project_payload,
+                    "adaptation_config": adaptation_config.model_dump(),
+                    **novel_analysis,
+                    "upstream_characters": novel_analysis.get("character_candidates", []),
+                    "upstream_events": novel_analysis.get("events", []),
+                }
+            )
+            self.llm_trace_service.record_run(
+                active_job.id, "story_ontology",
+                provider_name=getattr(self.story_ontology.provider, "name", "unknown"),
+                model_name=getattr(self.story_ontology.provider, "model", "unknown"),
+                duration_ms=(_time.monotonic() - _t0) * 1000,
+            )
+            self.artifact_service.save_artifact(
+                project_id, "story_bible",
+                _strip_chapter_text(story_assets), active_job.id,
+            )
+
+            return self.job_service.mark_step(active_job, "succeeded", "complete")
+        except Exception as exc:
+            return self.job_service.mark_step(active_job, "failed", active_job.current_step, str(exc))
+
+    def run_adaptation_plan(
+        self,
+        project_id: str,
+        chapters: list[dict[str, Any]],
+        adaptation_config: AdaptationConfig,
+        job: GenerationJob | None = None,
+    ) -> GenerationJob:
+        """运行 novel_reader → story_ontology → adaptation_planner，生成并保存 adaptation_plan artifact。
+
+        用于分步调试、单步重跑、前端展示 pipeline progress。
+        """
+        active_job = job or self.job_service.create_job(project_id)
+        chapters = chapters[:4]
+        try:
+            project = ProjectService().get_project(project_id)
+            project_payload = project.model_dump(mode="json") if project is not None else {"id": project_id}
+            artifact_dir = default_data_root() / "projects" / project_id / "artifacts"
+            logger.info(
+                "run_adaptation_plan project_id=%s project_title=%s chapters_count=%s provider=%s artifact_dir=%s",
+                project_id,
+                project_payload.get("title", ""),
+                len(chapters),
+                getattr(self.novel_reader.provider, "name", "unknown"),
+                artifact_dir,
+            )
+            import time as _time
+
+            # Phase 1: novel_reader
+            active_job = self.job_service.mark_step(active_job, "running", "novel_reader")
+            _t0 = _time.monotonic()
+            novel_analysis = self.novel_reader.run({"project": project_payload, "chapters": chapters})
+            self.llm_trace_service.record_run(
+                active_job.id, "novel_reader",
+                provider_name=getattr(self.novel_reader.provider, "name", "unknown"),
+                model_name=getattr(self.novel_reader.provider, "model", "unknown"),
+                duration_ms=(_time.monotonic() - _t0) * 1000,
+            )
+            self.artifact_service.save_artifact(
+                project_id, "novel_analysis",
+                _strip_chapter_text(novel_analysis), active_job.id,
+            )
+
+            # Phase 2: story_ontology
+            active_job = self.job_service.mark_step(active_job, "running", "story_ontology")
+            _t0 = _time.monotonic()
+            story_assets = self.story_ontology.run(
+                {
+                    "project": project_payload,
+                    "adaptation_config": adaptation_config.model_dump(),
+                    **novel_analysis,
+                    "upstream_characters": novel_analysis.get("character_candidates", []),
+                    "upstream_events": novel_analysis.get("events", []),
+                }
+            )
+            self.llm_trace_service.record_run(
+                active_job.id, "story_ontology",
+                provider_name=getattr(self.story_ontology.provider, "name", "unknown"),
+                model_name=getattr(self.story_ontology.provider, "model", "unknown"),
+                duration_ms=(_time.monotonic() - _t0) * 1000,
+            )
+            self.artifact_service.save_artifact(
+                project_id, "story_bible",
+                _strip_chapter_text(story_assets), active_job.id,
+            )
+
+            # Phase 3: adaptation_planner
+            active_job = self.job_service.mark_step(active_job, "running", "adaptation_planner")
+            _t0 = _time.monotonic()
+            adaptation_plan = self.adaptation_planner.run(
+                {
+                    "project": project_payload,
+                    **story_assets,
+                    "adaptation_config": adaptation_config.model_dump(),
+                }
+            )
+            self.llm_trace_service.record_run(
+                active_job.id, "adaptation_planner",
+                provider_name=getattr(self.adaptation_planner.provider, "name", "unknown"),
+                model_name=getattr(self.adaptation_planner.provider, "model", "unknown"),
+                duration_ms=(_time.monotonic() - _t0) * 1000,
+            )
+            self.artifact_service.save_artifact(
+                project_id, "adaptation_plan", adaptation_plan, active_job.id,
+            )
+
+            return self.job_service.mark_step(active_job, "succeeded", "complete")
+        except Exception as exc:
+            return self.job_service.mark_step(active_job, "failed", active_job.current_step, str(exc))
+
     def run_v1(
         self,
         project_id: str,
