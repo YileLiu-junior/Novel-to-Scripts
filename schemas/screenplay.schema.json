@@ -269,7 +269,7 @@
         "id": { "type": "string", "pattern": "^event_[0-9]{3}$" },
         "title": { "type": "string" },
         "event_type": { "type": "string" },
-        "participants": { "type": "array", "items": { "type": "string", "pattern": "^char_[0-9]{3}$" } },
+        "participants": { "type": "array", "items": { "type": "string", "pattern": "^char_[0-9]{3}(_[a-zA-Z0-9]+)*$" } },
         "summary": { "type": "string" },
         "complete_event": { "type": "boolean" },
         "event_flow": {
@@ -318,7 +318,7 @@
       "properties": {
         "id": { "type": "string", "pattern": "^conflict_[0-9]{3}$" },
         "conflict_axis": { "type": "string", "minLength": 1 },
-        "participants": { "type": "array", "items": { "type": "string", "pattern": "^char_[0-9]{3}$" } },
+        "participants": { "type": "array", "items": { "type": "string", "pattern": "^char_[0-9]{3}(_[a-zA-Z0-9]+)*$" } },
         "related_events": { "type": "array", "items": { "type": "string", "pattern": "^event_[0-9]{3}$" } },
         "source_refs": { "type": "array", "items": { "$ref": "#/$defs/sourceRef" } }
       },

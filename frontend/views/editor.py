@@ -6,7 +6,7 @@ editor.py
 import streamlit as st
 
 from frontend.utils import state, storage
-from frontend.views import audit_report, characters, export, original, plots, scenes
+from frontend.views import audit_report, characters, export, original, plots, scenes, screenplay_preview
 
 
 def _restore_backend_snapshot(project: dict) -> None:
@@ -67,6 +67,7 @@ def render():
         _nav_button("人物管理", "characters", current_section)
         _nav_button("场景管理", "scenes", current_section)
         _nav_button("事件管理", "plots", current_section)
+        _nav_button("剧本预览", "screenplay_preview", current_section)
         _nav_button("生成结果", "export", current_section)
         _nav_button("审查报告", "audit_report", current_section)
 
@@ -80,7 +81,9 @@ def render():
         scenes.render(project)
     elif current_section == "plots":
         plots.render(project)
-    elif current_section in {"export", "screenplay_preview"}:
+    elif current_section == "screenplay_preview":
+        screenplay_preview.render(project)
+    elif current_section == "export":
         export.render(project)
     elif current_section == "audit_report":
         audit_report.render(project)

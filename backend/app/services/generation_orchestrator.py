@@ -321,13 +321,23 @@ def _normalize_event_id(raw: str) -> str:
 
 
 def _normalize_char_id(raw: str) -> str:
-    """将模型可能输出的各种角色 ID 统一为零填充的 char_NNN 格式。"""
+    """将模型可能输出的各种角色 ID 统一为零填充的 char_NNN 格式。
+
+    对于 char_006_others 这类带描述性后缀的 ID，提取数字部分生成
+    char_006 格式；如果后缀是纯字母描述（如 char_others），则原样保留。
+    """
     if not raw:
         return raw
     if raw.startswith("char_"):
         suffix = raw[5:]
         if suffix.isdigit():
             return f"char_{int(suffix):03d}"
+        # char_006_others → 提取前段数字 → char_006
+        # char_baiqian → 无数字，原样保留
+        import re as _re
+        m = _re.match(r"^(\d+)", suffix)
+        if m:
+            return f"char_{int(m.group(1)):03d}"
         # 非纯数字后缀（如 char_baiqian_01）→ 继续尝试 rsplit
     if raw.isdigit():
         return f"char_{int(raw):03d}"
@@ -412,14 +422,16 @@ def _resolve_char_id(raw: str, lookup: dict[str, str]) -> str:
     当 LLM 输出描述性 ID（如 char_baiqian）或直接用中文名（"白浅"）
     而不是规范 char_NNN 时，此函数尝试通过名称查表、子串匹配等方式
     将其映射回合法格式。
+
+    同时接受 char_NNN_suffix（如 char_006_others）作为合法格式。
     """
     import re
-    # 已经是合法 char_NNN 格式则直接返回
-    if re.match(r"^char_[0-9]{3}$", raw):
+    # 已经是合法 char_NNN 或 char_NNN_suffix 格式则直接返回
+    if re.match(r"^char_[0-9]{3}(_[a-zA-Z0-9]+)*$", raw):
         return raw
-    # 尝试通过规范化修正（如 char_1 → char_001）
+    # 尝试通过规范化修正（如 char_1 → char_001, char_006_others → char_006）
     normalized = _normalize_char_id(raw)
-    if re.match(r"^char_[0-9]{3}$", normalized):
+    if re.match(r"^char_[0-9]{3}(_[a-zA-Z0-9]+)*$", normalized):
         return normalized
     # 尝试 lookup（大小写不敏感）
     if raw and raw.lower() in lookup:
@@ -704,6 +716,99 @@ def _normalize_all_references(
                     item["related_events"] = [_resolve_event_id(e, event_lookup) for e in re_events if isinstance(e, str)]
 
     return screenplay
+
+
+def _repair_scene_character_refs(screenplay: dict[str, Any]) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    """自动修复 scene.characters 缺失：对白/content_blocks 中出现的角色必须被加入场景出场列表。
+
+    遍历所有 scenes，从 dialogue 和 content_blocks 中收集 character_id：
+    1. 如果 character_id 已在 scene.characters 中，跳过；
+    2. 如果 character_id 存在于全局 story_bible.characters，自动补入 scene.characters；
+    3. 如果 character_id 不存在于全局角色表，创建占位角色并补入。
+
+    返回 (修复后的 screenplay, 修复记录列表)。
+    """
+    repairs: list[dict[str, Any]] = []
+    story_bible = screenplay.get("story_bible", {})
+    if not isinstance(story_bible, dict):
+        story_bible = {}
+    global_characters = story_bible.setdefault("characters", [])
+    if not isinstance(global_characters, list):
+        global_characters = []
+        story_bible["characters"] = global_characters
+
+    global_char_ids = {c.get("id") for c in global_characters if isinstance(c, dict) and c.get("id")}
+    next_char_idx = len(global_characters) + 1
+
+    for scene in screenplay.get("scenes", []):
+        if not isinstance(scene, dict):
+            continue
+        scene_id = scene.get("id", "unknown")
+        scene_chars = scene.get("characters")
+        if not isinstance(scene_chars, list):
+            scene_chars = []
+            scene["characters"] = scene_chars
+        scene_char_set = set(scene_chars)
+
+        # 收集 dialogue 中的 character_id
+        dialogue_chars: set[str] = set()
+        for line in scene.get("dialogue", []):
+            if isinstance(line, dict):
+                cid = line.get("character_id")
+                if isinstance(cid, str) and cid:
+                    dialogue_chars.add(cid)
+
+        # 收集 content_blocks 中的 character_id
+        block_chars: set[str] = set()
+        for block in scene.get("content_blocks", []):
+            if isinstance(block, dict):
+                cid = block.get("character_id")
+                if isinstance(cid, str) and cid:
+                    block_chars.add(cid)
+
+        all_needed = dialogue_chars | block_chars
+        for cid in sorted(all_needed):
+            if cid in scene_char_set:
+                continue
+
+            # 需要补齐
+            scene_chars.append(cid)
+            scene_char_set.add(cid)
+
+            if cid in global_char_ids:
+                repairs.append(
+                    {
+                        "category": "reference_repair",
+                        "severity": "warning",
+                        "message": f"Character {cid} was used in scene {scene_id} dialogue/content_blocks but missing from scene.characters; added automatically.",
+                        "scene_id": scene_id,
+                        "character_id": cid,
+                    }
+                )
+            else:
+                # 创建占位角色
+                placeholder = {
+                    "id": cid,
+                    "name": f"未命名角色 {cid}",
+                    "aliases": [],
+                    "narrative_role": "supporting",
+                    "voice_profile": {"rhythm": "", "diction": ""},
+                    "source_refs": [],
+                }
+                global_characters.append(placeholder)
+                global_char_ids.add(cid)
+                repairs.append(
+                    {
+                        "category": "reference_repair",
+                        "severity": "warning",
+                        "message": f"Character {cid} was used in scene {scene_id} but not defined in story_bible.characters; created placeholder and added to scene.characters.",
+                        "scene_id": scene_id,
+                        "character_id": cid,
+                    }
+                )
+
+    return screenplay, repairs
+
 
 def _strip_chapter_text(data: dict[str, Any]) -> dict[str, Any]:
     """移除 chapter 对象的 text 和 paragraphs 字段，替换为 paragraph_count 引用。
@@ -1203,9 +1308,20 @@ class GenerationOrchestrator:
             event_lookup = _build_event_lookup(screenplay_json["events"])
             if char_lookup or event_lookup:
                 screenplay_json = _normalize_all_references(screenplay_json, char_lookup, event_lookup)
+            # 自动修复：对白/content_blocks 中出现的角色必须被加入 scene.characters
+            screenplay_json, character_repairs = _repair_scene_character_refs(screenplay_json)
+            if character_repairs:
+                logger.warning(
+                    "Repaired %d scene character references: %s",
+                    len(character_repairs),
+                    character_repairs,
+                )
             screenplay_json = normalize_screenplay_for_export(screenplay_json)
             findings = self.validation_service.validate_screenplay(screenplay_json)
             audit_report = self.validation_service.audit_report_for(findings).model_dump()
+            # 将自动修复记录追加到 audit_report
+            if character_repairs:
+                audit_report.setdefault("schema_warnings", []).extend(character_repairs)
             screenplay_json["audit_report"] = audit_report
             # 无条件保存 screenplay_json，即使后续校验/导出失败也能用于调试
             screenplay_artifact = self.artifact_service.save_artifact(project_id, "screenplay_json", screenplay_json, active_job.id)

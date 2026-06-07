@@ -9,8 +9,8 @@ import os
 import uuid
 from datetime import datetime
 
-# 数据文件路径（相对于项目根目录）
-DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data")
+# 数据文件路径（指向 backend/data 目录，与后端数据根目录一致）
+DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "backend", "data")
 DATA_FILE = os.path.join(DATA_DIR, "projects.json")
 
 
@@ -26,13 +26,21 @@ def _load_all() -> dict:
     """
     读取整个 projects.json 内容。
     返回字典格式，包含 projects 列表。
-    如果文件不存在，返回初始空数据结构。
+    如果文件不存在或内容损坏，返回初始空数据结构。
     """
     _ensure_data_dir()
     if not os.path.exists(DATA_FILE):
         return {"projects": []}
-    with open(DATA_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
+    try:
+        with open(DATA_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        if not isinstance(data, dict):
+            return {"projects": []}
+        if "projects" not in data:
+            data["projects"] = []
+        return data
+    except (json.JSONDecodeError, OSError):
+        return {"projects": []}
 
 
 def _save_all(data: dict):

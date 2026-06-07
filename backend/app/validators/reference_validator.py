@@ -59,7 +59,8 @@ class ReferenceValidator:
                         self._finding(
                             "reference.dialogue_character_not_in_scene",
                             "error",
-                            f"Dialogue {line.get('id')} uses character {character_id}, which is not in scene {scene_id}.",
+                            f"Dialogue {line.get('id')} uses character {character_id}, which is not in scene {scene_id}.characters. "
+                            f"Suggestion: add '{character_id}' to scenes[{scene_id}].characters.",
                             "dialogue",
                             line.get("id"),
                         )
@@ -72,7 +73,8 @@ class ReferenceValidator:
                         self._finding(
                             "reference.content_block_character_not_in_scene",
                             "error",
-                            f"Content block {block.get('id')} uses character {character_id}, which is not in scene {scene_id}.",
+                            f"Content block {block.get('id')} uses character {character_id}, which is not in scene {scene_id}.characters. "
+                            f"Suggestion: add '{character_id}' to scenes[{scene_id}].characters.",
                             "content_block",
                             block.get("id"),
                         )

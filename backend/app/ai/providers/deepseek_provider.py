@@ -148,35 +148,72 @@ class DeepSeekProvider(AiProvider):
         raise AiProviderResponseError("DeepSeek response did not include message content")
 
     def _parse_json_object(self, raw_output: str) -> dict[str, Any]:
-        # Try direct parse first
+        raw_stripped = raw_output.strip()
+        logger.debug("_parse_json_object input length=%d preview=%s", len(raw_stripped), raw_stripped[:200])
+
+        # 1. Try direct parse first
         try:
-            parsed = json.loads(raw_output)
+            parsed = json.loads(raw_stripped)
             if isinstance(parsed, dict):
                 return parsed
-        except json.JSONDecodeError:
-            pass
+            if isinstance(parsed, list) and parsed:
+                # LLM 可能返回数组，取第一个对象
+                logger.warning("DeepSeek returned JSON array; extracting first object")
+                if isinstance(parsed[0], dict):
+                    return parsed[0]
+        except json.JSONDecodeError as exc:
+            logger.debug("Direct JSON parse failed: %s", exc)
 
-        # LLM may wrap JSON in markdown code blocks; try to extract
-        md_match = re.search(r"```(?:json)?\s*([\s\S]*?)```", raw_output)
-        if md_match:
+        # 2. LLM may wrap JSON in markdown code blocks; try to extract
+        # 使用 findall 获取所有代码块，优先尝试 json 标记的块
+        md_matches = re.findall(r"```(?:json)?\s*([\s\S]*?)```", raw_stripped)
+        for idx, block in enumerate(md_matches):
+            block = block.strip()
             try:
-                parsed = json.loads(md_match.group(1).strip())
+                parsed = json.loads(block)
                 if isinstance(parsed, dict):
-                    logger.warning("DeepSeek returned markdown-wrapped JSON; extracted via code block")
+                    logger.warning("DeepSeek returned markdown-wrapped JSON; extracted via code block %d", idx)
+                    return parsed
+                if isinstance(parsed, list) and parsed and isinstance(parsed[0], dict):
+                    logger.warning("DeepSeek returned markdown-wrapped JSON array; extracted first object from code block %d", idx)
+                    return parsed[0]
+            except json.JSONDecodeError:
+                continue
+
+        # 3. Smart brace matching: find outermost balanced braces
+        brace_start = -1
+        depth = 0
+        for i, ch in enumerate(raw_stripped):
+            if ch == "{":
+                if depth == 0:
+                    brace_start = i
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+                if depth == 0 and brace_start != -1:
+                    try:
+                        candidate = raw_stripped[brace_start:i + 1]
+                        parsed = json.loads(candidate)
+                        if isinstance(parsed, dict):
+                            logger.warning("DeepSeek returned non-JSON text; extracted via balanced brace matching")
+                            return parsed
+                    except json.JSONDecodeError:
+                        continue
+
+        # 4. Fallback: try first { to last } (legacy behavior for partially malformed JSON)
+        fallback_start = raw_stripped.find("{")
+        fallback_end = raw_stripped.rfind("}")
+        if fallback_start != -1 and fallback_end > fallback_start:
+            try:
+                candidate = raw_stripped[fallback_start:fallback_end + 1]
+                parsed = json.loads(candidate)
+                if isinstance(parsed, dict):
+                    logger.warning("DeepSeek returned non-JSON text; extracted via fallback brace matching")
                     return parsed
             except json.JSONDecodeError:
                 pass
 
-        # Last resort: find first { and last }
-        brace_start = raw_output.find("{")
-        brace_end = raw_output.rfind("}")
-        if brace_start != -1 and brace_end > brace_start:
-            try:
-                parsed = json.loads(raw_output[brace_start:brace_end + 1])
-                if isinstance(parsed, dict):
-                    logger.warning("DeepSeek returned non-JSON text; extracted via brace matching")
-                    return parsed
-            except json.JSONDecodeError:
-                pass
-
+        # Log the problematic response for debugging (truncated)
+        preview = raw_stripped[:500].replace("\n", " ")
+        logger.error("DeepSeek response was not valid JSON. Preview: %s...", preview)
         raise AiProviderResponseError("DeepSeek response was not valid JSON")

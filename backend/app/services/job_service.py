@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from uuid import uuid4
 
 from app.domain.jobs import GenerationJob, JobStatus
@@ -12,7 +12,7 @@ class JobService:
         self.repository = repository or JobRepository()
 
     def create_job(self, project_id: str) -> GenerationJob:
-        timestamp = datetime.now(UTC).strftime("%Y%m%d%H%M%S")
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
         job = GenerationJob(id=f"job_{timestamp}_{uuid4().hex[:8]}", project_id=project_id)
         return self.repository.save(job)
 

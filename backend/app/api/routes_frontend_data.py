@@ -132,6 +132,7 @@ def init_frontend_data(project_id: str, body: InitRequest = InitRequest()) -> Fr
             "related_events": s.get("related_events", []),
             "action": s.get("action", []),
             "dialogue": s.get("dialogue", []),
+            "content_blocks": s.get("content_blocks", []),
             "source_refs": s.get("source_refs", []),
         })
 
