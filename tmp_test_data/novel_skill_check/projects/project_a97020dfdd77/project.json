@@ -1,7 +1,0 @@
-{
-  "id": "project_a97020dfdd77",
-  "logline": "Full UTF-8 txt input routed through ChapterIntakeService and GenerationOrchestrator.",
-  "metadata": {},
-  "target_format": "web_series",
-  "title": "full_txt_backend_chain_check"
-}

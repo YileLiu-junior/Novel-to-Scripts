@@ -1,2 +1,0 @@
-$env:XENGINEER_AI_PROVIDER = "fake"
-uvicorn app.main:app --reload

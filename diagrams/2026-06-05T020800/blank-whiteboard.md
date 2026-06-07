@@ -1,1 +1,0 @@
-<whiteboard type="blank"></whiteboard>

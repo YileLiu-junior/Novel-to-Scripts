@@ -1,8 +1,67 @@
+# Python
 __pycache__/
 *.py[cod]
-.tmp/
+.pytest_cache/
+
+# Build artifacts
+backend/xengineer_backend.egg-info/
+*.egg-info/
+
+# Environment & secrets
 scripts/configure_llm_env.ps1
 scripts/configure_deepseek_env.ps1
-.pytest_cache/
-BACKEND_UNIMPLEMENTED_VERSION_MAP.md
+.env
+
+# Runtime data
 data/
+backend/data/
+
+# ---------------------------------------------------------------------------
+# Internal development docs (not for public repo)
+# ---------------------------------------------------------------------------
+AGENTS.md
+BACKEND_UNIMPLEMENTED_VERSION_MAP.md
+docs/specs/
+docs/plans/
+docs/superpowers/
+docs/ideation/
+Pre-research/
+
+# Internal communication reports
+前端持久化编辑修改完成报告.md
+前端本地保存功能修改报告.md
+character_card_layout_fix_report.md
+frontend_data_refactor_report.md
+frontend/前端编辑功能修改完成报告.md
+frontend/前端页面重组完成报告.md
+fixtures/前端接入指南.md
+fixtures/后端说明文档和路径情况.md
+fixtures/建议前端添加内容.md
+
+# Temp files
+.tmp/
+.tmp-diagram/
+.tmp-novel-to-script-team/
+tmp_test_data/
+
+# Dev diagrams
+diagrams/
+
+# Dev notes & debug scripts
+backend/run.txt
+backend/tests/debug_*.py
+
+# ---------------------------------------------------------------------------
+# Copyright-sensitive content
+# ---------------------------------------------------------------------------
+research/
+docs/三生三世十里桃花*.pdf
+docs/三生三世十里桃花*.txt
+docs/ripley-*.pdf
+docs/Scripts/
+
+# Demo fixture sub-project data (keep top-level fixtures only)
+fixtures/projects/
+
+# Outdated frontend guide (replaced by README)
+frontend/使用指南.md
