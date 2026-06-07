@@ -115,6 +115,15 @@ Only IDs (char_001, scene_001, event_001, etc.) and field names remain in Englis
 (three-digit zero-padded number, e.g. `char_001`, `char_002`). Do NOT invent
 descriptive IDs like `char_baiqian`, `char_yehua`, `char_protagonist`.
 Copy the `id` field verbatim from each entry in `canonical_characters`.
+
+**Anti-example — this is WRONG and will be rejected:**
+```json
+// ❌ WRONG — uses Chinese name instead of canonical ID
+{"characters": ["白浅", "夜华", "南斗真君"]}
+// ✅ CORRECT — copies the `id` field from canonical_characters
+{"characters": ["char_001", "char_002", "char_014"]}
+```
+
 The same rule applies to event IDs: use `event_NNN` format only
 (e.g. `event_001`), not `evt_arrival` or other descriptive forms.
 

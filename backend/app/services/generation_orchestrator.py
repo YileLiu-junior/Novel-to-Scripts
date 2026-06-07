@@ -1140,7 +1140,11 @@ class GenerationOrchestrator:
                     **story_assets,
                     "adaptation_config": adaptation_config.model_dump(),
                     "adaptation_plan": adaptation_plan,
-                    "canonical_characters": story_assets.get("story_bible", {}).get("characters", []),
+                    "canonical_characters": [
+                        {"id": c.get("id"), "name": c.get("name")}
+                        for c in story_assets.get("story_bible", {}).get("characters", [])
+                        if isinstance(c, dict)
+                    ],
                     "canonical_events": story_assets.get("events", []),
                 }
             )
@@ -1209,18 +1213,20 @@ class GenerationOrchestrator:
                 "generate screenplay_json_path=%s",
                 artifact_dir / f"screenplay_json_v{screenplay_artifact.version:03d}.json",
             )
-            # YAML 导出：校验有 error 时降级为 warn，不阻断 pipeline
-            yaml_export_errors: list[str] = []
-            try:
-                yaml_text = self.yaml_service.export_validated(screenplay_json)
-            except ValueError as ve:
-                yaml_export_errors.append(str(ve))
-                logger.warning("YAML export blocked by validation, falling back to best-effort export: %s", ve)
-                try:
-                    yaml_text = self.yaml_service.exporter.export(screenplay_json)
-                except Exception as fe:
-                    yaml_text = f"# YAML export failed: {fe}\n# Validation: {ve}\n"
-                    logger.error("Best-effort YAML export also failed: %s", fe)
+            # YAML 导出：校验器已重新启用，校验不通过则阻断 pipeline
+            # （如需恢复降级逻辑，取消下方注释）
+            yaml_text = self.yaml_service.export_validated(screenplay_json)
+            # yaml_export_errors: list[str] = []
+            # try:
+            #     yaml_text = self.yaml_service.export_validated(screenplay_json)
+            # except ValueError as ve:
+            #     yaml_export_errors.append(str(ve))
+            #     logger.warning("YAML export blocked by validation, falling back to best-effort export: %s", ve)
+            #     try:
+            #         yaml_text = self.yaml_service.exporter.export(screenplay_json)
+            #     except Exception as fe:
+            #         yaml_text = f"# YAML export failed: {fe}\n# Validation: {ve}\n"
+            #         logger.error("Best-effort YAML export also failed: %s", fe)
             self.artifact_service.save_artifact(project_id, "screenplay_yaml", yaml_text, active_job.id)
             self.artifact_service.save_artifact(project_id, "audit_report", audit_report, active_job.id)
             if save_intermediates:
