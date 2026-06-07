@@ -118,6 +118,13 @@
     "target_format": "web_series",
     "title": "test0"
   },
+  "project_800dd8c854aa": {
+    "id": "project_800dd8c854aa",
+    "logline": "Frontend backend acceptance check",
+    "metadata": {},
+    "target_format": "web_series",
+    "title": "frontend-acceptance-20260607-090516"
+  },
   "project_85fd46a2b384": {
     "id": "project_85fd46a2b384",
     "logline": null,
@@ -138,6 +145,13 @@
     "metadata": {},
     "target_format": "web_series",
     "title": "三生三世十里桃花 E2E Test"
+  },
+  "project_90a77e5dd6ae": {
+    "id": "project_90a77e5dd6ae",
+    "logline": "Frontend backend acceptance check",
+    "metadata": {},
+    "target_format": "web_series",
+    "title": "frontend-acceptance-20260607-090550"
   },
   "project_9d08bc9a5025": {
     "id": "project_9d08bc9a5025",

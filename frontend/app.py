@@ -9,7 +9,7 @@ AI 小说转剧本工具 —— Streamlit 应用入口。
 """
 
 import streamlit as st
-from frontend.utils import state
+from frontend.utils import state, theme
 from frontend.views import home, editor
 
 
@@ -21,6 +21,9 @@ def main():
         layout="wide",
         initial_sidebar_state="auto",
     )
+
+    # 注入侘寂文艺主题
+    theme.inject()
 
     # 初始化全局状态
     state.init_session_state()
