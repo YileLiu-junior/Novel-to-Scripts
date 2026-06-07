@@ -9,6 +9,7 @@ from app.services.generation_orchestrator import (
     _resolve_char_id,
     _normalize_event_id,
     _normalize_char_id,
+    _normalize_foreshadowing_id,
     _resolve_event_id,
     _auto_register_missing_characters,
     _normalize_source_refs_list,
@@ -290,3 +291,45 @@ def test_source_refs_no_valid_set_means_no_remapping() -> None:
 
     # 不改动，留给 validator 处理
     assert result[0]["chapter_id"] == "chapter_000"
+
+
+# ── _normalize_foreshadowing_id ─────────────────────────────────────────────
+
+
+def test_normalize_foreshadowing_id_fsh_prefix() -> None:
+    """fsh_001 → foreshadow_001, fsh_1 → foreshadow_001"""
+    assert _normalize_foreshadowing_id("fsh_001") == "foreshadow_001"
+    assert _normalize_foreshadowing_id("fsh_1") == "foreshadow_001"
+    assert _normalize_foreshadowing_id("fsh_005") == "foreshadow_005"
+
+
+def test_normalize_foreshadowing_id_pads_zero() -> None:
+    """foreshadow_1 → foreshadow_001"""
+    assert _normalize_foreshadowing_id("foreshadow_1") == "foreshadow_001"
+    assert _normalize_foreshadowing_id("foreshadow_12") == "foreshadow_012"
+
+
+def test_normalize_foreshadowing_id_passes_through_valid() -> None:
+    """已合法的不变"""
+    assert _normalize_foreshadowing_id("foreshadow_001") == "foreshadow_001"
+
+
+def test_normalize_foreshadowing_id_foreshadowing_prefix() -> None:
+    """foreshadowing_01 → foreshadow_001"""
+    assert _normalize_foreshadowing_id("foreshadowing_01") == "foreshadow_001"
+
+
+def test_normalize_foreshadowing_id_fs_prefix() -> None:
+    """fs_001 → foreshadow_001"""
+    assert _normalize_foreshadowing_id("fs_001") == "foreshadow_001"
+
+
+def test_normalize_foreshadowing_id_pure_number() -> None:
+    """"5" → foreshadow_005"""
+    assert _normalize_foreshadowing_id("5") == "foreshadow_005"
+
+
+def test_normalize_foreshadowing_id_unknown_kept() -> None:
+    """无法识别的 ID 保持原样"""
+    assert _normalize_foreshadowing_id("some_garbled") == "some_garbled"
+    assert _normalize_foreshadowing_id("") == ""
