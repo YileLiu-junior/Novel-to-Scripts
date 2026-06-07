@@ -8,7 +8,7 @@
 [![DeepSeek](https://img.shields.io/badge/AI-DeepSeek%20V4-536DFE.svg)](https://api.deepseek.com)
 
 XEngineer 将小说改编过程分解为**可检查、可追溯、可版本化的步骤**，最终输出一份**结构化 YAML 剧本**，完整保留从原著到剧本的引用链条。
-
+产品介绍 & demo演示视频 ：https://www.bilibili.com/video/BV1WuEh6VE8o/
 ---
 
 ## 目录
