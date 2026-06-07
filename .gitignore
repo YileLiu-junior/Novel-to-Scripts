@@ -15,7 +15,7 @@ scripts/configure_deepseek_env.ps1
 # Runtime data
 data/
 backend/data/
-
+.claude
 # ---------------------------------------------------------------------------
 # Internal development docs (not for public repo)
 # ---------------------------------------------------------------------------
