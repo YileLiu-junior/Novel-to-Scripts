@@ -16,8 +16,18 @@ from typing import Any
 # ---------------------------------------------------------------------------
 
 _CHAPTER_PATTERNS: list[tuple[str, int]] = [
-    # 中文章回体：第X章 / 第X节 / 第X回 / 第X卷
-    (r"^\s*第[零一二三四五六七八九十百千万\d]+[章节回卷部集]", 1),
+    # ── Markdown 标题行：###第X章 / ###楔子 / ###序幕 等 ──
+    (r"^\s*#{1,3}\s*第[零一二三四五六七八九十百千万\d]+[章节回卷部集部分]", 1),
+    (r"^\s*#{1,3}\s*楔[子文]", 1),
+    (r"^\s*#{1,3}\s*序\s*[章言幕]", 1),
+    (r"^\s*#{1,3}\s*引[子言文]", 1),
+    (r"^\s*#{1,3}\s*前[传序言][\s（(]*[零一二三四五六七八九十百千万\d]*", 1),
+    # ── 中文章回体：第X章 / 第X节 / 第X回 / 第X卷 / 第X部分 ──
+    (r"^\s*第[零一二三四五六七八九十百千万\d]+[章节回卷部集部分]", 1),
+    # ── 非标题行楔子/序幕/序章/引子（无 ### 前缀）──
+    (r"^\s*楔[子文]", 1),
+    (r"^\s*序\s*[章言幕]", 1),
+    (r"^\s*引[子言文]", 1),
     # 中文简写：第一章 / 一、
     (r"^\s*[零一二三四五六七八九十百千万]+[、，。．\s]", 1),
     # 英文：Chapter X / CHAPTER X
@@ -283,7 +293,11 @@ class ChapterSplitter:
         return chapters
 
     def _classify_chunk(self, chunk: str) -> str:
-        """判断切片是否是正文主章节，还是声明、目录、序章等非正文。"""
+        """判断切片是否是正文主章节，还是声明、目录等非正文。
+
+        楔子/序幕/序章/引子 不再被排除——很多小说（如《潜伏》）以楔子或序章
+        作为正文起点，这些内容对 NovelReader 有实际价值。
+        """
         title = self._extract_title(chunk)
         first_line = title.lower()
         compact = re.sub(r"\s+", "", chunk.lower())
@@ -291,10 +305,17 @@ class ChapterSplitter:
             return "ignored_notice"
         if any(first_line == item.lower() for item in _CATALOG_TITLES):
             return "catalog"
-        if any(first_line.startswith(item.lower()) for item in _PROLOGUE_TITLES):
-            return "prologue"
         if self._looks_like_catalog_entry(chunk):
             return "catalog_entry"
+        # 楔子/序章/序幕/引子 若标题行匹配章节边界模式，视为正文
+        if any(first_line.startswith(item.lower()) for item in _PROLOGUE_TITLES):
+            if self._looks_like_main_chapter_title(title):
+                return "main_chapter"
+            # 即使标题不匹配主章模式（如纯"楔子"），只要正文够长就视为正文
+            body = self._chapter_body_text(chunk)
+            if len(body) >= _MIN_CHAPTER_BODY_CHARS:
+                return "main_chapter"
+            return "prologue"
         if self._looks_like_main_chapter_title(title):
             return "main_chapter"
         return "unknown"

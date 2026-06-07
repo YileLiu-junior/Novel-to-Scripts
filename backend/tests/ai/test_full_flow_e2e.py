@@ -241,7 +241,7 @@ class FullFlowE2ETest(unittest.TestCase):
         self._assert_artifacts_exist()
         self._assert_chapter_text_stripped()
 
-        print("[E2E-FullFlow] All assertions passed ✓")
+        print("[E2E-FullFlow] All assertions passed - OK")
 
 
 if __name__ == "__main__":
